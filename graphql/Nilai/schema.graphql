@@ -14,11 +14,11 @@ type Nilai {
     deleted_at: DateTime
     
     # Relations
-    krsDetail: KrsDetail! @belongsTo
+    krsDetail: KrsDetail! @belongsTo    
 }
 
 input CreateNilaiInput {
-    krs_detail_id: Int!
+    krs_detail_id: Int! 
     tugas: Float
     quiz: Float
     uts: Float

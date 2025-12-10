@@ -28,7 +28,7 @@ class AdminController extends Controller
     }
     public function nilai()
     {
-        return view('admin.roles.index');
+        return view('admin.nilai.index');
     }
     public function krs()
     {

@@ -404,5 +404,5 @@
     </div>
 
     {{-- Script --}}
-    <script src="{{ asset('js/detailKrs/detailKrs.js') }}"></script>
+    <script src="{{ asset('js/admin/detailKrs/detailKrs.js') }}"></script>
 </x-layouts.dashboard>

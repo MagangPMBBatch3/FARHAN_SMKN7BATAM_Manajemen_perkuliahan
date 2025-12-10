@@ -18,7 +18,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/dosen', [AdminController::class, 'dosen']);
     Route::get('/admin/mahasiswa', [AdminController::class, 'mahasiswa'])->name('admin.mahasiswa');
     Route::get('/admin/krs', [AdminController::class, 'krs']);
-    Route::get('/admin/nilai', [AdminController::class, 'nilai']);
+    Route::get('/admin/nilai', [AdminController::class, 'nilai'])->name('admin.nilai');
     Route::get('/admin/ruangan', [AdminController::class, 'ruangan']);
     Route::get('/admin/kelas', [AdminController::class, 'kelas']);
     Route::get('/admin/jurusan', [AdminController::class, 'jurusan'])->name('admin.jurusan');
@@ -30,7 +30,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/jadwal', [AdminController::class, 'jadwal'])->name('admin.jadwal');
     Route::get('/admin/dosen_detail/{id}', [AdminController::class, 'dosen_detail']);
     Route::get('/admin/mahasiswa_detail/{id}', [AdminController::class, 'mahasiswa_detail']);
-    Route::get('/admin/krs_detail/{id}', [AdminController::class, 'krs_detail']);
+    Route::get('/admin/krs-detail/{id}', [AdminController::class, 'krs_detail'])->name('admin.krs_detail');
 });
 
 Route::middleware(['auth', 'role:dosen'])->group(function () {

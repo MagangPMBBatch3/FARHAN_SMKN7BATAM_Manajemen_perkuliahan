@@ -12,51 +12,68 @@ function getKrsIdFromUrl() {
 async function loadKrsDetail() {
     currentKrsId = getKrsIdFromUrl();
     
+    // Query untuk mengambil KRS dengan semua detail-nya
     const query = `
-    query($krs_id: ID!) {
-        krsdetail(krs_id: $krs_id) {
+    query($id: ID!) {
+        krs(id: $id) {
             id
-            krs_id
-            kelas_id
-            mata_kuliah_id
-            sks
-            status_ambil
+            mahasiswa_id
+            semester_id
+            tanggal_pengisian
+            tanggal_persetujuan
+            status
+            total_sks
+            catatan
+            dosen_pa_id
             created_at
             updated_at
-            krs {
+            mahasiswa {
                 id
-                semester {
+                nim
+                nama_lengkap
+                jurusan {
                     id
-                    nama_semester
-                    tahun_ajaran
-                  }
-                tanggal_pengisian
-                status
-                total_sks
-                mahasiswa {
-                    id
-                    nim
-                    nama_lengkap
-                    jurusan {
-                        id
-                        nama_jurusan
-                    }
-                    semester_saat_ini
+                    nama_jurusan
                 }
+                semester_saat_ini
             }
-            kelas {
+            semester {
                 id
-                nama_kelas
-                dosen {
-                    id
-                    nama_lengkap
-                }
+                nama_semester
+                tahun_ajaran
             }
-            mataKuliah {
+            dosenPa {
                 id
-                kode_mk
-                nama_mk
+                nama_lengkap
+            }
+            krsDetail {
+                id
+                krs_id
+                kelas_id
+                mata_kuliah_id
                 sks
+                status_ambil
+                created_at
+                updated_at
+                kelas {
+                    id
+                    nama_kelas
+                    dosen {
+                        id
+                        nama_lengkap
+                    }
+                }
+                mataKuliah {
+                    id
+                    kode_mk
+                    nama_mk
+                    sks
+                }
+                nilai {
+                    id
+                    nilai_akhir
+                    nilai_mutu
+                }
             }
         }
     }`;
@@ -67,92 +84,145 @@ async function loadKrsDetail() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 query: query, 
-                variables: { krs_id: currentKrsId } 
+                variables: { id: currentKrsId } 
             })
         });
 
         const result = await response.json();
+        console.log('GraphQL Response:', result);
         
         if (result.errors) {
             console.error('GraphQL Errors:', result.errors);
-            alert('Gagal memuat data KRS');
+            alert('Gagal memuat data KRS: ' + result.errors[0].message);
             return;
         }
 
-        krsDetailList = result.data.krsdetail || [];
-        
-        if (krsDetailList.length === 0) {
+        if (!result.data || !result.data.krs) {
             alert('Data KRS tidak ditemukan');
-            window.location.href = '/krs';
+            window.location.href = '/admin/krs';
             return;
         }
 
-        currentKrsData = krsDetailList[0].krs;
+        currentKrsData = result.data.krs;
+        krsDetailList = currentKrsData.krsDetail || [];
+        
+        console.log('KRS Data:', currentKrsData);
+        console.log('KRS Detail List:', krsDetailList);
         
         renderKrsDetail(currentKrsData, krsDetailList);
         
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('content').classList.remove('hidden');
+        const loadingEl = document.getElementById('loading');
+        const contentEl = document.getElementById('content');
+        
+        if (loadingEl) loadingEl.classList.add('hidden');
+        if (contentEl) contentEl.classList.remove('hidden');
         
     } catch (error) {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat memuat data');
+        alert('Terjadi kesalahan saat memuat data: ' + error.message);
+    }
+}
+
+// Helper function untuk safely set element content
+function safeSetContent(elementId, content) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = content;
+    } else {
+        console.warn(`Element dengan ID "${elementId}" tidak ditemukan`);
+    }
+}
+
+// Helper function untuk safely set innerHTML
+function safeSetHTML(elementId, html) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.innerHTML = html;
+    } else {
+        console.warn(`Element dengan ID "${elementId}" tidak ditemukan`);
     }
 }
 
 function renderKrsDetail(krsData, detailList) {
-    if (!krsData || !krsData.mahasiswa) return;
-    console.log(krsData)
+    if (!krsData || !krsData.mahasiswa) {
+        console.error('Data KRS atau mahasiswa tidak lengkap');
+        return;
+    }
+    
+    console.log('Rendering KRS Detail:', krsData);
     
     // Header Section
     const initial = krsData.mahasiswa.nama_lengkap.charAt(0).toUpperCase();
-    document.getElementById('initial').textContent = initial;
-    document.getElementById('nama').textContent = krsData.mahasiswa.nama_lengkap;
-    document.getElementById('nim').textContent = krsData.mahasiswa.nim;
-    document.getElementById('statusHeader').textContent = krsData.status     || '-';
+    safeSetContent('initial', initial);
+    safeSetContent('nama', krsData.mahasiswa.nama_lengkap);
+    safeSetContent('nim', krsData.mahasiswa.nim);
+    safeSetContent('statusHeader', krsData.status || '-');
 
     // Tab Info KRS - Mahasiswa Section
-    document.getElementById('krsId').textContent = krsData.id;
-    document.getElementById('mahasiswaNama').textContent = krsData.mahasiswa.nama_lengkap;
-    document.getElementById('mahasiswaNim').textContent = krsData.mahasiswa.nim;
-    document.getElementById('jurusan').textContent = krsData.mahasiswa.jurusan?.nama_jurusan || '-';
+    safeSetContent('krsId', krsData.id);
+    safeSetContent('mahasiswaNama', krsData.mahasiswa.nama_lengkap);
+    safeSetContent('mahasiswaNim', krsData.mahasiswa.nim);
+    safeSetContent('jurusan', krsData.mahasiswa.jurusan?.nama_jurusan || '-');
     
     // Tab Info KRS - Detail KRS Section
-    document.getElementById('semester').textContent = krsData.semester.nama_semester || '-';
-    document.getElementById('tahunAjaran').textContent = krsData.semester.tahun_ajaran || '-';
-    document.getElementById('tanggalPengisian').textContent = formatDate(krsData.tanggal_pengisian);
+    safeSetContent('semester', krsData.semester?.nama_semester || '-');
+    safeSetContent('tahunAjaran', krsData.semester?.tahun_ajaran || '-');
+    safeSetContent('tanggalPengisian', formatDate(krsData.tanggal_pengisian));
+    safeSetContent('tanggalPersetujuan', formatDate(krsData.tanggal_persetujuan));
     
     // Status dengan badge
-    const statusElement = document.getElementById('statusKrs');
-    statusElement.innerHTML = getStatusKrsBadge(krsData.status  );
+    safeSetHTML('statusKrs', getStatusKrsBadge(krsData.status));
+    
+    // Dosen PA
+    safeSetContent('dosenPa', krsData.dosenPa?.nama_lengkap || '-');
+    
+    // Catatan
+    safeSetContent('catatan', krsData.catatan || '-');
     
     // Calculate total SKS from detail list
     const totalSks = detailList.reduce((sum, detail) => sum + (detail.sks || 0), 0);
     
-    document.getElementById('totalSks').textContent = totalSks;
-    document.getElementById('ipSemester').textContent = krsData.ip_semester ? krsData.ip_semester.toFixed(2) : '-';
+    safeSetContent('totalSks', totalSks);
+    
+    // Update total_sks di KRS jika berbeda
+    const krsDataTotalSks = krsData.total_sks || 0;
+    if (krsDataTotalSks !== totalSks) {
+        console.warn(`Total SKS tidak sama: KRS=${krsDataTotalSks}, Detail=${totalSks}`);
+    }
 
     // Summary Cards
-    document.getElementById('totalSksBesar').textContent = totalSks;
-    document.getElementById('totalMatakuliah').textContent = detailList.length;
-    document.getElementById('ipSemesterBesar').textContent = krsData.ip_semester ? krsData.ip_semester.toFixed(2) : '-';
+    safeSetContent('totalSksBesar', totalSks);
+    safeSetContent('totalMatakuliah', detailList.length);
+    
+    // IP Semester - jika ada elementnya
+    safeSetContent('ipSemester', '-');
+    safeSetContent('ipSemesterBesar', '-');
 
+    // Render tabel mata kuliah
     renderMataKuliahTable(detailList);
-    if (detailList.length > 0) {
-        const firstDetail = detailList[0];
-        document.getElementById('createdAt').textContent = formatDateTime(firstDetail.created_at);
-        document.getElementById('updatedAt').textContent = formatDateTime(firstDetail.updated_at);
+    
+    // Metadata
+    if (krsData.created_at) {
+        safeSetContent('createdAt', formatDateTime(krsData.created_at));
+    }
+    if (krsData.updated_at) {
+        safeSetContent('updatedAt', formatDateTime(krsData.updated_at));
     }
 }
 
 function renderMataKuliahTable(detailList) {
     const tbody = document.getElementById('mataKuliahTableBody');
+    if (!tbody) {
+        console.error('Element mataKuliahTableBody tidak ditemukan');
+        return;
+    }
+    
     tbody.innerHTML = '';
 
     if (detailList.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                <td colspan="7" class="px-6 py-4 text-center text-gray-500">
                     Tidak ada mata kuliah yang diambil
                 </td>
             </tr>
@@ -163,16 +233,14 @@ function renderMataKuliahTable(detailList) {
     detailList.forEach((detail, index) => {
         const row = document.createElement('tr');
         row.className = 'border-b hover:bg-gray-50';
-    
-        const jadwal = detail.kelas?.hari && detail.kelas?.jam_mulai 
-            ? `${detail.kelas.hari}, ${detail.kelas.jam_mulai}-${detail.kelas.jam_selesai}` 
-            : '-';
         
-        // Format dosen
+        // Dosen
         const dosen = detail.kelas?.dosen?.nama_lengkap || '-';
         
         // Nilai
-        const nilai = detail.nilai?.nilai_huruf || '-';
+        const nilaiHuruf = detail.nilai?.nilai_akhir || '-';
+        const nilaiAngka = detail.nilai?.nilai_mutu || '';
+        const nilaiText = nilaiAngka ? `${nilaiHuruf} (${nilaiAngka})` : nilaiHuruf;
         
         row.innerHTML = `
             <td class="px-6 py-4 text-sm text-gray-900">${index + 1}</td>
@@ -182,7 +250,6 @@ function renderMataKuliahTable(detailList) {
             </td>
             <td class="px-6 py-4">
                 <div class="text-sm text-gray-900">${detail.kelas?.nama_kelas || '-'}</div>
-                <div class="text-xs text-gray-500">${jadwal}</div>
             </td>
             <td class="px-6 py-4">
                 <div class="text-sm text-gray-900">${dosen}</div>
@@ -190,7 +257,7 @@ function renderMataKuliahTable(detailList) {
             <td class="px-6 py-4 text-sm text-gray-900 text-center">${detail.sks || '0'}</td>
             <td class="px-6 py-4">${getStatusAmbilBadge(detail.status_ambil)}</td>
             <td class="px-6 py-4 text-center">
-                <span class="font-semibold ${getNilaiColor("nilai")}">${nilai}</span>
+                <span class="font-semibold ${getNilaiColor(nilaiHuruf)}">${nilaiText}</span>
             </td>
         `;
         tbody.appendChild(row);
@@ -198,6 +265,7 @@ function renderMataKuliahTable(detailList) {
 }
 
 function getNilaiColor(nilai) {
+    if (!nilai || nilai === '-') return 'text-gray-600';
     if (nilai === 'A' || nilai === 'A-') return 'text-green-600';
     if (nilai === 'B+' || nilai === 'B' || nilai === 'B-') return 'text-blue-600';
     if (nilai === 'C+' || nilai === 'C') return 'text-yellow-600';
@@ -227,22 +295,32 @@ function getStatusAmbilBadge(status) {
 
 function formatDate(dateString) {
     if (!dateString) return '-';
-    const date = new Date(dateString);
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return date.toLocaleDateString('id-ID', options);
+    try {
+        const date = new Date(dateString);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString('id-ID', options);
+    } catch (error) {
+        console.error('Error formatting date:', error);
+        return '-';
+    }
 }
 
 function formatDateTime(dateString) {
     if (!dateString) return '-';
-    const date = new Date(dateString);
-    const options = { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    };
-    return date.toLocaleDateString('id-ID', options);
+    try {
+        const date = new Date(dateString);
+        const options = { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return date.toLocaleDateString('id-ID', options);
+    } catch (error) {
+        console.error('Error formatting datetime:', error);
+        return '-';
+    }
 }
 
 // Tab Navigation
@@ -251,6 +329,11 @@ function showTab(tabName) {
     tabs.forEach(tab => {
         const tabBtn = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
         const content = document.getElementById(`content${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+        
+        if (!tabBtn || !content) {
+            console.warn(`Tab element not found: ${tab}`);
+            return;
+        }
         
         if (tab === tabName) {
             tabBtn.classList.add('border-b-2', 'border-blue-500', 'text-blue-600', 'font-semibold');
@@ -266,9 +349,15 @@ function showTab(tabName) {
 
 // Delete KRS
 async function confirmDelete() {
-    if (!currentKrsData) return;
+    if (!currentKrsData) {
+        alert('Data KRS tidak tersedia');
+        return;
+    }
     
-    if (!confirm(`Hapus KRS semester ${currentKrsData.semester} mahasiswa ${currentKrsData.mahasiswa.nama_lengkap}?\n\nSemua detail mata kuliah akan ikut terhapus.`)) return;
+    const semesterInfo = currentKrsData.semester?.nama_semester || 'semester ini';
+    const confirmText = `Hapus KRS ${semesterInfo} mahasiswa ${currentKrsData.mahasiswa.nama_lengkap}?\n\nSemua detail mata kuliah akan ikut terhapus.`;
+    
+    if (!confirm(confirmText)) return;
     
     const mutation = `
     mutation($id: ID!) {
@@ -294,7 +383,7 @@ async function confirmDelete() {
         }
         
         alert('KRS berhasil dihapus');
-        window.location.href = '/krs';
+        window.location.href = '/admin/krs';
         
     } catch (error) {
         console.error('Error:', error);
@@ -304,25 +393,40 @@ async function confirmDelete() {
 
 // Approve KRS
 async function approveKrs() {
-    if (!currentKrsData) return;
+    if (!currentKrsData) {
+        alert('Data KRS tidak tersedia');
+        return;
+    }
     
-    if (!confirm(`Setujui KRS semester ${currentKrsData.semester} mahasiswa ${currentKrsData.mahasiswa.nama_lengkap}?`)) return;
+    const semesterInfo = currentKrsData.semester?.nama_semester || 'semester ini';
+    const confirmText = `Setujui KRS ${semesterInfo} mahasiswa ${currentKrsData.mahasiswa.nama_lengkap}?`;
+    
+    if (!confirm(confirmText)) return;
     
     const mutation = `
-    mutation($id: ID!) {
-        updateKrs(id: $id, input: { status_krs: "DISETUJUI" }) {
+    mutation($id: ID!, $input: UpdateKrsInput!) {
+        updateKrs(id: $id, input: $input) {
             id
-            status_krs
+            status
+            tanggal_persetujuan
         }
     }`;
 
     try {
+        const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 query: mutation,
-                variables: { id: currentKrsId }
+                variables: { 
+                    id: currentKrsId,
+                    input: { 
+                        status: "DISETUJUI",
+                        tanggal_persetujuan: today
+                    }
+                }
             })
         });
         
@@ -343,17 +447,22 @@ async function approveKrs() {
 
 // Reject KRS
 async function rejectKrs() {
-    if (!currentKrsData) return;
+    if (!currentKrsData) {
+        alert('Data KRS tidak tersedia');
+        return;
+    }
     
-    const alasan = prompt(`Tolak KRS semester ${currentKrsData.semester} mahasiswa ${currentKrsData.mahasiswa.nama_lengkap}?\n\nBerikan alasan penolakan (opsional):`);
+    const semesterInfo = currentKrsData.semester?.nama_semester || 'semester ini';
+    const alasan = prompt(`Tolak KRS ${semesterInfo} mahasiswa ${currentKrsData.mahasiswa.nama_lengkap}?\n\nBerikan alasan penolakan (opsional):`);
     
     if (alasan === null) return; // User cancelled
     
     const mutation = `
-    mutation($id: ID!) {
-        updateKrs(id: $id, input: { status_krs: "DITOLAK" }) {
+    mutation($id: ID!, $input: UpdateKrsInput!) {
+        updateKrs(id: $id, input: $input) {
             id
-            status_krs
+            status
+            catatan
         }
     }`;
 
@@ -363,7 +472,13 @@ async function rejectKrs() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 query: mutation,
-                variables: { id: currentKrsId }
+                variables: { 
+                    id: currentKrsId,
+                    input: { 
+                        status: "DITOLAK",
+                        catatan: alasan || null
+                    }
+                }
             })
         });
         
