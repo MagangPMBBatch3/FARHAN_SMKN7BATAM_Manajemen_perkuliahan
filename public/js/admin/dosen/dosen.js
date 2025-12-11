@@ -150,7 +150,6 @@ function updateStatsCards(dosenList, totalAktif, totalArsip) {
     animateValue('totalDosen', 0, totalAktif, 500);
     animateValue('dosenAktif', 0, dosenAktifStatus, 500);
     animateValue('dosenCuti', 0, dosenCutiStatus, 500);
-    animateValue('dosenArsip', 0, totalArsip, 500);
 }
 
 function animateValue(id, start, end, duration) {
