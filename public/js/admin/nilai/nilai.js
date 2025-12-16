@@ -6,7 +6,6 @@ async function loadNilaiData(pageAktif = 1, pageArsip = 1) {
     currentPageAktif = pageAktif;
     currentPageArsip = pageArsip;
     
-    // Ambil perPage dari select yang sesuai dengan tab aktif
     const perPageAktif = parseInt(document.getElementById("perPage")?.value || 10);
     const perPageArsip = parseInt(document.getElementById("perPageArsip")?.value || 10);
     const searchValue = document.getElementById("search")?.value.trim() || "";
@@ -15,7 +14,33 @@ async function loadNilaiData(pageAktif = 1, pageArsip = 1) {
     const queryAktif = `
     query($first: Int, $page: Int, $search: String) {
         allNilaiPaginate(first: $first, page: $page, search: $search) {
-            data { id krsDetail{krs{mahasiswa{nama_lengkap}}mataKuliah{nama_mk}} tugas quiz uts uas nilai_akhir nilai_huruf nilai_mutu status }
+            data { 
+                id 
+                krsDetail {
+                    id
+                    krs {
+                        id
+                        mahasiswa {
+                            id 
+                            nama_lengkap
+                            nim
+                        }
+                    }
+                    mataKuliah {
+                        id 
+                        nama_mk
+                        kode_mk
+                    }
+                }
+                tugas 
+                quiz 
+                uts 
+                uas 
+                nilai_akhir 
+                nilai_huruf 
+                nilai_mutu 
+                status 
+            }
             paginatorInfo { currentPage lastPage total hasMorePages perPage }
         }
     }`;
@@ -33,7 +58,30 @@ async function loadNilaiData(pageAktif = 1, pageArsip = 1) {
     const queryArsip = `
     query($first: Int, $page: Int, $search: String) {
         allNilaiArsip(first: $first, page: $page, search: $search) {
-            data { id krsDetail{krs{mahasiswa{nama_lengkap}}mataKuliah{nama_mk}} tugas quiz uts uas nilai_akhir nilai_huruf nilai_mutu status }
+            data { 
+                id 
+                krsDetail {
+                    id
+                    krs {
+                        mahasiswa {
+                            nama_lengkap
+                            nim
+                        }
+                    }
+                    mataKuliah {
+                        nama_mk
+                        kode_mk
+                    }
+                }
+                tugas 
+                quiz 
+                uts 
+                uas 
+                nilai_akhir 
+                nilai_huruf 
+                nilai_mutu 
+                status 
+            }
             paginatorInfo { currentPage lastPage total hasMorePages perPage }
         }
     }`;
@@ -73,25 +121,25 @@ function renderNilaiTable(Nilai, tableId, isActive) {
     if (!Nilai.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center text-gray-500 p-3">Tidak ada data</td>
+                <td colspan="11" class="text-center text-gray-500 p-3">Tidak ada data</td>
             </tr>
         `;
         return;
     }
 
     Nilai.forEach(item => {
-        let actions = '';
+        let actions = '';       
         if (isActive) {
             actions = `
                 <div class="flex items-center justify-end gap-2">
-                    <button onclick="openEditModal(${item.id})" 
+                    <button onclick='openEditModal(${JSON.stringify(item).replace(/'/g, "&#39;")})' 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
                             title="Edit">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
                     </button>
-                    <button onclick="hapusKrs(${item.id})" 
+                    <button onclick="hapusNilai(${item.id})" 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                             title="Arsipkan">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,14 +151,14 @@ function renderNilaiTable(Nilai, tableId, isActive) {
         } else {
             actions = `
                 <div class="flex items-center justify-end gap-2">
-                    <button onclick="restoreKrs(${item.id})" 
+                    <button onclick="restoreNilai(${item.id})" 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                             title="Restore">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>
                     </button>
-                    <button onclick="forceDeleteKrs(${item.id})" 
+                    <button onclick="forceDeleteNilai(${item.id})" 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 transition-colors"
                             title="Hapus Permanen">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,19 +171,56 @@ function renderNilaiTable(Nilai, tableId, isActive) {
 
         tbody.innerHTML += `
             <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.krsDetail.krs.mahasiswa.nama_lengkap}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.tugas}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.quiz|| "-"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.uts}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.uas}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.nilai_akhir}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.nilai_huruf}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.nilai_mutu}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.status}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div class="font-medium">${item.krsDetail.krs.mahasiswa.nama_lengkap}</div>
+                    <div class="text-gray-500 text-xs">${item.krsDetail.krs.mahasiswa.nim}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div class="font-medium">${item.krsDetail.mataKuliah.nama_mk}</div>
+                    <div class="text-gray-500 text-xs">${item.krsDetail.mataKuliah.kode_mk}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">${item.tugas || "-"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">${item.quiz || "-"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">${item.uts || "-"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">${item.uas || "-"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-center">${item.nilai_akhir || "-"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${getNilaiHurufColor(item.nilai_huruf)}">
+                        ${item.nilai_huruf || "-"}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">${item.nilai_mutu || "-"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(item.status)}">
+                        ${item.status}
+                    </span>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">${actions}</td>
             </tr>
         `;
     });
+}
+
+function getNilaiHurufColor(huruf) {
+    const colors = {
+        'A': 'bg-green-100 text-green-800',
+        'B': 'bg-blue-100 text-blue-800',
+        'C': 'bg-yellow-100 text-yellow-800',
+        'D': 'bg-orange-100 text-orange-800',
+        'E': 'bg-red-100 text-red-800'
+    };
+    return colors[huruf] || 'bg-gray-100 text-gray-800';
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'Lulus': 'bg-green-100 text-green-800',
+        'Tidak Lulus': 'bg-red-100 text-red-800',
+        'Pending': 'bg-yellow-100 text-yellow-800',
+        'Draft': 'bg-gray-100 text-gray-800',
+        'Final': 'bg-blue-100 text-blue-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
 }
 
 // --- Mutations ---

@@ -16,6 +16,7 @@ type Mahasiswa {
     no_hp_ortu: String
     status: String!
     semester_saat_ini: Int!
+    ip_semester: Float!
     ipk: Float!
     total_sks: Int!
     created_at: DateTime
@@ -45,6 +46,7 @@ input CreateMahasiswaInput {
     no_hp_ortu: String
     status: String
     semester_saat_ini: Int
+    ip_semester: Float
     ipk: Float
     total_sks: Int
 }
@@ -67,6 +69,7 @@ input UpdateMahasiswaInput {
     no_hp_ortu: String
     status: String
     semester_saat_ini: Int
+    ip_semester: Float
     ipk: Float
     total_sks: Int
 }

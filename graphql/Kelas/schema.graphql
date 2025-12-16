@@ -6,7 +6,7 @@ type Kelas {
     dosen_id: Int!
     semester_id: Int!
     kapasitas: Int!
-    jumlah_mahasiswa: Int!
+    kuota_terisi: Int!
     status: String!
     created_at: DateTime
     updated_at: DateTime
@@ -27,6 +27,7 @@ input CreateKelasInput {
     dosen_id: Int!
     semester_id: Int!
     kapasitas: Int
+    kuota_terisi: Int
     status: String
 }
 
@@ -38,6 +39,7 @@ input UpdateKelasInput {
     dosen_id: Int
     semester_id: Int
     kapasitas: Int
+    kuota_terisi: Int
     status: String
 }
 

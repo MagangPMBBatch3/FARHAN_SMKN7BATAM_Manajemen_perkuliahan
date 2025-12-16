@@ -186,16 +186,25 @@
                 </div>
             </div>
 
-            {{-- Tab Content: Daftar Mata Kuliah --}}
+            {{-- Tab Content: Daftar Mata Kuliah - UPDATED --}}
             <div id="contentMatakuliah" class="space-y-6 hidden">
                 <div class="bg-white rounded-lg border shadow-sm">
-                    <div class="p-4 bg-gray-50 border-b">
+                    <div class="p-4 bg-gray-50 border-b flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-gray-700 flex items-center">
                             <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                             </svg>
                             Mata Kuliah yang Diambil
                         </h3>
+                        
+                        {{-- Tombol Tambah Mata Kuliah --}}
+                        <button onclick="openAddKrsDetailModal()" 
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Tambah Mata Kuliah
+                        </button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full">
@@ -276,133 +285,12 @@
         </div>
     </div>
 
-    {{-- Modal Input/Edit Nilai --}}
-    <div id="nilaiModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-            <div class="flex justify-between items-center mb-4 pb-3 border-b">
-                <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                    <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Input Nilai Mata Kuliah
-                </h3>
-                <button onclick="closeNilaiModal()" class="text-gray-400 hover:text-gray-600 transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <div class="mt-4">
-                {{-- Info Mata Kuliah --}}
-                <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-200">
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <label class="text-gray-600">Mata Kuliah</label>
-                            <p class="font-semibold text-gray-900" id="modalMataKuliah"></p>
-                        </div>
-                        <div>
-                            <label class="text-gray-600">Kode MK</label>
-                            <p class="font-semibold text-gray-900" id="modalKodeMK"></p>
-                        </div>
-                        <div>
-                            <label class="text-gray-600">Kelas</label>
-                            <p class="font-semibold text-gray-900" id="modalKelas"></p>
-                        </div>
-                        <div>
-                            <label class="text-gray-600">SKS</label>
-                            <p class="font-semibold text-gray-900" id="modalSKS"></p>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Form Input Nilai --}}
-                <form id="nilaiForm" class="space-y-4">
-                    <input type="hidden" id="nilaiKrsDetailId">
-                    <input type="hidden" id="nilaiId">
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="nilaiAngka" class="block text-sm font-semibold text-gray-700 mb-2">
-                                Nilai Angka (0-100)
-                                <span class="text-red-500">*</span>
-                            </label>
-                            <input 
-                                type="number" 
-                                id="nilaiAngka" 
-                                name="nilaiAngka"
-                                min="0" 
-                                max="100" 
-                                step="0.01"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="Contoh: 85.5"
-                                required
-                            >
-                            <p class="text-xs text-gray-500 mt-1">Masukkan nilai angka (desimal diperbolehkan)</p>
-                        </div>
-
-                        <div>
-                            <label for="nilaiHuruf" class="block text-sm font-semibold text-gray-700 mb-2">
-                                Nilai Huruf
-                                <span class="text-red-500">*</span>
-                            </label>
-                            <select 
-                                id="nilaiHuruf" 
-                                name="nilaiHuruf"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                required
-                            >
-                                <option value="">Pilih Nilai Huruf</option>
-                                <option value="A">A (85-100)</option>
-                                <option value="A-">A- (80-84)</option>
-                                <option value="B+">B+ (75-79)</option>
-                                <option value="B">B (70-74)</option>
-                                <option value="B-">B- (65-69)</option>
-                                <option value="C+">C+ (60-64)</option>
-                                <option value="C">C (55-59)</option>
-                                <option value="D">D (50-54)</option>
-                                <option value="E">E (0-49)</option>
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Atau pilih nilai huruf langsung</p>
-                        </div>
-                    </div>
-
-                    <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                        <div class="flex items-start">
-                            <svg class="w-5 h-5 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                            </svg>
-                            <div class="text-sm text-yellow-800">
-                                <p class="font-semibold mb-1">Konversi Otomatis:</p>
-                                <p>Sistem akan otomatis menyesuaikan nilai huruf berdasarkan nilai angka yang dimasukkan.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Buttons --}}
-                    <div class="flex justify-end gap-3 pt-4 border-t">
-                        <button 
-                            type="button" 
-                            onclick="closeNilaiModal()"
-                            class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition duration-200"
-                        >
-                            Batal
-                        </button>
-                        <button 
-                            type="submit"
-                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center"
-                        >
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            Simpan Nilai
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    {{-- Modal Add KRS Detail - Include yang baru --}}
+    @include('components.modal.krsDetail.modal-add')
+    @include('components.modal.krsDetail.modal-edit')
 
     {{-- Script --}}
     <script src="{{ asset('js/admin/detailKrs/detailKrs.js') }}"></script>
+    <script src="{{ asset('js/admin/detailKrs/detailKrs-create.js') }}"></script>
+    <script src="{{ asset('js/admin/detailKrs/detailKrs-edit.js') }}"></script>
 </x-layouts.dashboard>

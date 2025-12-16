@@ -26,7 +26,7 @@ input CreateNilaiInput {
     nilai_akhir: Float
     nilai_huruf: String
     nilai_mutu: Float
-    status: String
+    status: String!
 }
 
 input UpdateNilaiInput {

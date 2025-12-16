@@ -26,4 +26,10 @@ class KrsDetailQuery {
             ],
         ];
     }
+    public function byMahasiswa($root, array $args)
+{
+    return \App\Models\KrsDetail\KrsDetail::whereHas('krs', function($query) use ($args) {
+        $query->where('mahasiswa_id', $args['mahasiswa_id']);
+    })->with(['mataKuliah', 'krs.mahasiswa'])->get();
+}
 }

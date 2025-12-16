@@ -39,7 +39,7 @@ input UpdateMataKuliahInput {
 }
 
 type MataKuliahPaginator {
-    data: [MataKuliah]!
+    data: [MataKuliah]! 
     paginatorInfo: PageInfo!
 }
 
