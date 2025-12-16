@@ -1,54 +1,105 @@
 <div id="modalAdd" class="hidden">
-<div class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center">
-        <div class="bg-white rounded-lg shadow-lg w-96 p-6">
-            <h2 class="text-lg font-bold mb-4">Tambah Jadwal</h2>
-            <form id="formAddJadwal" onsubmit="createJadwal(); return false;">
-                @csrf
-                <div class="mb-4">
-                    <label for="addKelasId" class="block mb-1">Kelas</label>
-                    <select id="addKelasId" class="border p-2 w-full rounded" required>
-                                <option value="">Pilih Periode</option>
-                            </select>
+    <div class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center overflow-y-auto p-4">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold text-gray-800">Tambah Jadwal</h2>
+                    <button type="button" onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
-                <div class="mb-4">
-                    <label for="addRuanganId" class="block mb-1">Ruangan</label>
-                    <select id="addRuanganId" class="border p-2 w-full rounded" required>
-                                <option value="">Pilih Periode</option>
+            </div>
+
+            <!-- Body -->
+            <div class="flex-1 overflow-y-auto px-6 py-6">
+                <form id="formAddJadwal" onsubmit="createJadwal(); return false;">
+                    @csrf
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label for="addKelasId" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Kelas <span class="text-red-500">*</span>
+                            </label>
+                            <select id="addKelasId" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                required>
+                                <option value="">Pilih Kelas</option>
                             </select>
-                </div>
-                <div class="mb-4">
-                    <label for="addHari" class="block mb-1">Hari</label>
-                    <select id="addHari" class="border p-2 w-full rounded" required>
-                                <option value="">Pilih Periode</option>
+                        </div>
+
+                        <div>
+                            <label for="addRuanganId" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Ruangan <span class="text-red-500">*</span>
+                            </label>
+                            <select id="addRuanganId" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                required>
+                                <option value="">Pilih Ruangan</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="addHari" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Hari <span class="text-red-500">*</span>
+                            </label>
+                            <select id="addHari" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                required>
+                                <option value="">Pilih Hari</option>
                                 <option value="Senin">Senin</option>
                                 <option value="Selasa">Selasa</option>
                                 <option value="Rabu">Rabu</option>
                                 <option value="Kamis">Kamis</option>
-                                <option value="Kamis">Jumat</option>
+                                <option value="Jumat">Jumat</option>
                                 <option value="Sabtu">Sabtu</option>
                             </select>
-                </div>
-                <div class="mb-4">
-                    <label for="addMulai" class="block mb-1">Jam Mulai</label>
-                    <input type="time" id="addMulai" name="jam mulai" class="border p-2 w-full rounded" required>
-                </div>
-                <div class="mb-4">
-                    <label for="addSelesai" class="block mb-1">Jam Selesai</label>
-                    <input type="time" id="addSelesai" name="jam selesai" class="border p-2 w-full rounded" required>
-                </div>
-                <div class="mb-4">
-                    <label for="addKeterangan" class="block mb-1">Keterangan</label>
-                    <textarea id="addKeterangan" name="keterangan" id="" cols="10" rows="3" class="border p-1 w-full rounded" required></textarea>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeAddModal()" class="bg-gray-400 text-white px-4 py-2 rounded">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="addMulai" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Jam Mulai <span class="text-red-500">*</span>
+                                </label>
+                                <input type="time" id="addMulai" name="jam_mulai" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    required>
+                            </div>
+
+                            <div>
+                                <label for="addSelesai" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Jam Selesai <span class="text-red-500">*</span>
+                                </label>
+                                <input type="time" id="addSelesai" name="jam_selesai" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="addKeterangan" class="block text-sm font-medium text-gray-700 mb-1.5">Keterangan</label>
+                            <textarea id="addKeterangan" name="keterangan" rows="3" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeAddModal()" 
+                        class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200">
                         Batal
                     </button>
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
-                        Simpan
+                    <button type="submit" form="formAddJadwal"
+                        class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
+                        Simpan Data
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>

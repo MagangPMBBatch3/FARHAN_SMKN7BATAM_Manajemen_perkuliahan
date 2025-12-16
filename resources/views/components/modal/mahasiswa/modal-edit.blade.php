@@ -1,139 +1,201 @@
 <div id="modalEdit" class="hidden">
-    <div class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center overflow-y-auto">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl p-6 m-4 max-h-[90vh] overflow-y-auto">
-            <h2 class="text-xl font-bold mb-4">Edit Data Mahasiswa</h2>
-            <form id="formEditMahasiswa" onsubmit="updateMahasiswa(); return false;">
-                @csrf
-                <input type="hidden" id="editId" name="id">
-                
-                {{-- Data Akademik --}}
-                <div class="mb-6">
-                    <h3 class="font-semibold text-lg mb-3 text-gray-700 border-b pb-2">Data Akademik</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="editNim" class="block mb-1 text-sm">NIM <span class="text-red-500">*</span></label>
-                            <input type="text" id="editNim" class="border p-2 w-full rounded" required>
-                        </div>
-                        <div>
-                            <label for="editJurusanId" class="block mb-1 text-sm">Jurusan <span class="text-red-500">*</span></label>
-                            <select id="editJurusanId" class="border p-2 w-full rounded" required>
-                                <option value="">Pilih Jurusan</option>
-                                <!-- Options akan diisi via JS -->
-                            </select>
-                        </div>
-                        <div>
-                            <label for="editAngkatan" class="block mb-1 text-sm">Angkatan <span class="text-red-500">*</span></label>
-                            <input type="number" id="editAngkatan" class="border p-2 w-full rounded" required>
-                        </div>
-                        <div>
-                            <label for="editStatus" class="block mb-1 text-sm">Status <span class="text-red-500">*</span></label>
-                            <select id="editStatus" class="border p-2 w-full rounded" required>
-                                <option value="AKTIF">Aktif</option>
-                                <option value="CUTI">Cuti</option>
-                                <option value="LULUS">Lulus</option>
-                                <option value="DO">DO</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="editSemester" class="block mb-1 text-sm">Semester Saat Ini <span class="text-red-500">*</span></label>
-                            <input type="number" id="editSemester" class="border p-2 w-full rounded" required>
-                        </div>
-                        <div>
-                            <label for="editUserId" class="block mb-1 text-sm">User ID <span class="text-red-500">*</span></label>
-                            <input type="number" id="editUserId" class="border p-2 w-full rounded" required>
+    <div class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center overflow-y-auto p-4">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold text-gray-800">Edit Data Mahasiswa</h2>
+                    <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="flex-1 overflow-y-auto px-6 py-6">
+                <form id="formEditMahasiswa" onsubmit="updateMahasiswa(); return false;">
+                    @csrf
+                    <input type="hidden" id="editId" name="id">
+                    
+                    <!-- Data Akademik -->
+                    <div class="mb-8">
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Data Akademik</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="editNim" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    NIM <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="editNim" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    required>
+                            </div>
+                            <div>
+                                <label for="editJurusanId" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Jurusan <span class="text-red-500">*</span>
+                                </label>
+                                <select id="editJurusanId" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    required>
+                                    <option value="">Pilih Jurusan</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="editAngkatan" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Angkatan <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" id="editAngkatan" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    required>
+                            </div>
+                            <div>
+                                <label for="editStatus" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Status <span class="text-red-500">*</span>
+                                </label>
+                                <select id="editStatus" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    required>
+                                    <option value="AKTIF">Aktif</option>
+                                    <option value="CUTI">Cuti</option>
+                                    <option value="LULUS">Lulus</option>
+                                    <option value="DO">DO</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="editSemester" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Semester Saat Ini <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" id="editSemester" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    required>
+                            </div>
+                            <div>
+                                <label for="editUserId" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    User ID <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" id="editUserId" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    required>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {{-- Data Pribadi --}}
-                <div class="mb-6">
-                    <h3 class="font-semibold text-lg mb-3 text-gray-700 border-b pb-2">Data Pribadi</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="col-span-2">
-                            <label for="editNamaLengkap" class="block mb-1 text-sm">Nama Lengkap <span class="text-red-500">*</span></label>
-                            <input type="text" id="editNamaLengkap" class="border p-2 w-full rounded" required>
-                        </div>
-                        <div>
-                            <label for="editJenisKelamin" class="block mb-1 text-sm">Jenis Kelamin <span class="text-red-500">*</span></label>
-                            <select id="editJenisKelamin" class="border p-2 w-full rounded" required>
-                                <option value="">Pilih</option>
-                                <option value="L">Laki-laki</option>
-                                <option value="P">Perempuan</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="editTanggalLahir" class="block mb-1 text-sm">Tanggal Lahir</label>
-                            <input type="date" id="editTanggalLahir" class="border p-2 w-full rounded">
-                        </div>
-                        <div class="col-span-2">
-                            <label for="editTempatLahir" class="block mb-1 text-sm">Tempat Lahir</label>
-                            <input type="text" id="editTempatLahir" class="border p-2 w-full rounded">
-                        </div>
-                        <div class="col-span-2">
-                            <label for="editAlamat" class="block mb-1 text-sm">Alamat</label>
-                            <textarea id="editAlamat" rows="2" class="border p-2 w-full rounded"></textarea>
+                    <!-- Data Pribadi -->
+                    <div class="mb-8">
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Data Pribadi</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label for="editNamaLengkap" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Nama Lengkap <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="editNamaLengkap" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    required>
+                            </div>
+                            <div>
+                                <label for="editJenisKelamin" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Jenis Kelamin <span class="text-red-500">*</span>
+                                </label>
+                                <select id="editJenisKelamin" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    required>
+                                    <option value="">Pilih</option>
+                                    <option value="L">Laki-laki</option>
+                                    <option value="P">Perempuan</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="editTanggalLahir" class="block text-sm font-medium text-gray-700 mb-1.5">Tanggal Lahir</label>
+                                <input type="date" id="editTanggalLahir" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="editTempatLahir" class="block text-sm font-medium text-gray-700 mb-1.5">Tempat Lahir</label>
+                                <input type="text" id="editTempatLahir" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="editAlamat" class="block text-sm font-medium text-gray-700 mb-1.5">Alamat</label>
+                                <textarea id="editAlamat" rows="2" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"></textarea>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {{-- Kontak --}}
-                <div class="mb-6">
-                    <h3 class="font-semibold text-lg mb-3 text-gray-700 border-b pb-2">Kontak</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="editNoHp" class="block mb-1 text-sm">No. HP</label>
-                            <input type="text" id="editNoHp" class="border p-2 w-full rounded">
-                        </div>
-                        <div>
-                            <label for="editEmailPribadi" class="block mb-1 text-sm">Email Pribadi</label>
-                            <input type="email" id="editEmailPribadi" class="border p-2 w-full rounded">
+                    <!-- Kontak -->
+                    <div class="mb-8">
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Kontak</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="editNoHp" class="block text-sm font-medium text-gray-700 mb-1.5">No. HP</label>
+                                <input type="text" id="editNoHp" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            </div>
+                            <div>
+                                <label for="editEmailPribadi" class="block text-sm font-medium text-gray-700 mb-1.5">Email Pribadi</label>
+                                <input type="email" id="editEmailPribadi" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {{-- Data Orang Tua --}}
-                <div class="mb-6">
-                    <h3 class="font-semibold text-lg mb-3 text-gray-700 border-b pb-2">Data Orang Tua</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="editNamaAyah" class="block mb-1 text-sm">Nama Ayah</label>
-                            <input type="text" id="editNamaAyah" class="border p-2 w-full rounded">
-                        </div>
-                        <div>
-                            <label for="editNamaIbu" class="block mb-1 text-sm">Nama Ibu</label>
-                            <input type="text" id="editNamaIbu" class="border p-2 w-full rounded">
-                        </div>
-                        <div class="col-span-2">
-                            <label for="editNoHpOrtu" class="block mb-1 text-sm">No. HP Orang Tua</label>
-                            <input type="text" id="editNoHpOrtu" class="border p-2 w-full rounded">
+                    <!-- Data Orang Tua -->
+                    <div class="mb-8">
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Data Orang Tua</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="editNamaAyah" class="block text-sm font-medium text-gray-700 mb-1.5">Nama Ayah</label>
+                                <input type="text" id="editNamaAyah" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            </div>
+                            <div>
+                                <label for="editNamaIbu" class="block text-sm font-medium text-gray-700 mb-1.5">Nama Ibu</label>
+                                <input type="text" id="editNamaIbu" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="editNoHpOrtu" class="block text-sm font-medium text-gray-700 mb-1.5">No. HP Orang Tua</label>
+                                <input type="text" id="editNoHpOrtu" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {{-- Data Akademik Lanjutan --}}
-                <div class="mb-6">
-                    <h3 class="font-semibold text-lg mb-3 text-gray-700 border-b pb-2">Data Akademik Lanjutan</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="editIpk" class="block mb-1 text-sm">IPK</label>
-                            <input type="number" step="0.01" id="editIpk" class="border p-2 w-full rounded" placeholder="0.00">
-                        </div>
-                        <div>
-                            <label for="editTotalSks" class="block mb-1 text-sm">Total SKS</label>
-                            <input type="number" id="editTotalSks" class="border p-2 w-full rounded" placeholder="0">
+                    <!-- Data Akademik Lanjutan -->
+                    <div class="mb-6">
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Data Akademik Lanjutan</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="editIpk" class="block text-sm font-medium text-gray-700 mb-1.5">IPK</label>
+                                <input type="number" step="0.01" id="editIpk" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    placeholder="0.00">
+                            </div>
+                            <div>
+                                <label for="editTotalSks" class="block text-sm font-medium text-gray-700 mb-1.5">Total SKS</label>
+                                <input type="number" id="editTotalSks" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    placeholder="0">
+                            </div>
                         </div>
                     </div>
-                </div>
+                </form>
+            </div>
 
-                <div class="flex justify-end gap-2 pt-4 border-t">
-                    <button type="button" onclick="closeEditModal()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeEditModal()" 
+                        class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200">
                         Batal
                     </button>
-                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                        Update
+                    <button type="submit" form="formEditMahasiswa"
+                        class="px-5 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-sm hover:shadow-md">
+                        Update Data
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>

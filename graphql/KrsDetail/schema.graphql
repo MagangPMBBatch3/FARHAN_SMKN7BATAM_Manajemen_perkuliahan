@@ -58,6 +58,10 @@ extend type Query{
     krsdetailByNama(
         nama_mk: String! @where(operator: "like", key: "nama_mk")
     ): [KrsDetail]! @all(model: "KrsDetail\\KrsDetail")
+
+    krsDetailByMahasiswa(mahasiswa_id: Int!): [KrsDetail!]! 
+        @field(resolver: "App\\GraphQL\\KrsDetail\\Queries\\KrsDetailQuery@byMahasiswa")
+    
 }
 
 extend type Mutation {
