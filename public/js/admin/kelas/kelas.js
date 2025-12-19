@@ -15,7 +15,7 @@ async function loadKelasData(pageAktif = 1, pageArsip = 1) {
     const queryAktif = `
                 query($first: Int, $page: Int, $search: String) {
                     allKelasPaginate(first: $first, page: $page, search: $search) {
-                        data { id kode_kelas nama_kelas mataKuliah{id nama_mk} dosen{id nama_lengkap} semester{id nama_semester} kapasitas status }
+                        data { id kode_kelas nama_kelas mataKuliah{id nama_mk} dosen{id nama_lengkap} semester{id nama_semester} kapasitas kuota_terisi status }
                         paginatorInfo { currentPage lastPage total hasMorePages perPage }
                     }
                 }`;
@@ -33,7 +33,7 @@ async function loadKelasData(pageAktif = 1, pageArsip = 1) {
     const queryArsip = `
     query($first: Int, $page: Int, $search: String) {
         allKelasArsip(first: $first, page: $page, search: $search) {
-            data { id kode_kelas nama_kelas mataKuliah{id nama_mk} dosen{id nama_lengkap} semester{id nama_semester} kapasitas status  }
+            data { id kode_kelas nama_kelas mataKuliah{id nama_mk} dosen{id nama_lengkap} semester{id nama_semester} kapasitas kuota_terisi status  }
             paginatorInfo { currentPage lastPage total hasMorePages perPage }
         }
     }`;
@@ -84,7 +84,7 @@ function renderKelasTable(Kelas, tableId, isActive) {
         if (isActive) {
             actions = `
                 <div class="flex items-center justify-end gap-2">
-                    <button onclick="openEditModal(${item.id}, '${item.kode_kelas}', '${item.nama_kelas}', '${item.mataKuliah?.nama_mk}', '${item.dosen?.nama_lengkap}', '${item.semester?.nama_semester}', ${item.kapasitas}, '${item.status}')" 
+                    <button onclick="openEditModal(${item.id}, '${item.kode_kelas}', '${item.nama_kelas}', '${item.mataKuliah.id}', '${item.dosen.id}', '${item.semester.id}', ${item.kapasitas}, ${item.kuota_terisi}, '${item.status}')" 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
                             title="Edit">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,6 +129,7 @@ function renderKelasTable(Kelas, tableId, isActive) {
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.dosen?.nama_lengkap}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.semester?.nama_semester}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.kapasitas}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.kuota_terisi}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.status}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">${actions}</td>
             </tr>
