@@ -16,7 +16,7 @@ async function loadMahasiswaOptions() {
 
         const result = await response.json();
         const mahasiswaList = result.data.allMahasiswa || [];
-        
+
         const selectAdd = document.getElementById('addMahasiswaId');
         selectAdd.innerHTML = '<option value="">Pilih Mahasiswa</option>';
         mahasiswaList.forEach(mahasiswa => {
@@ -50,7 +50,7 @@ async function loadSemesterOptions() {
         });
 
         const result = await response.json();
-        
+
         const semesterList = result.data.allSemester || [];
 
         // Isi dropdown Add
@@ -89,7 +89,7 @@ async function loadDosenOptions() {
 
         const result = await response.json();
         const dosenList = result.data.allDosen || [];
-        
+
 
         // Isi dropdown Add
         const selectAdd = document.getElementById('addDosenId');
@@ -144,7 +144,6 @@ async function createKrs() {
     if (!pengisian) return alert("sks semester harus dipilih!");
     if (!status) return alert("ip semester dipilih!");
     if (!total_sks) return alert("ipk harus dipilih!");
-    if (!catatan) return alert("ipk harus dipilih!");
     if (!dosen) return alert("ipk harus dipilih!");
     const mutation = `
     mutation {
