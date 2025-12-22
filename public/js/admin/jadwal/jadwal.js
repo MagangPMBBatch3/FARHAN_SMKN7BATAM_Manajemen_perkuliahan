@@ -128,7 +128,7 @@ function renderJadwalTable(Jadwal, tableId, isActive) {
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.hari || "-"}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.jam_mulai || "-"}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.jam_selesai || "-"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.keterangan || "-"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.keterangan || "Tidak Ada Keterangan"}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">${actions}</td>
             </tr>
         `;

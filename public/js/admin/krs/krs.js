@@ -130,10 +130,10 @@ function renderKrsTable(krs, tableId, isActive) {
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.mahasiswa?.nama_lengkap}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.semester?.nama_semester}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.tanggal_pengisian|| "-"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.tanggal_persetujuan}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.tanggal_persetujuan || "Belum Disetujui"}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.status}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.total_sks}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.catatan}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.catatan || "-"}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.dosenPa?.nama_lengkap}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">${actions}</td>
             </tr>

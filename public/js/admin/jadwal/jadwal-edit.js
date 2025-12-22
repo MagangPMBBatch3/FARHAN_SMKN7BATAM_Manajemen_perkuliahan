@@ -68,7 +68,7 @@ async function loadRuanganOptions() {
         if (selectAdd) {
             selectAdd.innerHTML = '<option value="">Pilih Ruangan</option>';
             ruanganList.forEach(ruangan => {
-                selectAdd.innerHTML += `<option value="${ruangan.id}">${ruangan.nama_ruangan} - ${ruangan.kode_kelas}</option>`;
+                selectAdd.innerHTML += `<option value="${ruangan.id}">${ruangan.nama_ruangan} - ${ruangan.kode_ruangan}</option>`;
             });
         }
 
@@ -106,8 +106,7 @@ async function updateJadwal(){
     if(!NewRuangan){return alert("Ruangan Tidak Boleh Kosong")};
     if(!NewHari){return alert("Hari Tidak Boleh Kosong")};
     if(!NewMulai){return alert("Jam Mulai Tidak Boleh Kosong")};
-    if(!NewSelesai){return alert("Jam Selesai Tidak Boleh Kosong")};
-    if(!NewKeterangan) return alert("Keterangan Tidak Boleh Kosong"); {
+    if(!NewSelesai){return alert("Jam Selesai Tidak Boleh Kosong")} {
         const mutation = `
         mutation {
             updateJadwalKuliah(id: ${id}, input:{kelas_id: ${NewKelas}, ruangan_id: ${NewRuangan}, hari: "${NewHari}", jam_mulai: "${NewMulai}", jam_selesai: "${NewSelesai}", keterangan: "${NewKeterangan}"}){
