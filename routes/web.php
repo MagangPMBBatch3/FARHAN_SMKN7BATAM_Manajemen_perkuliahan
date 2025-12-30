@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MahasiswaController;
@@ -12,7 +13,9 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.po
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
+    // Gunakan AdminDashboardController untuk dashboard
     Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+    
     Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.user');
     Route::get('/admin/roles', [AdminController::class, 'roles'])->name('admin.role');
     Route::get('/admin/dosen', [AdminController::class, 'dosen']);

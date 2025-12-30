@@ -84,7 +84,7 @@ function renderJadwalTable(Jadwal, tableId, isActive) {
         if (isActive) {
             actions = `
                 <div class="flex items-center justify-end gap-2">
-                    <button onclick="openEditModal(${item.id})" 
+                    <button onclick="openEditModal(${item.id}, '${item.kelas.id}', '${item.ruangan.id}', '${item.hari}', '${item.jam_mulai}', '${item.jam_selesai}', '${item.keterangan}')" 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
                             title="Edit">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,7 +128,7 @@ function renderJadwalTable(Jadwal, tableId, isActive) {
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.hari || "-"}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.jam_mulai || "-"}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.jam_selesai || "-"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.keterangan || "-"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.keterangan || "Tidak Ada Keterangan"}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">${actions}</td>
             </tr>
         `;

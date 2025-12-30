@@ -24,6 +24,7 @@ class Kelas extends Model
         'dosen_id',
         'semester_id',
         'kapasitas',
+        'kuota_terisi',
         'jumlah_mahasiswa',
         'status',
     ];
@@ -32,6 +33,7 @@ class Kelas extends Model
     {
         return [
             'kapasitas' => 'integer',
+            'kuota_terisi' => 'integer',
             'jumlah_mahasiswa' => 'integer',
             'deleted_at' => 'datetime',
         ];

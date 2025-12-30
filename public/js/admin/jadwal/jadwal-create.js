@@ -5,6 +5,7 @@ async function loadKelasOptions() {
         allKelas {
             id
             nama_kelas
+            kode_kelas
         }
     }`;
 
@@ -42,6 +43,7 @@ async function loadRuanganOptions() {
         allRuangan {
             id
             nama_ruangan
+            kode_ruangan
         }
     }`;
 
@@ -105,7 +107,6 @@ async function createJadwal() {
     if (!hari) return alert("Hari harus dipilih!");
     if (!mulai) return alert("Jam Mulai harus diisi!");
     if (!selesai) return alert("Jam Selesai Harus diisi!");
-    if (!keterangan) return alert("Keterangan harus diisi!");
     const mutation = `
     mutation {
         createJadwalKuliah(input: {

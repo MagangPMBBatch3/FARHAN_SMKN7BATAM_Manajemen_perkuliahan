@@ -58,7 +58,7 @@
                             <label for="editTelepon" class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Nomor Telepon <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" id="editTelepon" name="telepon" 
+                            <input type="number" id="editTelepon" name="telepon" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                                 required>
                         </div>

@@ -143,11 +143,11 @@ function renderKrsDetail(krsData, detailList) {
     safeSetContent('statusHeader', krsData.status || '-');
 
     // Tab Info KRS
-    safeSetContent('krsId', krsData.id);
+    safeSetContent('krsId', krsData.id); 
     safeSetContent('mahasiswaNama', krsData.mahasiswa.nama_lengkap);
     safeSetContent('mahasiswaNim', krsData.mahasiswa.nim);
     safeSetContent('jurusan', krsData.mahasiswa.jurusan?.nama_jurusan || '-');
-    safeSetContent('semester', krsData.semester?.nama_semester || '-');
+    safeSetContent('semester', krsData.mahasiswa?.semester_saat_ini || '-');
     safeSetContent('tahunAjaran', krsData.semester?.tahun_ajaran || '-');
     safeSetContent('tanggalPengisian', formatDate(krsData.tanggal_pengisian));
     safeSetHTML('statusKrs', getStatusKrsBadge(krsData.status));
