@@ -85,7 +85,7 @@
                             <label for="editKuota" class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Terisi <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" id="editKapasitas" name="kapasitas"
+                            <input type="number" id="editKuota" name="kuota"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 required>
                         </div>

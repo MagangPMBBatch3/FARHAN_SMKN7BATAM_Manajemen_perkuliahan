@@ -56,9 +56,9 @@
                                 <select id="editStatus" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                                     required>
-                                    <option value="AKTIF">Aktif</option>
-                                    <option value="CUTI">Cuti</option>
-                                    <option value="LULUS">Lulus</option>
+                                    <option value="Aktif">Aktif</option>
+                                    <option value="Cuti">Cuti</option>
+                                    <option value="Lulus">Lulus</option>
                                     <option value="DO">DO</option>
                                 </select>
                             </div>

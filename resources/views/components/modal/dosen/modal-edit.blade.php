@@ -123,11 +123,9 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                                     required>
                                     <option value="">Pilih</option>
-                                    <option value="PNS">PNS</option>
-                                    <option value="CPNS">CPNS</option>
-                                    <option value="HONORER">Honorer</option>
-                                    <option value="KONTRAK">Kontrak</option>
-                                    <option value="TETAP">Tetap</option>
+                                    <option value="Tetap">Tetap</option>
+                                    <option value="Kontak">Kontak</option>
+                                    <option value="Honorer">Honorer</option>
                                 </select>
                             </div>
                             <div>
@@ -143,10 +141,10 @@
                                 <select id="editStatus" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                                     required>
-                                    <option value="AKTIF">Aktif</option>
-                                    <option value="CUTI">Cuti</option>
-                                    <option value="PENSIUN">Pensiun</option>
-                                    <option value="NONAKTIF">Nonaktif</option>
+                                    <option value="Aktif">Aktif</option>
+                                    <option value="Nonaktif">Nonaktif</option>
+                                    <option value="Pensiun">Pensiun</option>
+                                    <option value="Cuti">Cuti</option>
                                 </select>
                             </div>
                         </div>
