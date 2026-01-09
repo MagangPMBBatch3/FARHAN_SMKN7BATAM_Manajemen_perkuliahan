@@ -1,0 +1,107 @@
+type RekapKehadiran {
+    id: ID!
+    mahasiswa_id: Int!
+    kelas_id: Int!
+    semester_id: Int!
+    total_pertemuan: Int!
+    total_hadir: Int!
+    total_izin: Int!
+    total_sakit: Int!
+    total_alpa: Int!
+    persentase_kehadiran: Float!
+    nilai_kehadiran: Float
+    status_minimal: StatusMinimalKehadiran!
+    keterangan: String
+    created_at: DateTime
+    updated_at: DateTime
+    deleted_at: DateTime
+    
+    # Relations
+    mahasiswa: Mahasiswa! @belongsTo
+    kelas: Kelas! @belongsTo
+    semester: Semester! @belongsTo
+}
+
+enum StatusMinimalKehadiran {
+    Memenuhi @enum(value: "Memenuhi")
+    TidakMemenuhi @enum(value: "Tidak Memenuhi")
+}
+
+input CreateRekapKehadiranInput {
+    mahasiswa_id: Int!
+    kelas_id: Int!
+    semester_id: Int!
+    total_pertemuan: Int
+    total_hadir: Int
+    total_izin: Int
+    total_sakit: Int
+    total_alpa: Int
+    nilai_kehadiran: Float
+    status_minimal: StatusMinimalKehadiran
+    keterangan: String
+}
+
+input UpdateRekapKehadiranInput {
+    id: Int
+    mahasiswa_id: Int
+    kelas_id: Int
+    semester_id: Int
+    total_pertemuan: Int
+    total_hadir: Int
+    total_izin: Int
+    total_sakit: Int
+    total_alpa: Int
+    nilai_kehadiran: Float
+    status_minimal: StatusMinimalKehadiran
+    keterangan: String
+}
+
+type RekapKehadiranPaginator {
+    data: [RekapKehadiran]!
+    paginatorInfo: PageInfo!
+}
+
+extend type Query {
+    allRekapKehadiran: [RekapKehadiran!]! @all(model: "RekapKehadiran\\RekapKehadiran")
+    rekapKehadiran(id: ID! @eq(key: "id")): RekapKehadiran @find(model: "RekapKehadiran\\RekapKehadiran")
+    allRekapKehadiranPaginate(
+        search: String
+        mahasiswa_id: Int
+        kelas_id: Int
+        semester_id: Int
+        status_minimal: StatusMinimalKehadiran
+        first: Int
+        page: Int
+    ): RekapKehadiranPaginator @field(resolver: "App\\GraphQL\\RekapKehadiran\\Queries\\RekapKehadiranQuery@all")
+    allRekapKehadiranArsip(
+        search: String
+        first: Int
+        page: Int
+    ): RekapKehadiranPaginator @field(resolver: "App\\GraphQL\\RekapKehadiran\\Queries\\RekapKehadiranQuery@allArsip")
+    rekapKehadiranByMahasiswa(mahasiswa_id: Int!, semester_id: Int): [RekapKehadiran!]!
+        @field(resolver: "App\\GraphQL\\RekapKehadiran\\Queries\\RekapKehadiranQuery@byMahasiswa")
+    rekapKehadiranByKelas(kelas_id: Int!): [RekapKehadiran!]!
+        @field(resolver: "App\\GraphQL\\RekapKehadiran\\Queries\\RekapKehadiranQuery@byKelas")
+    rekapKehadiranTidakMemenuhi(kelas_id: Int, semester_id: Int): [RekapKehadiran!]!
+        @field(resolver: "App\\GraphQL\\RekapKehadiran\\Queries\\RekapKehadiranQuery@tidakMemenuhi")
+}
+
+extend type Mutation {
+    createRekapKehadiran(input: CreateRekapKehadiranInput! @spread): RekapKehadiran
+        @create(model: "RekapKehadiran\\RekapKehadiran")
+    
+    updateRekapKehadiran(
+        id: ID! @eq(key: "id")
+        input: UpdateRekapKehadiranInput! @spread
+    ): RekapKehadiran
+        @update(model: "RekapKehadiran\\RekapKehadiran")
+    
+    deleteRekapKehadiran(id: ID! @eq(key: "id")): RekapKehadiran
+        @delete(model: "RekapKehadiran\\RekapKehadiran")
+    
+    restoreRekapKehadiran(id: ID!): RekapKehadiran
+        @field(resolver: "RekapKehadiran\\Mutations\\RekapKehadiranMutation@restore")
+    
+    forceDeleteRekapKehadiran(id: ID!): RekapKehadiran
+        @field(resolver: "RekapKehadiran\\Mutations\\RekapKehadiranMutation@forceDelete")
+}

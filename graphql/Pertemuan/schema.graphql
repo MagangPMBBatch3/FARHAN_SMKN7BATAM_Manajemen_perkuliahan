@@ -1,0 +1,133 @@
+type Pertemuan {
+    id: ID!
+    kelas_id: Int!
+    pertemuan_ke: Int!
+    tanggal: Date!
+    waktu_mulai: String!
+    waktu_selesai: String!
+    materi: String
+    metode: MetodePertemuan!
+    ruangan_id: Int
+    status_pertemuan: StatusPertemuan!
+    link_daring: String
+    catatan: String
+    created_by: Int
+    created_at: DateTime
+    updated_at: DateTime
+    deleted_at: DateTime
+    
+    # Relations
+    kelas: Kelas! @belongsTo
+    ruangan: Ruangan @belongsTo
+    createdBy: User @belongsTo(relation: "createdBy")
+    kehadiran: [Kehadiran!]! @hasMany
+    
+    # Computed fields
+    durasi_menit: Int @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery@getDurasiMenit")
+    persentase_kehadiran: Float @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery@getPersentaseKehadiran")
+    statistik_kehadiran: StatistikKehadiran @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery@getStatistikKehadiran")
+}
+
+type StatistikKehadiran {
+    total: Int!
+    hadir: Int!
+    izin: Int!
+    sakit: Int!
+    alpa: Int!
+}
+
+enum MetodePertemuan {
+    TatapMuka @enum(value: "Tatap Muka")
+    Daring @enum(value: "Daring")
+    Hybrid @enum(value: "Hybrid")
+}
+
+enum StatusPertemuan {
+    Dijadwalkan @enum(value: "Dijadwalkan")
+    Berlangsung @enum(value: "Berlangsung")
+    Selesai @enum(value: "Selesai")
+    Dibatalkan @enum(value: "Dibatalkan")
+}
+
+input CreatePertemuanInput {
+    kelas_id: Int!
+    pertemuan_ke: Int!
+    tanggal: Date!
+    waktu_mulai: String!
+    waktu_selesai: String!
+    materi: String
+    metode: MetodePertemuan!
+    ruangan_id: Int
+    status_pertemuan: StatusPertemuan
+    link_daring: String
+    catatan: String
+    created_by: Int
+}
+
+input UpdatePertemuanInput {
+    id: Int
+    kelas_id: Int
+    pertemuan_ke: Int
+    tanggal: Date
+    waktu_mulai: String
+    waktu_selesai: String
+    materi: String
+    metode: MetodePertemuan
+    ruangan_id: Int
+    status_pertemuan: StatusPertemuan
+    link_daring: String
+    catatan: String
+}
+
+type PertemuanPaginator {
+    data: [Pertemuan]!
+    paginatorInfo: PageInfo!
+}
+
+extend type Query {
+    allPertemuan: [Pertemuan!]! @all(model: "Pertemuan\\Pertemuan")
+    pertemuan(id: ID! @eq(key: "id")): Pertemuan @find(model: "Pertemuan\\Pertemuan")
+    allPertemuanPaginate(
+        search: String
+        kelas_id: Int
+        status_pertemuan: StatusPertemuan
+        metode: MetodePertemuan
+        tanggal: Date
+        first: Int
+        page: Int
+    ): PertemuanPaginator @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery@all")
+    allPertemuanArsip(
+        search: String
+        first: Int
+        page: Int
+    ): PertemuanPaginator @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery@allArsip")
+    pertemuanByKelas(kelas_id: Int!): [Pertemuan!]!
+        @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery@byKelas")
+    pertemuanHariIni: [Pertemuan!]!
+        @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery@hariIni")
+    pertemuanMendatang(kelas_id: Int): [Pertemuan!]!
+        @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery@mendatang")
+}
+
+extend type Mutation {
+    createPertemuan(input: CreatePertemuanInput! @spread): Pertemuan
+        @create(model: "Pertemuan\\Pertemuan")
+    
+    updatePertemuan(
+        id: ID! @eq(key: "id")
+        input: UpdatePertemuanInput! @spread
+    ): Pertemuan
+        @update(model: "Pertemuan\\Pertemuan")
+    
+    deletePertemuan(id: ID! @eq(key: "id")): Pertemuan
+        @delete(model: "Pertemuan\\Pertemuan")
+    
+    restorePertemuan(id: ID!): Pertemuan
+        @field(resolver: "Pertemuan\\Mutations\\PertemuanMutation@restore")
+    
+    forceDeletePertemuan(id: ID!): Pertemuan
+        @field(resolver: "Pertemuan\\Mutations\\PertemuanMutation@forceDelete")
+    
+    updateStatusPertemuan(id: ID!, status: StatusPertemuan!): Pertemuan
+        @field(resolver: "Pertemuan\\Mutations\\PertemuanMutation@updateStatus")
+}

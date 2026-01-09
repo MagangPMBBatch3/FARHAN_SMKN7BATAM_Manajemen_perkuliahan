@@ -1,14 +1,11 @@
-// detailKrs-create.js - Sistem Tambah Mata Kuliah KRS
 
 const API_URL = "/graphql";
-
-// State untuk modal tambah
 let availableMataKuliah = [];
 let selectedKelasData = null;
 
 // Batas SKS berdasarkan IP
 function getMaxSks(ipSemester) {
-    if (!ipSemester || ipSemester === 0) return 20; // Mahasiswa baru default 20 SKS
+    if (!ipSemester || ipSemester === 0) return 12; //! Mahasiswa baru default 20 SKS
     if (ipSemester >= 3.50) return 24;
     if (ipSemester >= 3.00) return 22;
     if (ipSemester >= 2.50) return 20;
@@ -375,15 +372,11 @@ function checkJadwalConflict(kelasData) {
     return false;
 }
 
-// Helper untuk cek overlap waktu
 function isTimeOverlap(start1, end1, start2, end2) {
     return (start1 < end2 && end1 > start2);
 }
 
-// Cek apakah mahasiswa pernah ambil mata kuliah ini
 async function checkPreviousEnrollment(mataKuliahId) {
-    // Query untuk cek nilai mahasiswa di mata kuliah tertentu
-    // Sesuaikan dengan schema Nilai Anda
     const query = `
     query($mahasiswaId: ID!, $mataKuliahId: ID!) {
         allNilai(

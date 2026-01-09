@@ -1,0 +1,78 @@
+type SksLimit{
+    id: ID!
+    min_ipk: Float!
+    max_ipk: Float!
+    max_sks: Int!
+    keterangan: String!
+    created_at: DateTime
+    updated_at: DateTime
+    deleted_at: DateTime
+}
+
+input CreateSksLimitInput {
+    min_ipk: Float!
+    max_ipk: Float!
+    max_sks: Int!
+    keterangan: String
+}
+
+input UpdateSksLimitInput{
+    min_ipk: Float
+    max_ipk: Float
+    max_sks: Int
+    keterangan: String
+}
+
+type SksLimitPaginator {
+    data: [SksLimit]!
+    paginatorInfo: PageInfo!
+}
+
+type PageInfo {
+    hasMorePages: Boolean!
+    currentPage: Int!
+    lastPage: Int!
+    perPage: Int!
+    total: Int!
+}
+
+
+extend type Query{
+    allSksLimit: [SksLimit]! @all(model: "SksLimit\\SksLimit")
+    SksLimit(id: ID! @eq(key: "id")): SksLimit @find(model: "SksLimit\\SksLimit")
+    allSksLimitPaginate(
+        search: String
+        first: Int
+        page: Int
+    ): SksLimitPaginator @field(resolver: "App\\GraphQL\\SksLimit\\Queries\\SksLimitQuery@all")
+    allSksLimitArsip(
+            search: String
+            first: Int
+            page: Int
+        ): SksLimitPaginator @field(resolver: "App\\GraphQL\\SksLimit\\Queries\\SksLimitQuery@allArsip")
+    SksLimitByMinIpk (min_ipk: Float! @where(operator: "like", key: "min_ipk")
+    ): [SksLimit]! @all(model: "SksLimit\\SksLimit")
+    SksLimitByMaxIpk (max_ipk: Float! @where(operator: "like", key: "max_ipk")
+    ): [SksLimit]! @all(model: "SksLimit\\SksLimit")
+    SksLimitByMaxSks (max_sks: Int! @where(operator: "like", key: "max_sks")
+    ): [SksLimit]! @all(model: "SksLimit\\SksLimit")
+    SksLimitByKeterangan (keterangan: String! @where(operator: "like", key: "keterangan")
+    ): [SksLimit]! @all(model: "SksLimit\\SksLimit")
+}
+
+extend type Mutation {
+    createSksLimit(input: CreateSksLimitInput! @spread): SksLimit @create(model: "SksLimit\\SKsLimit")
+    updateSksLimit(
+        id: ID! @eq(key: "id"),
+        input: UpdateSksLimitInput! @spread
+    ): SksLimit @update(model: "SksLimit\\SKsLimit")
+
+    deleteSksLimit(id: ID! @eq(key: "id")): SksLimit
+    @delete(model: "SKsLimit\\SksLimit")
+
+    restoreSksLimit(id: ID!): SksLimit
+    @field(resolver: "SKsLimit\\SksLimit")
+
+    forceDeleteSksLimit(id: ID!): SksLimit
+    @field(resolver: "SksLimit\\Mutations\\SksLimitMutation@forceDelete")
+}

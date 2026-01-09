@@ -132,7 +132,7 @@ async function loadKrsDetail() {
 function renderKrsDetail(krsData, detailList) {
     if (!krsData || !krsData.mahasiswa) {
         console.error('Data KRS atau mahasiswa tidak lengkap');
-        return;
+        return; 
     }
     
     // Header Section
@@ -193,7 +193,6 @@ function updateSksInfo(currentSks, ipSemester) {
     
     if (!sksInfoEl) return;
     
-    // Tentukan warna dan pesan
     let alertClass = 'bg-blue-50 border-blue-500 text-blue-800';
     let icon = `<svg class="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -282,13 +281,6 @@ function renderMataKuliahTable(detailList) {
         // Actions
         const actions = `
             <div class="flex items-center justify-center gap-2">
-                <button onclick="openEditKrsDetailModal(${detail.id})" 
-                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
-                    title="Edit mata kuliah">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                    </svg>
-                </button>
                 <button onclick="deleteKrsDetail(${detail.id}, '${detail.mataKuliah?.nama_mk}')" 
                     class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                     title="Hapus dari KRS">

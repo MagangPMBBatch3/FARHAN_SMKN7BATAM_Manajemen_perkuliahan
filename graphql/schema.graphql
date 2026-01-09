@@ -18,3 +18,10 @@ scalar Time @scalar(class: "App\\GraphQL\\Scalars\\Time")
 #import ./Fakultas/Schema.graphql
 #import ./Dosen/Schema.graphql
 #import ./Mahasiswa/Schema.graphql
+#import ./SksLimit/Schema.graphql
+#import ./BobotNilai/Schema.graphql
+#import ./GradeSystem/Schema.graphql
+#import ./Kehadiran/Schema.graphql
+#import ./Pertemuan/Schema.graphql
+#import ./PengaturanKehadiran/Schema.graphql
+#import ./RekapKehadiran/Schema.graphql

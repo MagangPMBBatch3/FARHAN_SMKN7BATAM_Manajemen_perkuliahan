@@ -1,0 +1,87 @@
+type GradeSystem {
+    id: ID!
+    grade: String!
+    min_score: Float!
+    max_score: Float!
+    grade_point: Float!
+    status_kelulusan: StatusKelulusan!
+    keterangan: String
+    Status: String
+    created_at: DateTime
+    updated_at: DateTime
+    deleted_at: DateTime
+    
+    # Relations
+    nilai: [Nilai!]! @hasMany(relation: "nilai")
+}
+
+enum StatusKelulusan {
+    Lulus @enum(value: "Lulus")
+    TidakLulus @enum(value: "Tidak Lulus")
+}
+
+input CreateGradeSystemInput {
+    grade: String!
+    min_score: Float!
+    max_score: Float!
+    grade_point: Float!
+    status_kelulusan: StatusKelulusan!
+    keterangan: String
+    Status: String
+}
+
+input UpdateGradeSystemInput {
+    id: Int
+    grade: String
+    min_score: Float
+    max_score: Float
+    grade_point: Float
+    status_kelulusan: StatusKelulusan
+    keterangan: String
+    Status: String
+}
+
+type GradeSystemPaginator {
+    data: [GradeSystem]!
+    paginatorInfo: PageInfo!
+}
+
+extend type Query {
+    allGradeSystem: [GradeSystem!]! @all(model: "GradeSystem\\GradeSystem")
+    gradeSystem(id: ID! @eq(key: "id")): GradeSystem @find(model: "GradeSystem\\GradeSystem")
+    allGradeSystemPaginate(
+        search: String
+        status_kelulusan: StatusKelulusan
+        first: Int
+        page: Int
+    ): GradeSystemPaginator @field(resolver: "App\\GraphQL\\GradeSystem\\Queries\\GradeSystemQuery@all")
+    allGradeSystemArsip(
+        search: String
+        first: Int
+        page: Int
+    ): GradeSystemPaginator @field(resolver: "App\\GraphQL\\GradeSystem\\Queries\\GradeSystemQuery@allArsip")
+    gradeSystemByScore(score: Float!): GradeSystem
+        @field(resolver: "App\\GraphQL\\GradeSystem\\Queries\\GradeSystemQuery@getByScore")
+    gradeSystemAktif: [GradeSystem!]!
+        @field(resolver: "App\\GraphQL\\GradeSystem\\Queries\\GradeSystemQuery@aktif")
+}
+
+extend type Mutation {
+    createGradeSystem(input: CreateGradeSystemInput! @spread): GradeSystem
+        @create(model: "GradeSystem\\GradeSystem")
+    
+    updateGradeSystem(
+        id: ID! @eq(key: "id")
+        input: UpdateGradeSystemInput! @spread
+    ): GradeSystem
+        @update(model: "GradeSystem\\GradeSystem")
+    
+    deleteGradeSystem(id: ID! @eq(key: "id")): GradeSystem
+        @delete(model: "GradeSystem\\GradeSystem")
+    
+    restoreGradeSystem(id: ID!): GradeSystem
+        @field(resolver: "GradeSystem\\Mutations\\GradeSystemMutation@restore")
+    
+    forceDeleteGradeSystem(id: ID!): GradeSystem
+        @field(resolver: "GradeSystem\\Mutations\\GradeSystemMutation@forceDelete")
+}

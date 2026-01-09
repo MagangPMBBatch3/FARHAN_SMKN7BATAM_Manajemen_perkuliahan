@@ -1,0 +1,80 @@
+type PengaturanKehadiran {
+    id: ID!
+    kelas_id: Int!
+    minimal_kehadiran: Float!
+    auto_generate_pertemuan: Boolean!
+    keterangan: String
+    aktif: Boolean!
+    created_at: DateTime
+    updated_at: DateTime
+    deleted_at: DateTime
+    
+    # Relations
+    kelas: Kelas! @belongsTo
+}
+
+input CreatePengaturanKehadiranInput {
+    kelas_id: Int!
+    minimal_kehadiran: Float
+    auto_generate_pertemuan: Boolean
+    keterangan: String
+    aktif: Boolean
+}
+
+input UpdatePengaturanKehadiranInput {
+    id: Int
+    kelas_id: Int
+    minimal_kehadiran: Float
+    auto_generate_pertemuan: Boolean
+    keterangan: String
+    aktif: Boolean
+}
+
+type PengaturanKehadiranPaginator {
+    data: [PengaturanKehadiran]!
+    paginatorInfo: PageInfo!
+}
+
+extend type Query {
+    allPengaturanKehadiran: [PengaturanKehadiran!]! @all(model: "PengaturanKehadiran\\PengaturanKehadiran")
+    pengaturanKehadiran(id: ID! @eq(key: "id")): PengaturanKehadiran @find(model: "PengaturanKehadiran\\PengaturanKehadiran")
+    allPengaturanKehadiranPaginate(
+        search: String
+        kelas_id: Int
+        aktif: Boolean
+        first: Int
+        page: Int
+    ): PengaturanKehadiranPaginator @field(resolver: "App\\GraphQL\\PengaturanKehadiran\\Queries\\PengaturanKehadiranQuery@all")
+    allPengaturanKehadiranArsip(
+        search: String
+        first: Int
+        page: Int
+    ): PengaturanKehadiranPaginator @field(resolver: "App\\GraphQL\\PengaturanKehadiran\\Queries\\PengaturanKehadiranQuery@allArsip")
+    pengaturanKehadiranByKelas(kelas_id: Int!): PengaturanKehadiran
+        @field(resolver: "App\\GraphQL\\PengaturanKehadiran\\Queries\\PengaturanKehadiranQuery@byKelas")
+    pengaturanKehadiranAktif: [PengaturanKehadiran!]!
+        @field(resolver: "App\\GraphQL\\PengaturanKehadiran\\Queries\\PengaturanKehadiranQuery@aktif")
+}
+
+extend type Mutation {
+    createPengaturanKehadiran(input: CreatePengaturanKehadiranInput! @spread): PengaturanKehadiran
+        @create(model: "PengaturanKehadiran\\PengaturanKehadiran")
+    
+    updatePengaturanKehadiran(
+        id: ID! @eq(key: "id")
+        input: UpdatePengaturanKehadiranInput! @spread
+    ): PengaturanKehadiran
+        @update(model: "PengaturanKehadiran\\PengaturanKehadiran")
+    
+    deletePengaturanKehadiran(id: ID! @eq(key: "id")): PengaturanKehadiran
+        @delete(model: "PengaturanKehadiran\\PengaturanKehadiran")
+    
+    restorePengaturanKehadiran(id: ID!): PengaturanKehadiran
+        @field(resolver: "PengaturanKehadiran\\Mutations\\PengaturanKehadiranMutation@restore")
+    
+    forceDeletePengaturanKehadiran(id: ID!): PengaturanKehadiran
+        @field(resolver: "PengaturanKehadiran\\Mutations\\PengaturanKehadiranMutation@forceDelete")
+    
+    getOrCreatePengaturanKehadiran(kelas_id: Int!): PengaturanKehadiran
+        @field(resolver: "PengaturanKehadiran\\Mutations\\PengaturanKehadiranMutation@getOrCreate")
+}

@@ -1,0 +1,92 @@
+type BobotNilai {
+    id: ID!
+    mata_kuliah_id: Int!
+    tugas: Float!
+    quiz: Float!
+    uts: Float!
+    uas: Float!
+    kehadiran: Float!
+    praktikum: Float!
+    total_bobot: Float!
+    semester_id: Int!
+    keterangan: String
+    created_at: DateTime
+    updated_at: DateTime
+    deleted_at: DateTime
+    
+    # Relations
+    mataKuliah: MataKuliah! @belongsTo
+    semester: Semester! @belongsTo
+    nilai: [Nilai!]! @hasMany
+}
+
+input CreateBobotNilaiInput {
+    mata_kuliah_id: Int!
+    tugas: Float!
+    quiz: Float!
+    uts: Float!
+    uas: Float!
+    kehadiran: Float
+    praktikum: Float
+    semester_id: Int!
+    keterangan: String
+}
+
+input UpdateBobotNilaiInput {
+    id: Int
+    mata_kuliah_id: Int
+    tugas: Float
+    quiz: Float
+    uts: Float
+    uas: Float
+    kehadiran: Float
+    praktikum: Float
+    semester_id: Int
+    keterangan: String
+}
+
+type BobotNilaiPaginator {
+    data: [BobotNilai]!
+    paginatorInfo: PageInfo!
+}
+
+extend type Query {
+    allBobotNilai: [BobotNilai!]! @all(model: "BobotNilai\\BobotNilai")
+    bobotNilai(id: ID! @eq(key: "id")): BobotNilai @find(model: "BobotNilai\\BobotNilai")
+    allBobotNilaiPaginate(
+        search: String
+        mata_kuliah_id: Int
+        semester_id: Int
+        first: Int
+        page: Int
+    ): BobotNilaiPaginator @field(resolver: "App\\GraphQL\\BobotNilai\\Queries\\BobotNilaiQuery@all")
+    allBobotNilaiArsip(
+        search: String
+        first: Int
+        page: Int
+    ): BobotNilaiPaginator @field(resolver: "App\\GraphQL\\BobotNilai\\Queries\\BobotNilaiQuery@allArsip")
+    bobotNilaiByMataKuliah(
+        mata_kuliah_id: Int! @eq(key: "mata_kuliah_id")
+        semester_id: Int @eq(key: "semester_id")
+    ): BobotNilai @find(model: "BobotNilai\\BobotNilai")
+}
+
+extend type Mutation {
+    createBobotNilai(input: CreateBobotNilaiInput! @spread): BobotNilai
+        @create(model: "BobotNilai\\BobotNilai")
+    
+    updateBobotNilai(
+        id: ID! @eq(key: "id")
+        input: UpdateBobotNilaiInput! @spread
+    ): BobotNilai
+        @update(model: "BobotNilai\\BobotNilai")
+    
+    deleteBobotNilai(id: ID! @eq(key: "id")): BobotNilai
+        @delete(model: "BobotNilai\\BobotNilai")
+    
+    restoreBobotNilai(id: ID!): BobotNilai
+        @field(resolver: "BobotNilai\\Mutations\\BobotNilaiMutation@restore")
+    
+    forceDeleteBobotNilai(id: ID!): BobotNilai
+        @field(resolver: "BobotNilai\\Mutations\\BobotNilaiMutation@forceDelete")
+}

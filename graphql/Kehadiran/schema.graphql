@@ -1,0 +1,112 @@
+type Kehadiran {
+    id: ID!
+    pertemuan_id: Int!
+    mahasiswa_id: Int!
+    krs_detail_id: Int!
+    status_kehadiran: StatusKehadiran!
+    waktu_input: DateTime
+    keterangan: String
+    diinput_oleh: Int
+    created_at: DateTime
+    updated_at: DateTime
+    deleted_at: DateTime
+    
+    # Relations
+    pertemuan: Pertemuan! @belongsTo
+    mahasiswa: Mahasiswa! @belongsTo
+    krsDetail: KrsDetail! @belongsTo(relation: "krsDetail")
+    inputBy: User @belongsTo(relation: "inputBy")
+}
+
+enum StatusKehadiran {
+    Hadir @enum(value: "Hadir")
+    Izin @enum(value: "Izin")
+    Sakit @enum(value: "Sakit")
+    Alpa @enum(value: "Alpa")
+}
+
+input CreateKehadiranInput {
+    pertemuan_id: Int!
+    mahasiswa_id: Int!
+    krs_detail_id: Int!
+    status_kehadiran: StatusKehadiran!
+    keterangan: String
+    diinput_oleh: Int
+}
+
+input UpdateKehadiranInput {
+    id: Int
+    pertemuan_id: Int
+    mahasiswa_id: Int
+    krs_detail_id: Int
+    status_kehadiran: StatusKehadiran
+    keterangan: String
+    diinput_oleh: Int
+}
+
+input BulkUpdateKehadiranInput {
+    id: Int!
+    status_kehadiran: StatusKehadiran!
+    keterangan: String
+}
+
+type KehadiranPaginator {
+    data: [Kehadiran]!
+    paginatorInfo: PageInfo!
+}
+
+type TotalKehadiranMahasiswa {
+    total_pertemuan: Int!
+    total_hadir: Int!
+    total_izin: Int!
+    total_sakit: Int!
+    total_alpa: Int!
+    persentase_kehadiran: Float!
+}
+
+extend type Query {
+    allKehadiran: [Kehadiran!]! @all(model: "Kehadiran\\Kehadiran")
+    kehadiran(id: ID! @eq(key: "id")): Kehadiran @find(model: "Kehadiran\\Kehadiran")
+    allKehadiranPaginate(
+        search: String
+        pertemuan_id: Int
+        mahasiswa_id: Int
+        status_kehadiran: StatusKehadiran
+        first: Int
+        page: Int
+    ): KehadiranPaginator @field(resolver: "App\\GraphQL\\Kehadiran\\Queries\\KehadiranQuery@all")
+    allKehadiranArsip(
+        search: String
+        first: Int
+        page: Int
+    ): KehadiranPaginator @field(resolver: "App\\GraphQL\\Kehadiran\\Queries\\KehadiranQuery@allArsip")
+    kehadiranByPertemuan(pertemuan_id: Int!): [Kehadiran!]!
+        @field(resolver: "App\\GraphQL\\Kehadiran\\Queries\\KehadiranQuery@byPertemuan")
+    kehadiranByMahasiswa(mahasiswa_id: Int!, kelas_id: Int): [Kehadiran!]!
+        @field(resolver: "App\\GraphQL\\Kehadiran\\Queries\\KehadiranQuery@byMahasiswa")
+    totalKehadiranMahasiswa(mahasiswa_id: Int!, kelas_id: Int!): TotalKehadiranMahasiswa
+        @field(resolver: "App\\GraphQL\\Kehadiran\\Queries\\KehadiranQuery@totalKehadiranMahasiswa")
+}
+
+extend type Mutation {
+    createKehadiran(input: CreateKehadiranInput! @spread): Kehadiran
+        @field(resolver: "App\\GraphQL\\Kehadiran\\Mutations\\KehadiranMutation@create")
+    
+    updateKehadiran(
+        id: ID! @eq(key: "id")
+        input: UpdateKehadiranInput! @spread
+    ): Kehadiran
+        @update(model: "Kehadiran\\Kehadiran")
+    
+    deleteKehadiran(id: ID! @eq(key: "id")): Kehadiran
+        @delete(model: "Kehadiran\\Kehadiran")
+    
+    restoreKehadiran(id: ID!): Kehadiran
+        @field(resolver: "Kehadiran\\Mutations\\KehadiranMutation@restore")
+    
+    forceDeleteKehadiran(id: ID!): Kehadiran
+        @field(resolver: "Kehadiran\\Mutations\\KehadiranMutation@forceDelete")
+    
+    bulkUpdateKehadiran(inputs: [BulkUpdateKehadiranInput!]!): [Kehadiran!]!
+        @field(resolver: "Kehadiran\\Mutations\\KehadiranMutation@bulkUpdate")
+}
