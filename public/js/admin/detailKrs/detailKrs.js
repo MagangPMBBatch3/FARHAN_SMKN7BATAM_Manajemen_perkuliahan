@@ -1,90 +1,29 @@
-// detailKrs-edit.js - Sistem Edit Mata Kuliah KRS
+// ============================================================================
+// CONFIGURATION & GLOBAL STATE
+// ============================================================================
 
-let editKrsDetailData = null;
-let editAvailableKelas = [];
+const API_URL = "/graphql";
+const MIN_SKS = 12;
 
-// Buka modal edit
-async function openEditKrsDetailModal(detailId) {
-    const modal = document.getElementById('modalEditKrsDetail');
-    if (!modal) {
-        console.error('Modal edit KRS Detail tidak ditemukan');
-        return;
-    }
+let currentKrsId = null;
+let currentKrsData = null;
+let krsDetailList = [];
 
-    // Cari data detail
-    const detail = krsDetailList.find(d => d.id === detailId);
-    if (!detail) {
-        alert('Data tidak ditemukan');
-        return;
-    }
+// ============================================================================
+// SKS LIMIT MANAGEMENT
+// ============================================================================
 
-    editKrsDetailData = detail;
-    
-    // Populate form
-    await populateEditForm(detail);
-    
-    // Tampilkan modal
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-
-// Tutup modal edit
-function closeEditKrsDetailModal() {
-    const modal = document.getElementById('modalEditKrsDetail');
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-    editKrsDetailData = null;
-    editAvailableKelas = [];
-}
-
-// Populate form edit
-async function populateEditForm(detail) {
-    // Info mata kuliah (read-only)
-    document.getElementById('editKrsDetailNamaMk').textContent = detail.mataKuliah?.nama_mk || '-';
-    document.getElementById('editKrsDetailKodeMk').textContent = detail.mataKuliah?.kode_mk || '-';
-    document.getElementById('editKrsDetailSksMk').textContent = `${detail.sks || 0} SKS`;
-    
-    // Current kelas info
-    document.getElementById('editKrsDetailCurrentKelas').textContent = detail.kelas?.nama_kelas || '-';
-    document.getElementById('editKrsDetailCurrentDosen').textContent = detail.kelas?.dosen?.nama_lengkap || '-';
-    
-    // Status ambil
-    const statusSelect = document.getElementById('editKrsDetailStatusAmbil');
-    if (statusSelect) {
-        statusSelect.value = detail.status_ambil || 'BARU';
-    }
-    
-    // Load kelas lain untuk mata kuliah ini
-    await loadEditAvailableKelas(detail.mata_kuliah_id, detail.kelas_id);
-}
-
-// Load kelas lain yang tersedia
-async function loadEditAvailableKelas(mataKuliahId, currentKelasId) {
-    const query = `
-    query($id: ID!) {
-        matakuliah(id: $id) {
+/**
+ * Mengambil data batas SKS dari API
+ */
+async function getSksLimitList() {
+    const query = `query {
+        allSksLimit {
             id
-            kelas {
-                id
-                nama_kelas
-                kapasitas
-                dosen {
-                    id
-                    nama_lengkap
-                }
-                jadwalKuliah {
-                    id
-                    hari
-                    jam_mulai
-                    jam_selesai
-                    ruangan {
-                        id
-                        nama_ruangan
-                    }
-                }
-            }
+            min_ipk
+            max_ipk
+            max_sks
+            keterangan
         }
     }`;
 
@@ -92,312 +31,336 @@ async function loadEditAvailableKelas(mataKuliahId, currentKelasId) {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                query,
-                variables: { id: mataKuliahId }
-            })
+            body: JSON.stringify({ query })
         });
 
         const result = await response.json();
-        
-        if (result.errors) {
-            throw new Error(result.errors[0].message);
-        }
-
-        const allKelas = result.data.matakuliah?.kelas || [];
-        
-        // Normalize data: set default kuota_terisi = 0
-        editAvailableKelas = allKelas
-            .filter(k => k.id !== currentKelasId)
-            .map(k => ({
-                ...k,
-                kuota_terisi: k.kuota_terisi ?? 0
-            }));
-        
-        populateEditKelasSelect();
-        
+        return result.data.allSksLimit || [];
     } catch (error) {
-        console.error('Error loading kelas:', error);
-        showEditKrsDetailError('Gagal memuat data kelas: ' + error.message);
+        console.error('Error getting SKS limit:', error);
+        return [];
     }
 }
 
-// Populate select kelas untuk edit
-function populateEditKelasSelect() {
-    const select = document.getElementById('editKrsDetailKelasId');
-    if (!select) return;
-
-    select.innerHTML = '<option value="">-- Tetap di kelas saat ini --</option>';
-
-    if (editAvailableKelas.length === 0) {
-        const option = document.createElement('option');
-        option.value = '';
-        option.textContent = '-- Tidak ada kelas lain tersedia --';
-        option.disabled = true;
-        select.appendChild(option);
-        return;
-    }
-
-    editAvailableKelas.forEach(kelas => {
-        const kuotaTerisi = kelas.kuota_terisi ?? 0;
-        const kapasitas = kelas.kapasitas ?? 0;
-        const sisaKuota = kapasitas - kuotaTerisi;
-        const isFull = sisaKuota <= 0;
-        
-        const option = document.createElement('option');
-        option.value = kelas.id;
-        option.textContent = `${kelas.nama_kelas} - Dosen: ${kelas.dosen?.nama_lengkap || '-'} - Kuota: ${sisaKuota}/${kapasitas}${isFull ? ' (PENUH)' : ''}`;
-        option.dataset.kelas = JSON.stringify(kelas);
-        option.disabled = isFull;
-        
-        select.appendChild(option);
-    });
-}
-
-// Handle perubahan kelas pada edit
-function onEditKelasChange() {
-    const select = document.getElementById('editKrsDetailKelasId');
-    if (!select || !select.value) {
-        hideEditKelasInfo();
-        return;
-    }
-
-    const selectedOption = select.options[select.selectedIndex];
-    const kelasData = JSON.parse(selectedOption.dataset.kelas);
-    
-    displayEditKelasInfo(kelasData);
-    validateEditKelasSelection(kelasData);
-}
-
-// Tampilkan info kelas baru
-function displayEditKelasInfo(kelasData) {
-    const infoSection = document.getElementById('editKrsDetailNewKelasInfo');
-    if (!infoSection) return;
-
-    // Dosen
-    document.getElementById('editKrsDetailNewDosen').textContent = kelasData.dosen?.nama_lengkap || '-';
-    
-    // Jadwal
-    if (kelasData.jadwalKuliah && kelasData.jadwalKuliah.length > 0) {
-        const jadwalTexts = kelasData.jadwalKuliah.map(j => {
-            const ruangan = j.ruangan?.nama_ruangan || '-';
-            return `${j.hari}, ${j.jam_mulai}-${j.jam_selesai} (${ruangan})`;
-        });
-        document.getElementById('editKrsDetailNewJadwal').innerHTML = jadwalTexts.join('<br>');
-    } else {
-        document.getElementById('editKrsDetailNewJadwal').textContent = 'Belum ada jadwal';
-    }
-    
-    // Kuota
-    const kuotaTerisi = kelasData.kuota_terisi ?? 0;
-    const kapasitas = kelasData.kapasitas ?? 0;
-    const sisaKuota = kapasitas - kuotaTerisi;
-    document.getElementById('editKrsDetailNewKuota').textContent = `${sisaKuota} / ${kapasitas}`;
-    
-    infoSection.classList.remove('hidden');
-}
-
-// Hide info kelas baru
-function hideEditKelasInfo() {
-    const infoSection = document.getElementById('editKrsDetailNewKelasInfo');
-    if (infoSection) {
-        infoSection.classList.add('hidden');
-    }
-    hideEditKrsDetailError();
-}
-
-// Validasi pemilihan kelas baru
-function validateEditKelasSelection(kelasData) {
-    hideEditKrsDetailError();
-    
-    // Cek konflik jadwal (exclude mata kuliah yang sedang diedit)
-    const hasConflict = checkEditJadwalConflict(kelasData);
-    if (hasConflict) {
-        showEditKrsDetailError('⚠️ KONFLIK JADWAL: Waktu kuliah bentrok dengan mata kuliah lain!');
-        return false;
-    }
-    
-    showEditKrsDetailInfo('✓ Tidak ada konflik jadwal');
-    return true;
-}
-
-// Cek konflik jadwal untuk edit (exclude current mata kuliah)
-function checkEditJadwalConflict(kelasData) {
-    if (!kelasData.jadwalKuliah || kelasData.jadwalKuliah.length === 0) {
-        return false;
-    }
-    
-    for (const detail of krsDetailList) {
-        // Skip mata kuliah yang sedang diedit
-        if (detail.id === editKrsDetailData.id) continue;
-        
-        if (!detail.kelas?.jadwalKuliah) continue;
-        
-        for (const jadwalBaru of kelasData.jadwalKuliah) {
-            for (const jadwalLama of detail.kelas.jadwalKuliah) {
-                if (jadwalBaru.hari === jadwalLama.hari) {
-                    if (isTimeOverlap(
-                        jadwalBaru.jam_mulai, jadwalBaru.jam_selesai,
-                        jadwalLama.jam_mulai, jadwalLama.jam_selesai
-                    )) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    
-    return false;
-}
-
-// Submit edit KRS Detail
-async function submitEditKrsDetail(event) {
-    if (event) event.preventDefault();
-    
-    const submitBtn = document.getElementById('btnSubmitEditKrsDetail');
-    if (submitBtn) submitBtn.disabled = true;
-
+/**
+ * Menghitung maksimal SKS berdasarkan IPK mahasiswa
+ */
+async function getMaxSks(ipk) {
     try {
-        if (!editKrsDetailData) {
-            throw new Error('Data tidak ditemukan');
+        const sksLimitList = await getSksLimitList();
+
+        // Mahasiswa baru (IPK = 0 atau null)
+        if (!ipk || ipk === 0) {
+            const mahasiswaBaru = sksLimitList.find(item =>
+                item.keterangan?.toLowerCase().includes('baru')
+            );
+            return mahasiswaBaru?.max_sks || 12;
         }
 
-        const kelasSelect = document.getElementById('editKrsDetailKelasId');
-        const statusSelect = document.getElementById('editKrsDetailStatusAmbil');
-        
-        const newKelasId = kelasSelect.value;
-        const newStatus = statusSelect.value;
-        
-        // Cek apakah ada perubahan
-        const hasKelasChange = newKelasId && newKelasId !== editKrsDetailData.kelas_id;
-        const hasStatusChange = newStatus !== editKrsDetailData.status_ambil;
-        
-        if (!hasKelasChange && !hasStatusChange) {
-            throw new Error('Tidak ada perubahan yang dilakukan');
-        }
+        // Cari batas SKS berdasarkan range IPK
+        const matchedLimit = sksLimitList.find(item => {
+            const minIpk = parseFloat(item.min_ipk) || 0;
+            const maxIpk = parseFloat(item.max_ipk) || 4.0;
+            return ipk >= minIpk && ipk <= maxIpk;
+        });
 
-        // Validasi jika ganti kelas
-        if (hasKelasChange) {
-            const selectedOption = kelasSelect.options[kelasSelect.selectedIndex];
-            const kelasData = JSON.parse(selectedOption.dataset.kelas);
-            
-            if (!validateEditKelasSelection(kelasData)) {
-                throw new Error('Validasi gagal. Periksa pesan error di atas.');
+        return matchedLimit?.max_sks || 16;
+
+    } catch (error) {
+        console.error('Error in getMaxSks:', error);
+        // Fallback hardcoded
+        if (!ipk || ipk === 0) return 12;
+        if (ipk >= 3.50) return 24;
+        if (ipk >= 3.00) return 22;
+        if (ipk >= 2.50) return 20;
+        if (ipk >= 2.00) return 18;
+        return 16;
+    }
+}
+
+// ============================================================================
+// DATA LOADING
+// ============================================================================
+
+/**
+ * Mengambil detail KRS dari API
+ */
+async function loadKrsDetail() {
+    currentKrsId = getKrsIdFromUrl();
+
+    const query = `query($id: ID!) {
+        krs(id: $id) {
+            id mahasiswa_id semester_id tanggal_pengisian tanggal_persetujuan
+            status total_sks catatan dosen_pa_id created_at updated_at
+            mahasiswa {
+                id nim nama_lengkap semester_saat_ini ip_semester ipk
+                jurusan { id nama_jurusan }
             }
-        }
-
-        // Mutation GraphQL
-        const mutation = `
-        mutation($id: ID!, $input: UpdateKrsDetailInput!) {
-            updateKrsDetail(id: $id, input: $input) {
-                id
-                kelas_id
-                status_ambil
+            semester { id nama_semester tahun_ajaran }
+            dosenPa { id nama_lengkap }
+            krsDetail {
+                id krs_id kelas_id mata_kuliah_id sks status_ambil created_at updated_at
                 kelas {
-                    id
-                    nama_kelas
-                    dosen {
-                        id
-                        nama_lengkap
+                    id nama_kelas kapasitas kuota_terisi
+                    dosen { id nama_lengkap }
+                    jadwalKuliah {
+                        id hari jam_mulai jam_selesai
+                        ruangan { id nama_ruangan }
                     }
                 }
+                mataKuliah { id kode_mk nama_mk sks semester_rekomendasi }
+                nilai { id nilai_akhir nilai_huruf nilai_mutu }
             }
-        }`;
-
-        const input = {};
-        if (hasKelasChange) input.kelas_id = parseInt(newKelasId);  // Convert to Int
-        if (hasStatusChange) input.status_ambil = newStatus;
-
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                query: mutation,
-                variables: {
-                    id: parseInt(editKrsDetailData.id),  // Convert to Int
-                    input: input
-                }
-            })
-        });
-
-        const result = await response.json();
-        
-        if (result.errors) {
-            throw new Error(result.errors[0].message);
-        }
-
-        // Update kuota jika ganti kelas
-        if (hasKelasChange) {
-            // Kurangi kuota kelas lama
-            await updateKuotaKelasById(editKrsDetailData.kelas_id, -1);
-            // Tambah kuota kelas baru
-            await updateKuotaKelasById(newKelasId, 1);
-        }
-
-        // Reload data KRS
-        await loadKrsDetail();
-        
-        // Close modal
-        closeEditKrsDetailModal();
-        
-        // Show success message
-        let message = 'Data mata kuliah berhasil diupdate!';
-        if (hasKelasChange) message = 'Kelas berhasil dipindah!';
-        if (hasStatusChange && !hasKelasChange) message = 'Status pengambilan berhasil diubah!';
-        
-        showSuccessNotification(message);
-        
-    } catch (error) {
-        console.error('Error updating KRS Detail:', error);
-        showEditKrsDetailError('Gagal mengupdate data: ' + error.message);
-    } finally {
-        if (submitBtn) submitBtn.disabled = false;
-    }
-}
-
-// Update kuota by kelas ID
-async function updateKuotaKelasById(kelasId, increment) {
-    const query = `
-    query($id: ID!) {
-        kelas(id: $id) {
-            id
-            kuota_terisi
-        }
-    }`;
-
-    const mutation = `
-    mutation($id: ID!, $input: UpdateKelasInput!) {
-        updateKelas(id: $id, input: $input) {
-            id
-            kuota_terisi
         }
     }`;
 
     try {
-        // Get current kuota
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                query,
-                variables: { id: parseInt(kelasId) }  // Convert to Int
-            })
+            body: JSON.stringify({ query, variables: { id: currentKrsId } })
         });
 
         const result = await response.json();
+
+        if (result.errors) throw new Error(result.errors[0].message);
+        if (!result.data?.krs) {
+            alert('Data KRS tidak ditemukan');
+            window.location.href = '/admin/krs';
+            return;
+        }
+
+        currentKrsData = result.data.krs;
+        krsDetailList = currentKrsData.krsDetail || [];
+
+        renderKrsDetail(currentKrsData, krsDetailList);
+
+        document.getElementById('loading')?.classList.add('hidden');
+        document.getElementById('content')?.classList.remove('hidden');
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan: ' + error.message);
+    }
+}
+
+// ============================================================================
+// RENDER & UI
+// ============================================================================
+
+/**
+ * Render detail KRS ke halaman
+ */
+function renderKrsDetail(krsData, detailList) {
+    if (!krsData?.mahasiswa) return;
+
+    // Header
+    const initial = krsData.mahasiswa.nama_lengkap.charAt(0).toUpperCase();
+    setContent('initial', initial);
+    setContent('nama', krsData.mahasiswa.nama_lengkap);
+    setContent('nim', krsData.mahasiswa.nim);
+    setContent('statusHeader', krsData.status || '-');
+
+    // Info KRS
+    setContent('krsId', krsData.id);
+    setContent('mahasiswaNama', krsData.mahasiswa.nama_lengkap);
+    setContent('mahasiswaNim', krsData.mahasiswa.nim);
+    setContent('jurusan', krsData.mahasiswa.jurusan?.nama_jurusan || '-');
+    setContent('semester', krsData.semester?.nama_semester || '-');
+    setContent('tahunAjaran', krsData.semester?.tahun_ajaran || '-');
+    setContent('tanggalPengisian', formatDate(krsData.tanggal_pengisian));
+    setHTML('statusKrs', getStatusKrsBadge(krsData.status));
+
+    // Statistik
+    const totalSks = detailList.reduce((sum, d) => sum + (d.sks || 0), 0);
+    const ipk = krsData.mahasiswa.ipk || 0;
+
+    setContent('totalSks', totalSks);
+    setContent('totalSksBesar', totalSks);
+    setContent('totalMatakuliah', detailList.length);
+    setContent('ipSemester', ipk.toFixed(2));
+    setContent('ipSemesterBesar', ipk.toFixed(2));
+
+    // Table
+    renderMataKuliahTable(detailList);
+
+    // Metadata
+    if (krsData.created_at) setContent('createdAt', formatDateTime(krsData.created_at));
+    if (krsData.updated_at) setContent('updatedAt', formatDateTime(krsData.updated_at));
+
+    // Info SKS
+    updateSksInfo(totalSks, ipk);
+}
+
+/**
+ * Render tabel mata kuliah
+ */
+function renderMataKuliahTable(detailList) {
+    const tbody = document.getElementById('mataKuliahTableBody');
+    if (!tbody) return;
+
+    if (detailList.length === 0) {
+        tbody.innerHTML = `
+            <tr><td colspan="8" class="px-6 py-8 text-center">
+                <div class="flex flex-col items-center text-gray-500">
+                    <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <p class="text-lg font-semibold mb-1">Belum ada mata kuliah</p>
+                    <button onclick="openAddKrsDetailModal()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Tambah Mata Kuliah
+                    </button>
+                </div>
+            </td></tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = detailList.map((detail, index) => {
+        const jadwal = detail.kelas?.jadwalKuliah?.map(j =>
+            `${j.hari}, ${j.jam_mulai}-${j.jam_selesai}`
+        ).join('<br>') || '-';
+
+        const dosen = detail.kelas?.dosen?.nama_lengkap || '-';
+        const nilaiHuruf = detail.nilai?.nilai_huruf || '-';
+        const nilaiAngka = detail.nilai?.nilai_akhir || '';
+        const nilaiText = nilaiAngka ? `${nilaiHuruf} (${nilaiAngka})` : nilaiHuruf;
+
+        return `
+            <tr class="border-b hover:bg-gray-50">
+                <td class="px-6 py-4 text-sm">${index + 1}</td>
+                <td class="px-6 py-4">
+                    <div class="font-medium">${detail.mataKuliah?.nama_mk || '-'}</div>
+                    <div class="text-sm text-gray-500">${detail.mataKuliah?.kode_mk || '-'}</div>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm">${detail.kelas?.nama_kelas || '-'}</div>
+                    <div class="text-xs text-gray-500">${jadwal}</div>
+                </td>
+                <td class="px-6 py-4 text-sm">${dosen}</td>
+                <td class="px-6 py-4 text-sm text-center">${detail.sks || 0}</td>
+                <td class="px-6 py-4">${getStatusAmbilBadge(detail.status_ambil)}</td>
+                <td class="px-6 py-4 text-center">
+                    <span class="font-semibold ${getNilaiColor(nilaiHuruf)}">${nilaiText}</span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <button onclick="deleteKrsDetail(${detail.id}, '${detail.mataKuliah?.nama_mk}')" 
+                        class="px-3 py-1.5 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+                        Hapus
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+/**
+ * Update informasi batas SKS
+ */
+async function updateSksInfo(currentSks, ipk) {
+    const maxSks = await getMaxSks(ipk);
+    let sksInfoEl = document.getElementById('sksInfoAlert');
+
+    if (!sksInfoEl) {
+        const container = document.getElementById('contentMatakuliah');
+        if (container) {
+            sksInfoEl = document.createElement('div');
+            sksInfoEl.id = 'sksInfoAlert';
+            sksInfoEl.className = 'mb-6';
+            container.insertBefore(sksInfoEl, container.firstChild);
+        }
+    }
+
+    if (!sksInfoEl) return;
+
+    let alertClass, icon, message;
+
+    if (currentSks < MIN_SKS) {
+        alertClass = 'bg-red-50 border-red-500 text-red-800';
+        icon = '⚠️';
+        message = `Total SKS <strong>${currentSks}</strong> kurang dari minimal <strong>${MIN_SKS} SKS</strong>`;
+    } else if (currentSks > maxSks) {
+        alertClass = 'bg-red-50 border-red-500 text-red-800';
+        icon = '⚠️';
+        message = `Total SKS <strong>${currentSks}</strong> melebihi maksimal <strong>${maxSks} SKS</strong> (IPK: ${ipk.toFixed(2)})`;
+    } else {
+        alertClass = 'bg-green-50 border-green-500 text-green-800';
+        icon = '✓';
+        message = `Total SKS <strong>${currentSks}</strong> sudah sesuai (Min: ${MIN_SKS}, Max: ${maxSks} berdasarkan IPK ${ipk.toFixed(2)})`;
+    }
+
+    sksInfoEl.innerHTML = `
+        <div class="${alertClass} p-4 rounded-lg border-l-4">
+            <div class="flex items-start">
+                <span class="text-xl mr-3">${icon}</span>
+                <div class="text-sm">${message}</div>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================================
+// CRUD OPERATIONS
+// ============================================================================
+
+/**
+ * Hapus mata kuliah dari KRS
+ */
+async function deleteKrsDetail(id, namaMk) {
+    if (!confirm(`Hapus "${namaMk}" dari KRS?`)) return;
+
+    try {
+        const detail = krsDetailList.find(d => d.id == id);
+
+        const mutation = `mutation($id: ID!) { deleteKrsDetail(id: $id) { id } }`;
+
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: mutation, variables: { id: parseInt(id) } })
+        });
+
+        const result = await response.json();
+        if (result.errors) throw new Error(result.errors[0].message);
+
+        if (detail?.kelas_id) await updateKuotaKelas(detail.kelas_id, -1);
+
+        await loadKrsDetail();
+        showSuccessNotification(`"${namaMk}" berhasil dihapus`);
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Gagal menghapus: ' + error.message);
+    }
+}
+
+/**
+ * Update kuota kelas (increment/decrement)
+ */
+async function updateKuotaKelas(kelasId, increment) {
+    try {
+        const queryKuota = `query($id: ID!) { kelas(id: $id) { id kuota_terisi } }`;
+        
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: queryKuota, variables: { id: parseInt(kelasId) } })
+        });
+
+        const result = await res.json();
         const currentKuota = result.data?.kelas?.kuota_terisi ?? 0;
         const newKuota = Math.max(0, currentKuota + increment);
 
-        // Update kuota
+        const mutation = `mutation($id: ID!, $input: UpdateKelasInput!) {
+            updateKelas(id: $id, input: $input) { id kuota_terisi }
+        }`;
+
         await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 query: mutation,
-                variables: {
-                    id: parseInt(kelasId),  // Convert to Int
-                    input: { kuota_terisi: newKuota }
-                }
+                variables: { id: parseInt(kelasId), input: { kuota_terisi: newKuota } }
             })
         });
     } catch (error) {
@@ -405,36 +368,217 @@ async function updateKuotaKelasById(kelasId, increment) {
     }
 }
 
-// Show/Hide error & info untuk edit
-function showEditKrsDetailError(message) {
-    const errorEl = document.getElementById('editKrsDetailError');
-    if (errorEl) {
-        errorEl.textContent = message;
-        errorEl.classList.remove('hidden');
+/**
+ * Setujui KRS
+ */
+async function approveKrs() {
+    if (!currentKrsData) return;
+
+    const totalSks = krsDetailList.reduce((sum, d) => sum + (d.sks || 0), 0);
+    const ipk = currentKrsData.mahasiswa.ipk || 0;
+    const maxSks = await getMaxSks(ipk);
+
+    if (totalSks < MIN_SKS) {
+        alert(`Total SKS (${totalSks}) kurang dari minimal ${MIN_SKS} SKS`);
+        return;
     }
-    hideEditKrsDetailInfo();
+
+    if (totalSks > maxSks) {
+        alert(`Total SKS (${totalSks}) melebihi maksimal ${maxSks} SKS (IPK: ${ipk.toFixed(2)})`);
+        return;
+    }
+
+    if (!confirm('Setujui KRS ini?')) return;
+
+    const mutation = `mutation($id: ID!, $input: UpdateKrsInput!) {
+        updateKrs(id: $id, input: $input) { id status }
+    }`;
+
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                query: mutation,
+                variables: {
+                    id: parseInt(currentKrsId),
+                    input: { status: "DISETUJUI", tanggal_persetujuan: today }
+                }
+            })
+        });
+
+        const result = await response.json();
+        if (result.errors) throw new Error(result.errors[0].message);
+
+        alert('KRS berhasil disetujui');
+        loadKrsDetail();
+    } catch (error) {
+        alert('Gagal menyetujui: ' + error.message);
+    }
 }
 
-function hideEditKrsDetailError() {
-    const errorEl = document.getElementById('editKrsDetailError');
-    if (errorEl) {
-        errorEl.classList.add('hidden');
-        errorEl.textContent = '';
+/**
+ * Tolak KRS
+ */
+async function rejectKrs() {
+    if (!currentKrsData) return;
+
+    const alasan = prompt('Berikan alasan penolakan (opsional):');
+    if (alasan === null) return;
+
+    const mutation = `mutation($id: ID!, $input: UpdateKrsInput!) {
+        updateKrs(id: $id, input: $input) { id status }
+    }`;
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                query: mutation,
+                variables: {
+                    id: parseInt(currentKrsId),
+                    input: { status: "DITOLAK", catatan: alasan || null }
+                }
+            })
+        });
+
+        const result = await response.json();
+        if (result.errors) throw new Error(result.errors[0].message);
+
+        alert('KRS berhasil ditolak');
+        loadKrsDetail();
+    } catch (error) {
+        alert('Gagal menolak: ' + error.message);
     }
 }
 
-function showEditKrsDetailInfo(message) {
-    const infoEl = document.getElementById('editKrsDetailInfo');
-    if (infoEl) {
-        infoEl.textContent = message;
-        infoEl.classList.remove('hidden');
+/**
+ * Hapus KRS
+ */
+async function confirmDelete() {
+    if (!currentKrsData) return;
+
+    if (!confirm(`Hapus KRS ini? Semua detail akan ikut terhapus.`)) return;
+
+    const mutation = `mutation($id: ID!) { deleteKrs(id: $id) { id } }`;
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: mutation, variables: { id: currentKrsId } })
+        });
+
+        const result = await response.json();
+        if (result.errors) throw new Error(result.errors[0].message);
+
+        alert('KRS berhasil dihapus');
+        window.location.href = '/admin/krs';
+    } catch (error) {
+        alert('Gagal menghapus: ' + error.message);
     }
 }
 
-function hideEditKrsDetailInfo() {
-    const infoEl = document.getElementById('editKrsDetailInfo');
-    if (infoEl) {
-        infoEl.classList.add('hidden');
-        infoEl.textContent = '';
-    }
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+function getKrsIdFromUrl() {
+    const segments = window.location.pathname.split('/');
+    return segments[segments.length - 1];
 }
+
+function setContent(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+}
+
+function setHTML(id, html) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+}
+
+function showSuccessNotification(msg) {
+    const toast = document.createElement('div');
+    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50';
+    toast.innerHTML = `<span>${msg}</span>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function getNilaiColor(nilai) {
+    if (!nilai || nilai === '-') return 'text-gray-600';
+    if (['A', 'A-'].includes(nilai)) return 'text-green-600';
+    if (['B+', 'B', 'B-'].includes(nilai)) return 'text-blue-600';
+    if (['C+', 'C'].includes(nilai)) return 'text-yellow-600';
+    if (['D', 'E'].includes(nilai)) return 'text-red-600';
+    return 'text-gray-600';
+}
+
+function getStatusKrsBadge(status) {
+    const badges = {
+        'DRAFT': 'bg-gray-100 text-gray-800',
+        'DIAJUKAN': 'bg-yellow-100 text-yellow-800',
+        'DISETUJUI': 'bg-green-100 text-green-800',
+        'DITOLAK': 'bg-red-100 text-red-800',
+        'AKTIF': 'bg-blue-100 text-blue-800'
+    };
+    const cls = badges[status?.toUpperCase()] || 'bg-gray-100 text-gray-800';
+    return `<span class="${cls} px-3 py-1 rounded-full text-sm font-semibold">${status || '-'}</span>`;
+}
+
+function getStatusAmbilBadge(status) {
+    const badges = {
+        'BARU': 'bg-blue-100 text-blue-800',
+        'MENGULANG': 'bg-orange-100 text-orange-800'
+    };
+    const cls = badges[status?.toUpperCase()] || 'bg-gray-100 text-gray-800';
+    return `<span class="${cls} px-2 py-1 rounded text-xs font-semibold">${status || '-'}</span>`;
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    try {
+        return new Date(dateString).toLocaleDateString('id-ID', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+    } catch { return '-'; }
+}
+
+function formatDateTime(dateString) {
+    if (!dateString) return '-';
+    try {
+        return new Date(dateString).toLocaleDateString('id-ID', {
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+    } catch { return '-'; }
+}
+
+function showTab(tabName) {
+    const tabs = ['info', 'matakuliah'];
+    tabs.forEach(tab => {
+        const btn = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+        const content = document.getElementById(`content${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+        
+        if (btn && content) {
+            if (tab === tabName) {
+                btn.classList.add('border-b-2', 'border-blue-500', 'text-blue-600', 'font-semibold');
+                content.classList.remove('hidden');
+            } else {
+                btn.classList.remove('border-b-2', 'border-blue-500', 'text-blue-600', 'font-semibold');
+                content.classList.add('hidden');
+            }
+        }
+    });
+}
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadKrsDetail();
+});
