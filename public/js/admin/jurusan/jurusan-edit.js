@@ -37,7 +37,7 @@ async function loadFakultasOptions() {
     }
 }
 
-async function openEditModal(id, kode, nama, fakultasId, jenjang, akreditasi, kaprodi){
+async function openEditModal(id, kode, nama, fakultasId, jenjang, akreditasi, kaprodi) {
     await loadFakultasOptions();
     document.getElementById('editId').value = id;
     document.getElementById('editKode').value = kode;
@@ -49,11 +49,11 @@ async function openEditModal(id, kode, nama, fakultasId, jenjang, akreditasi, ka
     document.getElementById('modalEdit').classList.remove('hidden');
 }
 
-function closeEditModal(){
+function closeEditModal() {
     document.getElementById('modalEdit').classList.add('hidden');
 }
 
-async function updateJurusan(){
+async function updateJurusan() {
     const id = document.getElementById('editId').value;
     const kode = document.getElementById('editKode').value;
     const nama = document.getElementById('editNama').value;
@@ -61,7 +61,7 @@ async function updateJurusan(){
     const jenjang = document.getElementById('editJenjang').value;
     const akreditasi = document.getElementById('editAkreditasi').value;
     const kaprodi = document.getElementById('editKaprodi').value;
-    
+
     // Validasi
     if (!kode) return alert("Kode Jurusan Tidak Boleh Kosong");
     if (!nama) return alert("Nama Jurusan Tidak Boleh Kosong");
@@ -69,7 +69,7 @@ async function updateJurusan(){
     if (!jenjang) return alert("Jenjang Tidak Boleh Kosong");
     if (!akreditasi) return alert("Akreditasi Tidak Boleh Kosong");
     if (!kaprodi) return alert("Kaprodi Tidak Boleh Kosong");
-    
+
     try {
         const mutation = `
         mutation {
@@ -93,21 +93,21 @@ async function updateJurusan(){
                 kaprodi
             }
         }`;
-        
+
         const response = await fetch('/graphql', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({query: mutation})
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: mutation })
         });
-        
+
         const result = await response.json();
-        
+
         if (result.errors) {
             console.error('GraphQL Errors:', result.errors);
             alert('Gagal mengupdate data: ' + result.errors[0].message);
             return;
         }
-        
+
         alert('Data jurusan berhasil diupdate!');
         closeEditModal();
         loadJurusanData();
