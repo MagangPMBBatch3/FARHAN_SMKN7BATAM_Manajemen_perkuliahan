@@ -16,6 +16,7 @@ async function loadMahasiswaOptions() {
 
         const result = await response.json();
         const mahasiswaList = result.data.allMahasiswa || [];
+        /* console.log(mahasiswaList); */
 
         const selectAdd = document.getElementById('addMahasiswaId');
         selectAdd.innerHTML = '<option value="">Pilih Mahasiswa</option>';
@@ -33,6 +34,79 @@ async function loadMahasiswaOptions() {
         console.error('Error loading mahasiswa:', error);
     }
 }
+
+// async function onMahasiswaSelect(){
+//     const mahasiswaId = document.getElementById("addMahasiswaId").value;
+
+//     if (!mahasiswaId){
+//         addTotalSks.disabled = true;
+//         addTotalSks.innerHTML = '<strong value=""> Silahkan Pilih Mahasiswa Terlebih Dahulu<strong>';
+//         return;
+//     }
+//     addTotalSks.disabled = true;
+//     addTotalSks.innerHTML = '<strong value=""> Loading Total SKS<strong>';
+// }
+// async function getSksLimitList() {
+//     const query = `query {
+//         allSksLimit {
+//             id
+//             min_ipk
+//             max_ipk
+//             max_sks
+//             keterangan
+//         }
+//     }`;
+
+//     try {
+//         const response = await fetch(API_URL, {
+//             method: 'POST',
+//             headers: { 'Content-Type': 'application/json' },
+//             body: JSON.stringify({ query })
+//         });
+
+//         const result = await response.json();
+//         return result.data.allSksLimit || [];
+//     } catch (error) {
+//         console.error('Error getting SKS limit:', error);
+//         return [];
+//     }
+// }
+
+// /**
+//  * Menghitung maksimal SKS berdasarkan IPK mahasiswa
+//  */
+// async function getMaxSks(ipk) {
+//     try {
+//         const sksLimitList = await getSksLimitList();
+
+//         // Mahasiswa baru (IPK = 0 atau null)
+//         if (!ipk || ipk === 0) {
+//             const mahasiswaBaru = sksLimitList.find(item =>
+//                 item.keterangan?.toLowerCase().includes('baru')
+//             );
+//             return mahasiswaBaru?.max_sks || 12;
+//         }
+
+//         // Cari batas SKS berdasarkan range IPK
+//         const matchedLimit = sksLimitList.find(item => {
+//             const minIpk = parseFloat(item.min_ipk) || 0;
+//             const maxIpk = parseFloat(item.max_ipk) || 4.0;
+//             return ipk >= minIpk && ipk <= maxIpk;
+//         });
+
+//         return matchedLimit?.max_sks || 16;
+
+//     } catch (error) {
+//         console.error('Error in getMaxSks:', error);
+//         // Fallback hardcoded
+//         if (!ipk || ipk === 0) return 12;
+//         if (ipk >= 3.50) return 24;
+//         if (ipk >= 3.00) return 22;
+//         if (ipk >= 2.50) return 20;
+//         if (ipk >= 2.00) return 18;
+//         return 16;
+//     }
+// }
 async function loadSemesterOptions() {
     const query = `
     query {
@@ -123,7 +197,7 @@ function closeAddModal() {
     document.getElementById('addSemesterId').value = '';
     document.getElementById('addPengisian').value = '';
     document.getElementById('addStatus').value = '';
-    document.getElementById('addTotalSks').value = '';
+    /* document.getElementById('addTotalSks').value = ''; */
     document.getElementById('addCatatan').value = '';
     document.getElementById('addDosenId').value = '';
 }
@@ -134,7 +208,7 @@ async function createKrs() {
     const semester = document.getElementById('addSemesterId').value;
     const pengisian = document.getElementById('addPengisian').value;
     const status = document.getElementById('addStatus').value;
-    const total_sks = document.getElementById('addTotalSks').value;
+    const total_sks = 0;
     const catatan = document.getElementById('addCatatan').value;
     const dosen = document.getElementById('addDosenId').value;
 
@@ -143,7 +217,6 @@ async function createKrs() {
     if (!semester) return alert("semester harus diisi!");
     if (!pengisian) return alert("sks semester harus dipilih!");
     if (!status) return alert("ip semester dipilih!");
-    if (!total_sks) return alert("ipk harus dipilih!");
     if (!dosen) return alert("ipk harus dipilih!");
     const mutation = `
     mutation {
