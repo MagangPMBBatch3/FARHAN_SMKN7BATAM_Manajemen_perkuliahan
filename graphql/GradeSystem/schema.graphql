@@ -6,7 +6,7 @@ type GradeSystem {
     grade_point: Float!
     status_kelulusan: StatusKelulusan!
     keterangan: String
-    Status: String
+    status: String
     created_at: DateTime
     updated_at: DateTime
     deleted_at: DateTime
@@ -27,7 +27,7 @@ input CreateGradeSystemInput {
     grade_point: Float!
     status_kelulusan: StatusKelulusan!
     keterangan: String
-    Status: String
+    status: String
 }
 
 input UpdateGradeSystemInput {
@@ -38,7 +38,7 @@ input UpdateGradeSystemInput {
     grade_point: Float
     status_kelulusan: StatusKelulusan
     keterangan: String
-    Status: String
+    status: String
 }
 
 type GradeSystemPaginator {
