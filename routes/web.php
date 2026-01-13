@@ -31,9 +31,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/mata_kuliah', [AdminController::class, 'mata_kuliah'])->name('admin.mata_kuliah');
     Route::get('/admin/khs', [AdminController::class, 'khs']);
     Route::get('/admin/jadwal', [AdminController::class, 'jadwal'])->name('admin.jadwal');
+    Route::get('/admin/sks-limit', [AdminController::class, 'sksLimit'])->name('admin.sksLimit');
     Route::get('/admin/dosen_detail/{id}', [AdminController::class, 'dosen_detail']);
     Route::get('/admin/mahasiswa_detail/{id}', [AdminController::class, 'mahasiswa_detail']);
     Route::get('/admin/krs-detail/{id}', [AdminController::class, 'krs_detail'])->name('admin.krs_detail');
+    Route::get('/admin/grade-system', [AdminController::class, 'gradeSystem'])->name('admin.grade-system');
+    Route::get('/admin/bobot-nilai', [AdminController::class, 'bobotNilai'])->name('admin.bobot-nilai');
+    Route::get('/admin/pertemuan', [AdminController::class, 'pertemuan'])->name('admin.pertemuan');
+    Route::get('/admin/kehadiran', [AdminController::class, 'kehadiran'])->name('admin.kehadiran');
+    Route::get('/admin/rekap-kehadiran', [AdminController::class, 'rekapKehadiran'])->name('admin.rekapKehadiran');
 });
 
 Route::middleware(['auth', 'role:dosen'])->group(function () {

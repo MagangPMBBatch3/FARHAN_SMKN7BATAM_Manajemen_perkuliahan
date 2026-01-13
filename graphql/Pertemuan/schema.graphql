@@ -3,8 +3,8 @@ type Pertemuan {
     kelas_id: Int!
     pertemuan_ke: Int!
     tanggal: Date!
-    waktu_mulai: String!
-    waktu_selesai: String!
+    waktu_mulai: Time!
+    waktu_selesai: Time!
     materi: String
     metode: MetodePertemuan!
     ruangan_id: Int
@@ -53,8 +53,8 @@ input CreatePertemuanInput {
     kelas_id: Int!
     pertemuan_ke: Int!
     tanggal: Date!
-    waktu_mulai: String!
-    waktu_selesai: String!
+    waktu_mulai: Time!
+    waktu_selesai: Time!
     materi: String
     metode: MetodePertemuan!
     ruangan_id: Int
@@ -69,8 +69,8 @@ input UpdatePertemuanInput {
     kelas_id: Int
     pertemuan_ke: Int
     tanggal: Date
-    waktu_mulai: String
-    waktu_selesai: String
+    waktu_mulai: Time
+    waktu_selesai: Time
     materi: String
     metode: MetodePertemuan
     ruangan_id: Int

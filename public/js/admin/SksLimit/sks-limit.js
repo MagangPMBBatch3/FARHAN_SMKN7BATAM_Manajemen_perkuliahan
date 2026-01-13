@@ -2,23 +2,38 @@ const API_URL = "/graphql";
 let currentPageAktif = 1;
 let currentPageArsip = 1;
 
-async function loadJadwalData(pageAktif = 1, pageArsip = 1) {
+/**
+ * Load data SKS Limit dengan pagination
+ */
+async function loadSksLimitData(pageAktif = 1, pageArsip = 1) {
     currentPageAktif = pageAktif;
     currentPageArsip = pageArsip;
     
-    // Ambil perPage dari select yang sesuai dengan tab aktif
     const perPageAktif = parseInt(document.getElementById("perPage")?.value || 10);
     const perPageArsip = parseInt(document.getElementById("perPageArsip")?.value || 10);
     const searchValue = document.getElementById("search")?.value.trim() || "";
 
-    // --- Query Data Aktif ---
+    // Query Data Aktif
     const queryAktif = `
     query($first: Int, $page: Int, $search: String) {
-        allJadwalKuliahPaginate(first: $first, page: $page, search: $search) {
-            data { id kelas{id nama_kelas} ruangan{id nama_ruangan} hari jam_mulai jam_selesai keterangan }
-            paginatorInfo { currentPage lastPage total hasMorePages perPage }
+        allSksLimitPaginate(first: $first, page: $page, search: $search) {
+            data { 
+                id 
+                min_ipk 
+                max_ipk 
+                max_sks 
+                keterangan 
+            }
+            paginatorInfo { 
+                currentPage 
+                lastPage 
+                total 
+                hasMorePages 
+                perPage 
+            }
         }
     }`;
+
     const variablesAktif = { first: perPageAktif, page: pageAktif, search: searchValue };
 
     const resAktif = await fetch(API_URL, {
@@ -26,17 +41,31 @@ async function loadJadwalData(pageAktif = 1, pageArsip = 1) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: queryAktif, variables: variablesAktif })
     });
-    const dataAktif = await resAktif.json();
-    renderJadwalTable(dataAktif?.data?.allJadwalKuliahPaginate?.data || [], 'dataJadwal', true);
 
-    // --- Query Data Arsip ---
+    const dataAktif = await resAktif.json();
+    renderSksLimitTable(dataAktif?.data?.allSksLimitPaginate?.data || [], 'dataSksLimit', true);
+
+    // Query Data Arsip
     const queryArsip = `
     query($first: Int, $page: Int, $search: String) {
-        allJadwalKuliahArsip(first: $first, page: $page, search: $search) {
-            data { id kelas{id nama_kelas} ruangan{id nama_ruangan} hari jam_mulai jam_selesai keterangan }
-            paginatorInfo { currentPage lastPage total hasMorePages perPage }
+        allSksLimitArsip(first: $first, page: $page, search: $search) {
+            data { 
+                id 
+                min_ipk 
+                max_ipk 
+                max_sks 
+                keterangan 
+            }
+            paginatorInfo { 
+                currentPage 
+                lastPage 
+                total 
+                hasMorePages 
+                perPage 
+            }
         }
     }`;
+
     const variablesArsip = { first: perPageArsip, page: pageArsip, search: searchValue };
 
     const resArsip = await fetch(API_URL, {
@@ -44,11 +73,12 @@ async function loadJadwalData(pageAktif = 1, pageArsip = 1) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: queryArsip, variables: variablesArsip })
     });
-    const dataArsip = await resArsip.json();
-    renderJadwalTable(dataArsip?.data?.allJadwalKuliahArsip?.data || [], 'dataJadwalArsip', false);
 
-    // --- Update info pagination untuk Data Aktif ---
-    const pageInfoAktif = dataAktif?.data?.allJadwalKuliahPaginate?.paginatorInfo;
+    const dataArsip = await resArsip.json();
+    renderSksLimitTable(dataArsip?.data?.allSksLimitArsip?.data || [], 'dataSksLimitArsip', false);
+
+    // Update pagination info
+    const pageInfoAktif = dataAktif?.data?.allSksLimitPaginate?.paginatorInfo;
     if (pageInfoAktif) {
         document.getElementById("pageInfoAktif").innerText =
             `Halaman ${pageInfoAktif.currentPage} dari ${pageInfoAktif.lastPage} (Total: ${pageInfoAktif.total})`;
@@ -56,8 +86,7 @@ async function loadJadwalData(pageAktif = 1, pageArsip = 1) {
         document.getElementById("nextBtnAktif").disabled = !pageInfoAktif.hasMorePages;
     }
 
-    // --- Update info pagination untuk Data Arsip ---
-    const pageInfoArsip = dataArsip?.data?.allJadwalKuliahArsip?.paginatorInfo;
+    const pageInfoArsip = dataArsip?.data?.allSksLimitArsip?.paginatorInfo;
     if (pageInfoArsip) {
         document.getElementById("pageInfoArsip").innerText =
             `Halaman ${pageInfoArsip.currentPage} dari ${pageInfoArsip.lastPage} (Total: ${pageInfoArsip.total})`;
@@ -66,32 +95,35 @@ async function loadJadwalData(pageAktif = 1, pageArsip = 1) {
     }
 }
 
-function renderJadwalTable(Jadwal, tableId, isActive) {
+/**
+ * Render tabel SKS Limit
+ */
+function renderSksLimitTable(data, tableId, isActive) {
     const tbody = document.getElementById(tableId);
     tbody.innerHTML = '';
 
-    if (!Jadwal.length) {
+    if (!data.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center text-gray-500 p-3">Tidak ada data</td>
+                <td colspan="5" class="text-center text-gray-500 p-3">Tidak ada data</td>
             </tr>
         `;
         return;
     }
-    console.log(Jadwal);
-    Jadwal.forEach(item => {
+
+    data.forEach(item => {
         let actions = '';
         if (isActive) {
             actions = `
                 <div class="flex items-center justify-end gap-2">
-                    <button onclick="openEditModal(${item.id}, '${item.kelas.id}', '${item.ruangan.id}', '${item.hari}', '${item.jam_mulai}', '${item.jam_selesai}', '${item.keterangan}')" 
+                    <button onclick="openEditModal(${item.id}, ${item.min_ipk}, ${item.max_ipk}, ${item.max_sks}, '${item.keterangan || ''}')" 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
                             title="Edit">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
                     </button>
-                    <button onclick="hapusJadwal(${item.id})" 
+                    <button onclick="hapusSksLimit(${item.id})" 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                             title="Arsipkan">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,14 +135,14 @@ function renderJadwalTable(Jadwal, tableId, isActive) {
         } else {
             actions = `
                 <div class="flex items-center justify-end gap-2">
-                    <button onclick="restoreJadwal(${item.id})" 
+                    <button onclick="restoreSksLimit(${item.id})" 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                             title="Restore">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>
                     </button>
-                    <button onclick="forceDeleteJadwal(${item.id})" 
+                    <button onclick="forceDeleteSksLimit(${item.id})" 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 transition-colors"
                             title="Hapus Permanen">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,82 +155,70 @@ function renderJadwalTable(Jadwal, tableId, isActive) {
 
         tbody.innerHTML += `
             <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.kelas?.nama_kelas || "-"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.ruangan?.nama_ruangan || "-"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.hari || "-"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.jam_mulai || "-"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.jam_selesai || "-"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.keterangan || "Tidak Ada Keterangan"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.min_ipk || '0.00'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.max_ipk || '4.00'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.max_sks}</td>
+                <td class="px-6 py-4 text-sm text-gray-900">${item.keterangan || '-'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">${actions}</td>
             </tr>
         `;
     });
 }
 
-// --- Mutations ---
-async function hapusJadwal(id) {
+// CRUD Operations
+async function hapusSksLimit(id) {
     if (!confirm('Pindahkan ke arsip?')) return;
-    const mutation = `
-    mutation {
-        deleteJadwal(id: ${id}) { id }
-    }`;
+    const mutation = `mutation { deleteSksLimit(id: ${id}) { id } }`;
     await fetch(API_URL, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify({ query: mutation }) 
     });
-    loadJadwalData(currentPageAktif, currentPageArsip);
+    loadSksLimitData(currentPageAktif, currentPageArsip);
 }
 
-async function restoreJadwal(id) {
+async function restoreSksLimit(id) {
     if (!confirm('Kembalikan dari arsip?')) return;
-    const mutation = `
-    mutation {
-        restoreJadwal(id: ${id}) { id }
-    }`;
+    const mutation = `mutation { restoreSksLimit(id: ${id}) { id } }`;
     await fetch(API_URL, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify({ query: mutation }) 
     });
-    loadJadwalData(currentPageAktif, currentPageArsip);
+    loadSksLimitData(currentPageAktif, currentPageArsip);
 }
 
-async function forceDeleteJadwal(id) {
+async function forceDeleteSksLimit(id) {
     if (!confirm('Hapus permanen? Data tidak bisa dikembalikan')) return;
-    const mutation = `
-    mutation {
-        forceDeleteJadwal(id: ${id}) { id }
-    }`;
+    const mutation = `mutation { forceDeleteSksLimit(id: ${id}) { id } }`;
     await fetch(API_URL, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify({ query: mutation }) 
     });
-    loadJadwalData(currentPageAktif, currentPageArsip);
+    loadSksLimitData(currentPageAktif, currentPageArsip);
 }
 
-// --- Search ---
-async function searchJadwal() {
-    loadJadwalData(1, 1);
+// Search
+async function searchSksLimit() {
+    loadSksLimitData(1, 1);
 }
 
-// --- Pagination untuk Data Aktif ---
+// Pagination
 function prevPageAktif() {
-    if (currentPageAktif > 1) loadJadwalData(currentPageAktif - 1, currentPageArsip);
+    if (currentPageAktif > 1) loadSksLimitData(currentPageAktif - 1, currentPageArsip);
 }
 
 function nextPageAktif() {
-    loadJadwalData(currentPageAktif + 1, currentPageArsip);
+    loadSksLimitData(currentPageAktif + 1, currentPageArsip);
 }
 
-// --- Pagination untuk Data Arsip ---
 function prevPageArsip() {
-    if (currentPageArsip > 1) loadJadwalData(currentPageAktif, currentPageArsip - 1);
+    if (currentPageArsip > 1) loadSksLimitData(currentPageAktif, currentPageArsip - 1);
 }
 
 function nextPageArsip() {
-    loadJadwalData(currentPageAktif, currentPageArsip + 1);
+    loadSksLimitData(currentPageAktif, currentPageArsip + 1);
 }
 
-document.addEventListener("DOMContentLoaded", () => loadJadwalData());
+document.addEventListener("DOMContentLoaded", () => loadSksLimitData());

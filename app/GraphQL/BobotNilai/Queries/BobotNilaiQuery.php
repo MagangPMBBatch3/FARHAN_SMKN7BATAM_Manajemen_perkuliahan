@@ -1,25 +1,70 @@
 <?php
-namespace App\GraphQL\BobotNilai\Mutations;
+namespace App\GraphQL\BobotNilai\Queries;
 
 use App\Models\BobotNilai\BobotNilai;
 
-class BobotNilaiMutation
+class BobotNilaiQuery
 {
-    public function restore($_, array $args): ?BobotNilai
+    public function all($_, array $args)
     {
-        return BobotNilai::withTrashed()->find($args['id'])?->restore()
-            ? BobotNilai::find($args['id'])
-            : null;
+        $query = BobotNilai::query()->with(['mataKuliah', 'semester']);
+        
+        if (!empty($args['search'])) {
+            $query->whereHas('mataKuliah', function($q) use ($args) {
+                $q->where('nama_mk', 'like', '%' . $args['search'] . '%')
+                  ->orWhere('kode_mk', 'like', '%' . $args['search'] . '%');
+            });
+        }
+        
+        if (!empty($args['mata_kuliah_id'])) {
+            $query->where('mata_kuliah_id', $args['mata_kuliah_id']);
+        }
+        
+        if (!empty($args['semester_id'])) {
+            $query->where('semester_id', $args['semester_id']);
+        }
+        
+        $perPage = $args['first'] ?? 10;
+        $page = $args['page'] ?? 1;
+        
+        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
+        
+        return [
+            'data' => $paginator->items(),
+            'paginatorInfo' => [
+                'hasMorePages' => $paginator->hasMorePages(),
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'perPage' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+        ];
     }
     
-    public function forceDelete($_, array $args): ?BobotNilai
+    public function allArsip($_, array $args)
     {
-        $bobotNilai = BobotNilai::withTrashed()->find($args['id']);
-        if ($bobotNilai) {
-            $bobotNilai->forceDelete();
-            return $bobotNilai;
+        $query = BobotNilai::onlyTrashed()->with(['mataKuliah', 'semester']);
+        
+        if (!empty($args['search'])) {
+            $query->whereHas('mataKuliah', function($q) use ($args) {
+                $q->where('nama_mk', 'like', '%' . $args['search'] . '%');
+            });
         }
-        return null;
+        
+        $perPage = $args['first'] ?? 10;
+        $page = $args['page'] ?? 1;
+        
+        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
+        
+        return [
+            'data' => $paginator->items(),
+            'paginatorInfo' => [
+                'hasMorePages' => $paginator->hasMorePages(),
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'perPage' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+        ];
     }
 }
-   

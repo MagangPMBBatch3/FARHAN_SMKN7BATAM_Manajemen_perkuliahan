@@ -286,4 +286,23 @@ class AdminController extends Controller
     {
         return view('admin.krs_detail.index');
     }
+    public function sksLimit()
+    {
+        return view('admin.sksLimit.index');
+    }
+    public function gradeSystem(){
+        return view('admin.grade-system.index');
+    }
+    public function bobotNilai(){
+        return view('admin.bobot-nilai.index');
+    }
+    public function pertemuan(){
+        return view('admin.pertemuan.index');
+    }
+    public function kehadiran(){
+        return view('admin.kehadiran.index');
+    }
+    public function rekapKehadiran(){
+        return view('admin.rekap-kehadiran.index');
+    }
 }

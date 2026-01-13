@@ -19,7 +19,7 @@ enum StatusKelulusan {
     Lulus @enum(value: "Lulus")
     TidakLulus @enum(value: "Tidak Lulus")
 }
-
+    
 input CreateGradeSystemInput {
     grade: String!
     min_score: Float!

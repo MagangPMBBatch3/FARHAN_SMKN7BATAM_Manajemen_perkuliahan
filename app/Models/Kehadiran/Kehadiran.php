@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Mahasiswa\Mahasiswa;
 use App\Models\Kelas\Kelas;
-use App\Models\KRS\KrsDetail;
+use App\Models\KrsDetail\KrsDetail;
 use App\Models\User\User;
 use App\Models\Pertemuan\Pertemuan;
 
