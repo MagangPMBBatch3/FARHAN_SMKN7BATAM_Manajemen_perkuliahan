@@ -110,7 +110,7 @@
         }
 
         .dropdown-content.open {
-            max-height: 600px;
+            max-height: 800px;
         }
 
         .dropdown-arrow {
@@ -163,16 +163,6 @@
 
         .submenu-item.active {
             background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Badge */
-        .badge {
-            font-size: 9px;
-            padding: 2px 6px;
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            border-radius: 10px;
-            font-weight: 600;
-            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
         }
 
         /* User Profile Card */
@@ -237,19 +227,6 @@
             transform: translateY(0);
         }
 
-        /* Gradient Text */
-        .gradient-text {
-            background: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(16px);
-        }
-
         /* Logo Animation */
         .logo-icon {
             animation: pulse 2s ease-in-out infinite;
@@ -260,12 +237,6 @@
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
             margin: 8px 0;
-        }
-
-        /* Header Style */
-        .header-card {
-            border-bottom: 2px solid transparent;
-            border-image: linear-gradient(90deg, #10b981, #0ea5e9) 1;
         }
     </style>
 </head>
@@ -284,6 +255,7 @@
                             <i class="fas fa-graduation-cap text-lg"></i>
                         </div>
                         <div>
+                            <h1 class="text-sm font-bold">SIAKAD</h1>
                             <p class="text-[9px] text-white/80 font-medium">Manajemen Akademik</p>
                         </div>
                     </div>
@@ -326,21 +298,6 @@
                             <a href="{{ route('admin.mahasiswa') }}" class="submenu-item {{ request()->routeIs('admin.mahasiswa') || request()->is('admin/mahasiswa_detail/*') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
                                 <span class="font-medium">Data Mahasiswa</span>
                             </a>
-                        </div>
-                    </div>
-
-                    {{-- Akademik Dropdown --}}
-                    <div>
-                        <button onclick="toggleDropdown('akademik')" class="menu-item dropdown-trigger w-full flex items-center justify-between px-3 py-2.5 rounded-lg group">
-                            <div class="flex items-center">
-                                <div class="icon-box mr-2.5">
-                                    <i class="fas fa-university text-xs"></i>
-                                </div>
-                                <span class="font-semibold text-xs tracking-wide">Akademik</span>
-                            </div>
-                            <i class="fas fa-chevron-down dropdown-arrow" id="arrow-akademik"></i>
-                        </button>
-                        <div class="dropdown-content mt-1" id="dropdown-akademik">
                             <a href="{{ route('admin.fakultas') }}" class="submenu-item {{ request()->routeIs('admin.fakultas') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
                                 <span class="font-medium">Fakultas</span>
                             </a>
@@ -350,11 +307,11 @@
                             <a href="{{ route('admin.mata_kuliah') }}" class="submenu-item {{ request()->routeIs('admin.mata_kuliah') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
                                 <span class="font-medium">Mata Kuliah</span>
                             </a>
-                            <a href="/admin/kelas" class="submenu-item {{ request()->is('admin/kelas') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
-                                <span class="font-medium">Kelas</span>
-                            </a>
                             <a href="/admin/ruangan" class="submenu-item {{ request()->is('admin/ruangan') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
                                 <span class="font-medium">Ruangan</span>
+                            </a>
+                            <a href="/admin/kelas" class="submenu-item {{ request()->is('admin/kelas') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
+                                <span class="font-medium">Kelas</span>
                             </a>
                             <a href="/admin/semester" class="submenu-item {{ request()->is('admin/semester') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
                                 <span class="font-medium">Semester</span>
@@ -375,13 +332,64 @@
                         </button>
                         <div class="dropdown-content mt-1" id="dropdown-perkuliahan">
                             <a href="{{ route('admin.jadwal') }}" class="submenu-item {{ request()->routeIs('admin.jadwal') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
-                                <span class="font-medium">Jadwal Perkuliahan</span>
+                                <span class="font-medium">Jadwal Kuliah</span>
+                            </a>
+                            <a href="/admin/pertemuan" class="submenu-item {{ request()->is('admin/pertemuan') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
+                                <span class="font-medium">Pertemuan</span>
                             </a>
                             <a href="/admin/krs" class="submenu-item {{ request()->is('admin/krs*') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
                                 <span class="font-medium">Kartu Rencana Studi</span>
                             </a>
+                            <a href="/admin/sks-limit" class="submenu-item {{ request()->is('admin/sks-limit') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
+                                <span class="font-medium">Batas SKS</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Kehadiran Dropdown --}}
+                    <div>
+                        <button onclick="toggleDropdown('kehadiran')" class="menu-item dropdown-trigger w-full flex items-center justify-between px-3 py-2.5 rounded-lg group">
+                            <div class="flex items-center">
+                                <div class="icon-box mr-2.5">
+                                    <i class="fas fa-clipboard-check text-xs"></i>
+                                </div>
+                                <span class="font-semibold text-xs tracking-wide">Kehadiran</span>
+                            </div>
+                            <i class="fas fa-chevron-down dropdown-arrow" id="arrow-kehadiran"></i>
+                        </button>
+                        <div class="dropdown-content mt-1" id="dropdown-kehadiran">
+                            <a href="/admin/kehadiran" class="submenu-item {{ request()->is('admin/kehadiran') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
+                                <span class="font-medium">Data Kehadiran</span>
+                            </a>
+                            <a href="/admin/rekap-kehadiran" class="submenu-item {{ request()->is('admin/rekap-kehadiran') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
+                                <span class="font-medium">Rekap Kehadiran</span>
+                            </a>
+                            <a href="/admin/pengaturan-kehadiran" class="submenu-item {{ request()->is('admin/pengaturan-kehadiran') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
+                                <span class="font-medium">Pengaturan Kehadiran</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Penilaian Dropdown --}}
+                    <div>
+                        <button onclick="toggleDropdown('penilaian')" class="menu-item dropdown-trigger w-full flex items-center justify-between px-3 py-2.5 rounded-lg group">
+                            <div class="flex items-center">
+                                <div class="icon-box mr-2.5">
+                                    <i class="fas fa-star text-xs"></i>
+                                </div>
+                                <span class="font-semibold text-xs tracking-wide">Penilaian</span>
+                            </div>
+                            <i class="fas fa-chevron-down dropdown-arrow" id="arrow-penilaian"></i>
+                        </button>
+                        <div class="dropdown-content mt-1" id="dropdown-penilaian">
                             <a href="{{ route('admin.nilai') }}" class="submenu-item {{ request()->routeIs('admin.nilai') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
                                 <span class="font-medium">Input Nilai</span>
+                            </a>
+                            <a href="/admin/bobot-nilai" class="submenu-item {{ request()->is('admin/bobot-nilai') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
+                                <span class="font-medium">Bobot Nilai</span>
+                            </a>
+                            <a href="/admin/grade-system" class="submenu-item {{ request()->is('admin/grade-system') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
+                                <span class="font-medium">Sistem Grade</span>
                             </a>
                             <a href="/admin/khs" class="submenu-item {{ request()->is('admin/khs') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
                                 <span class="font-medium">Kartu Hasil Studi</span>

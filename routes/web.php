@@ -40,6 +40,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/pertemuan', [AdminController::class, 'pertemuan'])->name('admin.pertemuan');
     Route::get('/admin/kehadiran', [AdminController::class, 'kehadiran'])->name('admin.kehadiran');
     Route::get('/admin/rekap-kehadiran', [AdminController::class, 'rekapKehadiran'])->name('admin.rekapKehadiran');
+    Route::get('/admin/pengaturan-kehadiran', [AdminController::class, 'pengaturanKehadiran'])->name('admin.pengaturanKehadiran');
 });
 
 Route::middleware(['auth', 'role:dosen'])->group(function () {

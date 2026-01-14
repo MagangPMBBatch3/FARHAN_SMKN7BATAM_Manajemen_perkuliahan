@@ -145,22 +145,22 @@
         </div>
     </div>
 </div>
-
+<script src="{{ asset('js/admin/kehadiran/kehadiran-edit.js') }}"></script>
 <script>
-// // Helper function to set radio button value in edit modal
-// function setEditStatusKehadiran(value) {
-//     const radios = document.getElementsByName('status_kehadiran_edit');
-//     radios.forEach(radio => {
-//         if (radio.value === value) {
-//             radio.checked = true;
-//         }
-//     });
-// }
+// Helper function to set radio button value in edit modal
+function setEditStatusKehadiran(value) {
+    const radios = document.getElementsByName('status_kehadiran_edit');
+    radios.forEach(radio => {
+        if (radio.value === value) {
+            radio.checked = true;
+        }
+    });
+}
 
-// // Update openEditModal di kehadiran-edit.js untuk set radio button
-// const originalOpenEditModal = openEditModal;
-// openEditModal = function(item) {
-//     originalOpenEditModal(item);
-//     setEditStatusKehadiran(item.status_kehadiran);
-// };
+// Update openEditModal di kehadiran-edit.js untuk set radio button
+const originalOpenEditModal = openEditModal;
+openEditModal = function(item) {
+    originalOpenEditModal(item);
+    setEditStatusKehadiran(item.status_kehadiran);
+};
 </script>

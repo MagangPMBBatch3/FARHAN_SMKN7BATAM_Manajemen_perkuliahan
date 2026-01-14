@@ -1,17 +1,21 @@
+// Open Add Modal
 function openAddModal() {
     document.getElementById('modalAdd').classList.remove('hidden');
 }
 
+// Close Add Modal
 function closeAddModal() {
     document.getElementById('modalAdd').classList.add('hidden');
     document.getElementById('formAddKehadiran').reset();
+    document.getElementById('addKrsDetail').innerHTML = '<option value="">Pilih KRS Detail</option>';
 }
 
+// Create Kehadiran
 async function createKehadiran() {
     const pertemuanId = parseInt(document.getElementById('addPertemuan').value);
     const mahasiswaId = parseInt(document.getElementById('addMahasiswa').value);
     const krsDetailId = parseInt(document.getElementById('addKrsDetail').value);
-    const statusKehadiran = document.getElementById('addStatusKehadiran').value;
+    const statusKehadiran = document.querySelector('input[name="status_kehadiran"]:checked')?.value;
     const keterangan = document.getElementById('addKeterangan').value.trim();
 
     if (!pertemuanId) return alert("Pertemuan harus dipilih!");
@@ -20,23 +24,36 @@ async function createKehadiran() {
     if (!statusKehadiran) return alert("Status kehadiran harus dipilih!");
 
     const mutation = `
-    mutation {
-        createKehadiran(input: {
-            pertemuan_id: ${pertemuanId},
-            mahasiswa_id: ${mahasiswaId},
-            krs_detail_id: ${krsDetailId},
-            status_kehadiran: ${statusKehadiran},
-            keterangan: "${keterangan.replace(/"/g, '\\"')}"
-        }) {
-            id pertemuan_id mahasiswa_id status_kehadiran
+mutation CreateKehadiran($input: CreateKehadiranInput!) {
+    createKehadiran(input: $input) {
+        id
+        pertemuan_id
+        mahasiswa_id
+        krs_detail_id
+        status_kehadiran
+        keterangan
+    }
+}`;
+
+ 
+    const variables = {
+        input: {
+            pertemuan_id: pertemuanId,
+            mahasiswa_id: mahasiswaId,
+            krs_detail_id: krsDetailId,
+            status_kehadiran: statusKehadiran,
+            keterangan: keterangan || null
         }
-    }`;
+    };
 
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: mutation })
+            body: JSON.stringify({ 
+                query: mutation,
+                variables: variables
+            })
         });
 
         const result = await response.json();
@@ -49,14 +66,14 @@ async function createKehadiran() {
 
         alert('Data berhasil disimpan!');
         closeAddModal();
-        loadKehadiranData();
+        loadKehadiranData(currentPageAktif, currentPageArsip);
     } catch (error) {
         console.error('Error:', error);
         alert('Terjadi kesalahan saat menyimpan data');
     }
 }
 
-// Load KRS Detail berdasarkan mahasiswa yang dipilih
+// Load KRS Detail by Mahasiswa (for Add Modal)
 async function loadKrsDetailByMahasiswa(mahasiswaId) {
     if (!mahasiswaId) {
         document.getElementById('addKrsDetail').innerHTML = '<option value="">Pilih KRS Detail</option>';
@@ -64,11 +81,16 @@ async function loadKrsDetailByMahasiswa(mahasiswaId) {
     }
 
     const query = `
-    query {
-        krsDetailByMahasiswa(mahasiswa_id: ${mahasiswaId}) {
+    query KrsDetailByMahasiswa($mahasiswa_id: Int!) {
+        krsDetailByMahasiswa(mahasiswa_id: $mahasiswa_id) {
             id
-            kelas { kode_kelas nama_kelas }
-            mataKuliah { nama_mk }
+            kelas {
+                kode_kelas
+                nama_kelas
+                mataKuliah {
+                    nama_mk
+                }
+            }
         }
     }`;
 
@@ -76,7 +98,10 @@ async function loadKrsDetailByMahasiswa(mahasiswaId) {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query })
+            body: JSON.stringify({ 
+                query,
+                variables: { mahasiswa_id: parseInt(mahasiswaId) }
+            })
         });
 
         const result = await response.json();
@@ -85,9 +110,10 @@ async function loadKrsDetailByMahasiswa(mahasiswaId) {
         const select = document.getElementById('addKrsDetail');
         select.innerHTML = '<option value="">Pilih KRS Detail</option>' + 
             krsDetails.map(kd => 
-                `<option value="${kd.id}">${kd.kelas?.kode_kelas} - ${kd.mataKuliah?.nama_mk}</option>`
+                `<option value="${kd.id}">${kd.kelas?.kode_kelas} - ${kd.kelas?.mataKuliah?.nama_mk}</option>`
             ).join('');
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error loading KRS Detail:', error);
+        alert('Gagal memuat data KRS');
     }
 }

@@ -1,46 +1,87 @@
 type Nilai {
     id: ID!
     krs_detail_id: Int!
+    bobot_nilai_id: Int!
+
     tugas: Float
     quiz: Float
     uts: Float
     uas: Float
+    kehadiran: Float
+    praktikum: Float
+
     nilai_akhir: Float
     nilai_huruf: String
     nilai_mutu: Float
+
     status: String!
+
+    tanggal_input: DateTime
+    input_by: Int
+
     created_at: DateTime
     updated_at: DateTime
     deleted_at: DateTime
-    
+
     # Relations
-    krsDetail: KrsDetail! @belongsTo    
+    krsDetail: KrsDetail! @belongsTo
+    bobotNilai: BobotNilai @belongsTo
 }
+# enum NilaiHuruf {
+#     A
+#     B
+#     C
+#     D
+#     E
+# }
+
+# enum String {
+#     Draft
+#     Final
+# }
+
 
 input CreateNilaiInput {
-    krs_detail_id: Int! 
+    krs_detail_id: Int!
+    bobot_nilai_id: Int!
+
     tugas: Float
     quiz: Float
     uts: Float
     uas: Float
+    kehadiran: Float
+    praktikum: Float
+
     nilai_akhir: Float
     nilai_huruf: String
     nilai_mutu: Float
+
     status: String!
+    tanggal_input: DateTime
+    input_by: Int
 }
 
+
 input UpdateNilaiInput {
-    id: Int
     krs_detail_id: Int
+    bobot_nilai_id: Int
+
     tugas: Float
     quiz: Float
     uts: Float
     uas: Float
+    kehadiran: Float
+    praktikum: Float
+
     nilai_akhir: Float
     nilai_huruf: String
     nilai_mutu: Float
+
     status: String
+    tanggal_input: DateTime
+    input_by: Int
 }
+
 
 type NilaiPaginator {
     data: [Nilai]!
@@ -72,6 +113,22 @@ extend type Query{
     nilaiByHuruf(
         nilai_huruf: String! @where(operator: "like", key: "nilai_huruf")
     ): [Nilai]! @all(model: "Nilai\\Nilai")
+
+    # Change Int! to ID! for all ID parameters
+    kelasBySemester(semester_id: ID!): [Kelas]
+        @field(resolver: "App\\GraphQL\\Nilai\\Queries\\NilaiQuery@kelasBySemester")
+    
+    bobotNilaiByMataKuliahSemester(mata_kuliah_id: ID!, semester_id: ID!): BobotNilai
+        @field(resolver: "App\\GraphQL\\Nilai\\Queries\\NilaiQuery@bobotNilaiByMataKuliahSemester")
+    
+    krsDetailByKelas(kelas_id: ID!): [KrsDetail]
+        @field(resolver: "App\\GraphQL\\Nilai\\Queries\\NilaiQuery@krsDetailByKelas")
+    
+    # allGradeSystem: [GradeSystem]
+    #     @field(resolver: "App\\GraphQL\\Nilai\\Queries\\NilaiQuery@allGradeSystem")
+    
+    nilaiByKelas(kelas_id: ID!): [Nilai]
+        @field(resolver: "App\\GraphQL\\Nilai\\Queries\\NilaiQuery@nilaiByKelas")
 }
 
 extend type Mutation {

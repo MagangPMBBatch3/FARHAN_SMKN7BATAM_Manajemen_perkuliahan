@@ -305,4 +305,7 @@ class AdminController extends Controller
     public function rekapKehadiran(){
         return view('admin.rekap-kehadiran.index');
     }
+    public function pengaturanKehadiran(){
+        return view('admin.pengaturan-kehadiran.index');
+    }
 }
