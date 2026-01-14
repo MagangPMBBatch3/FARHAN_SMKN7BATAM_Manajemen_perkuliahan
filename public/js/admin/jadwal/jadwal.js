@@ -78,7 +78,7 @@ function renderJadwalTable(Jadwal, tableId, isActive) {
         `;
         return;
     }
-
+    console.log(Jadwal);
     Jadwal.forEach(item => {
         let actions = '';
         if (isActive) {

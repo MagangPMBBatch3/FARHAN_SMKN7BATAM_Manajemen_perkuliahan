@@ -71,7 +71,7 @@ extend type Mutation {
     @delete(model: "SKsLimit\\SksLimit")
 
     restoreSksLimit(id: ID!): SksLimit
-    @field(resolver: "SKsLimit\\SksLimit")
+    @field(resolver: "SksLimit\\Mutations\\SksLimitMutation@restore")
 
     forceDeleteSksLimit(id: ID!): SksLimit
     @field(resolver: "SksLimit\\Mutations\\SksLimitMutation@forceDelete")

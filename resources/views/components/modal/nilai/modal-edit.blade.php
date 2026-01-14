@@ -1,7 +1,7 @@
-<!-- Modal Edit Nilai -->
+<!-- Modal Edit Nilai - Improved Version -->
 <div id="modalEdit" class="hidden">
     <div class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center overflow-y-auto p-4">
-        <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             <!-- Header -->
             <div class="px-6 py-4 border-b border-gray-200">
                 <div class="flex items-center justify-between">
@@ -21,11 +21,12 @@
                     @method('PUT')
                     <input type="hidden" id="editId" name="id">
                     <input type="hidden" id="editKrsDetailId" name="krs_detail_id">
+                    <input type="hidden" id="editBobotNilaiId" name="bobot_nilai_id">
                     
                     <div class="space-y-5">
                         <!-- Info Mahasiswa & Mata Kuliah (Read-only) -->
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                            <div class="space-y-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                                         Mahasiswa
@@ -38,53 +39,112 @@
                                     </label>
                                     <p id="editMataKuliahDisplay" class="text-sm font-semibold text-gray-900">-</p>
                                 </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                                        Kelas
+                                    </label>
+                                    <p id="editKelasDisplay" class="text-sm font-semibold text-gray-900">-</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                                        Semester
+                                    </label>
+                                    <p id="editSemesterDisplay" class="text-sm font-semibold text-gray-900">-</p>
+                                </div>
                             </div>
-                            <div class="mt-3 pt-3 border-t border-gray-300">
-                                <p class="text-xs text-gray-600 flex items-start">
-                                    <svg class="w-4 h-4 mr-1.5 text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    <span>Mahasiswa dan mata kuliah tidak dapat diubah. Jika ingin mengubah, silakan hapus dan buat data nilai baru.</span>
-                                </p>
+                        </div>
+
+                        <!-- Info Bobot -->
+                        <div id="editInfoBobot" class="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg p-4">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3">Bobot Penilaian</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Tugas:</span>
+                                    <span id="editBobotTugas" class="font-medium text-indigo-600">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Quiz:</span>
+                                    <span id="editBobotQuiz" class="font-medium text-indigo-600">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">UTS:</span>
+                                    <span id="editBobotUTS" class="font-medium text-indigo-600">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">UAS:</span>
+                                    <span id="editBobotUAS" class="font-medium text-indigo-600">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Kehadiran:</span>
+                                    <span id="editBobotKehadiran" class="font-medium text-indigo-600">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Praktikum:</span>
+                                    <span id="editBobotPraktikum" class="font-medium text-indigo-600">-</span>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Nilai Komponen -->
                         <div>
-                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Nilai Komponen</h3>
-                            <div class="grid grid-cols-2 gap-4">
+                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Input Nilai Komponen (0-100)</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 <div>
                                     <label for="editTugas" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                        Nilai Tugas
+                                        Nilai Tugas <span id="editLabelBobotTugas" class="text-xs text-gray-500"></span>
                                     </label>
                                     <input type="number" id="editTugas" name="tugas" step="0.01" min="0" max="100"
+                                        oninput="hitungNilaiAkhirEdit()"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         placeholder="0-100">
                                 </div>
 
                                 <div>
                                     <label for="editQuiz" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                        Nilai Quiz
+                                        Nilai Quiz <span id="editLabelBobotQuiz" class="text-xs text-gray-500"></span>
                                     </label>
                                     <input type="number" id="editQuiz" name="quiz" step="0.01" min="0" max="100"
+                                        oninput="hitungNilaiAkhirEdit()"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         placeholder="0-100">
                                 </div>
 
                                 <div>
                                     <label for="editUts" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                        Nilai UTS
+                                        Nilai UTS <span id="editLabelBobotUTS" class="text-xs text-gray-500"></span>
                                     </label>
                                     <input type="number" id="editUts" name="uts" step="0.01" min="0" max="100"
+                                        oninput="hitungNilaiAkhirEdit()"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         placeholder="0-100">
                                 </div>
 
                                 <div>
                                     <label for="editUas" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                        Nilai UAS
+                                        Nilai UAS <span id="editLabelBobotUAS" class="text-xs text-gray-500"></span>
                                     </label>
                                     <input type="number" id="editUas" name="uas" step="0.01" min="0" max="100"
+                                        oninput="hitungNilaiAkhirEdit()"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        placeholder="0-100">
+                                </div>
+
+                                <div>
+                                    <label for="editKehadiran" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Nilai Kehadiran <span id="editLabelBobotKehadiran" class="text-xs text-gray-500"></span>
+                                    </label>
+                                    <input type="number" id="editKehadiran" name="kehadiran" step="0.01" min="0" max="100"
+                                        oninput="hitungNilaiAkhirEdit()"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        placeholder="0-100">
+                                </div>
+
+                                <div>
+                                    <label for="editPraktikum" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Nilai Praktikum <span id="editLabelBobotPraktikum" class="text-xs text-gray-500"></span>
+                                    </label>
+                                    <input type="number" id="editPraktikum" name="praktikum" step="0.01" min="0" max="100"
+                                        oninput="hitungNilaiAkhirEdit()"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         placeholder="0-100">
                                 </div>
@@ -92,42 +152,34 @@
                         </div>
 
                         <!-- Nilai Akhir & Konversi -->
-                        <div>
-                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Nilai Akhir & Konversi</h3>
-                            <div class="space-y-4">
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Hasil Perhitungan (Otomatis)</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label for="editNilaiAkhir" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                         Nilai Akhir
                                     </label>
-                                    <input type="number" id="editNilaiAkhir" name="nilai_akhir" step="0.01" min="0" max="100"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                        placeholder="0-100">
+                                    <input type="number" id="editNilaiAkhir" name="nilai_akhir" step="0.01" readonly
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 font-bold text-lg text-center text-blue-600"
+                                        placeholder="0.00">
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label for="editNilaiHuruf" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                            Nilai Huruf
-                                        </label>
-                                        <select id="editNilaiHuruf" name="nilai_huruf"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                                            <option value="">Pilih Nilai Huruf</option>
-                                            <option value="A">A</option>
-                                            <option value="B">B</option>
-                                            <option value="C">C</option>
-                                            <option value="D">D</option>
-                                            <option value="E">E</option>
-                                        </select>
-                                    </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Nilai Huruf
+                                    </label>
+                                    <input type="text" id="editNilaiHuruf" name="nilai_huruf" readonly
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 font-bold text-lg text-center text-green-600"
+                                        placeholder="-">
+                                </div>
 
-                                    <div>
-                                        <label for="editNilaiMutu" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                            Nilai Mutu
-                                        </label>
-                                        <input type="number" id="editNilaiMutu" name="nilai_mutu" step="0.01" min="0" max="4"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                            placeholder="0-4">
-                                    </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Nilai Mutu
+                                    </label>
+                                    <input type="number" id="editNilaiMutu" name="nilai_mutu" step="0.01" readonly
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 font-bold text-lg text-center text-purple-600"
+                                        placeholder="0.00">
                                 </div>
                             </div>
                         </div>
@@ -135,15 +187,11 @@
                         <!-- Status -->
                         <div>
                             <label for="editStatus" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Status Kelulusan <span class="text-red-500">*</span>
+                                Status <span class="text-red-500">*</span>
                             </label>
                             <select id="editStatus" name="status" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 required>
-                                <option value="">Pilih Status</option>
-                                <option value="Lulus">Lulus</option>
-                                <option value="Tidak Lulus">Tidak Lulus</option>
-                                <option value="Pending">Pending</option>
                                 <option value="Draft">Draft</option>
                                 <option value="Final">Final</option>
                             </select>

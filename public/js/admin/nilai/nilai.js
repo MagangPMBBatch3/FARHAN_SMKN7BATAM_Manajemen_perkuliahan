@@ -26,6 +26,16 @@ async function loadNilaiData(pageAktif = 1, pageArsip = 1) {
                             nim
                         }
                     }
+                    kelas {
+                        id
+                        nama_kelas
+                        kode_kelas
+                        semester{
+                            id
+                            kode_semester
+                            nama_semester
+                        }
+                    }
                     mataKuliah {
                         id 
                         nama_mk
@@ -36,6 +46,8 @@ async function loadNilaiData(pageAktif = 1, pageArsip = 1) {
                 quiz 
                 uts 
                 uas 
+                kehadiran
+                praktikum
                 nilai_akhir 
                 nilai_huruf 
                 nilai_mutu 
@@ -68,6 +80,16 @@ async function loadNilaiData(pageAktif = 1, pageArsip = 1) {
                             nim
                         }
                     }
+                    kelas{
+                        id
+                        nama_kelas
+                        kode_kelas
+                        semester{
+                            id
+                            kode_semester
+                            nama_semester
+                        }
+                    }
                     mataKuliah {
                         nama_mk
                         kode_mk
@@ -77,6 +99,8 @@ async function loadNilaiData(pageAktif = 1, pageArsip = 1) {
                 quiz 
                 uts 
                 uas 
+                kehadiran
+                praktikum
                 nilai_akhir 
                 nilai_huruf 
                 nilai_mutu 

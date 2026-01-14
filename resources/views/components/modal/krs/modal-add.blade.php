@@ -24,7 +24,7 @@
                                 Mahasiswa <span class="text-red-500">*</span>
                             </label>
                             <select id="addMahasiswaId" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 required>
                                 <option value="">Pilih Mahasiswa</option> 
                             </select>
@@ -49,7 +49,7 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                                 required>
                         </div>
-
+            
                         <div>
                             <label for="addStatus" class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Status <span class="text-red-500">*</span>
@@ -65,14 +65,14 @@
                             </select>
                         </div>
 
-                        <div>
+                        <!-- <div>
                             <label for="addTotalSks" class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Total SKS <span class="text-red-500">*</span>
                             </label>
                             <input type="number" id="addTotalSks" name="total_sks" step="1" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
-                                required>
-                        </div>
+                                value="0">
+                        </div> -->
 
                         <div>
                             <label for="addDosenId" class="block text-sm font-medium text-gray-700 mb-1.5">

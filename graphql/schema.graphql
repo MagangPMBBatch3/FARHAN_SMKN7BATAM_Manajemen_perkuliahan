@@ -3,25 +3,25 @@ scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date
 scalar Date @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date")
 scalar Time @scalar(class: "App\\GraphQL\\Scalars\\Time")
 
-#import ./User/Schema.graphql
-#import ./Semester/Schema.graphql
-#import ./Ruangan/Schema.graphql
-#import ./Role/Schema.graphql
-#import ./Nilai/Schema.graphql
-#import ./MataKuliah/Schema.graphql
-#import ./KrsDetail/Schema.graphql
-#import ./Krs/Schema.graphql
-#import ./Khs/Schema.graphql
-#import ./Kelas/Schema.graphql
-#import ./Jurusan/Schema.graphql
-#import ./JadwalKuliah/Schema.graphql
-#import ./Fakultas/Schema.graphql
-#import ./Dosen/Schema.graphql
-#import ./Mahasiswa/Schema.graphql
-#import ./SksLimit/Schema.graphql
-#import ./BobotNilai/Schema.graphql
-#import ./GradeSystem/Schema.graphql
-#import ./Kehadiran/Schema.graphql
-#import ./Pertemuan/Schema.graphql
-#import ./PengaturanKehadiran/Schema.graphql
-#import ./RekapKehadiran/Schema.graphql
+#import ./User/schema.graphql
+#import ./Semester/schema.graphql
+#import ./Ruangan/schema.graphql
+#import ./Role/schema.graphql
+#import ./Nilai/schema.graphql
+#import ./MataKuliah/schema.graphql
+#import ./KrsDetail/schema.graphql
+#import ./Krs/schema.graphql
+#import ./Khs/schema.graphql
+#import ./Kelas/schema.graphql
+#import ./Jurusan/schema.graphql
+#import ./JadwalKuliah/schema.graphql
+#import ./Fakultas/schema.graphql
+#import ./Dosen/schema.graphql
+#import ./Mahasiswa/schema.graphql
+#import ./SksLimit/schema.graphql
+#import ./BobotNilai/schema.graphql
+#import ./GradeSystem/schema.graphql
+#import ./Kehadiran/schema.graphql
+#import ./Pertemuan/schema.graphql
+#import ./PengaturanKehadiran/schema.graphql
+#import ./RekapKehadiran/schema.graphql

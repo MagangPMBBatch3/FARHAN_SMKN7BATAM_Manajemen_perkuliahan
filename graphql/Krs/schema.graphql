@@ -5,7 +5,7 @@ type Krs {
     tanggal_pengisian: Date!
     tanggal_persetujuan: Date
     status: String!
-    total_sks: Int!
+    total_sks: Int
     catatan: String
     dosen_pa_id: Int
     created_at: DateTime

@@ -1,70 +1,24 @@
 <?php
-namespace App\GraphQL\BobotNilai\Queries;
+namespace App\GraphQL\BobotNilai\Mutations;
 
 use App\Models\BobotNilai\BobotNilai;
 
-class BobotNilaiQuery
+class BobotNilaiMutation
 {
-    public function all($_, array $args)
+    public function restore($_, array $args): ?BobotNilai
     {
-        $query = BobotNilai::query()->with(['mataKuliah', 'semester']);
-        
-        if (!empty($args['search'])) {
-            $query->whereHas('mataKuliah', function($q) use ($args) {
-                $q->where('nama_mk', 'like', '%' . $args['search'] . '%')
-                  ->orWhere('kode_mk', 'like', '%' . $args['search'] . '%');
-            });
-        }
-        
-        if (!empty($args['mata_kuliah_id'])) {
-            $query->where('mata_kuliah_id', $args['mata_kuliah_id']);
-        }
-        
-        if (!empty($args['semester_id'])) {
-            $query->where('semester_id', $args['semester_id']);
-        }
-        
-        $perPage = $args['first'] ?? 10;
-        $page = $args['page'] ?? 1;
-        
-        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
-        
-        return [
-            'data' => $paginator->items(),
-            'paginatorInfo' => [
-                'hasMorePages' => $paginator->hasMorePages(),
-                'currentPage' => $paginator->currentPage(),
-                'lastPage' => $paginator->lastPage(),
-                'perPage' => $paginator->perPage(),
-                'total' => $paginator->total(),
-            ],
-        ];
+        return BobotNilai::withTrashed()->find($args['id'])?->restore()
+            ? BobotNilai::find($args['id'])
+            : null;
     }
     
-    public function allArsip($_, array $args)
+    public function forceDelete($_, array $args): ?BobotNilai
     {
-        $query = BobotNilai::onlyTrashed()->with(['mataKuliah', 'semester']);
-        
-        if (!empty($args['search'])) {
-            $query->whereHas('mataKuliah', function($q) use ($args) {
-                $q->where('nama_mk', 'like', '%' . $args['search'] . '%');
-            });
+        $bobotNilai = BobotNilai::withTrashed()->find($args['id']);
+        if ($bobotNilai) {
+            $bobotNilai->forceDelete();
+            return $bobotNilai;
         }
-        
-        $perPage = $args['first'] ?? 10;
-        $page = $args['page'] ?? 1;
-        
-        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
-        
-        return [
-            'data' => $paginator->items(),
-            'paginatorInfo' => [
-                'hasMorePages' => $paginator->hasMorePages(),
-                'currentPage' => $paginator->currentPage(),
-                'lastPage' => $paginator->lastPage(),
-                'perPage' => $paginator->perPage(),
-                'total' => $paginator->total(),
-            ],
-        ];
+        return null;
     }
 }

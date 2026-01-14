@@ -44,16 +44,6 @@ CREATE TABLE `bobot_nilai` (
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ;
 
---
--- Dumping data untuk tabel `bobot_nilai`
---
-
-INSERT INTO `bobot_nilai` (`id`, `mata_kuliah_id`, `tugas`, `quiz`, `uts`, `uas`, `kehadiran`, `praktikum`, `semester_id`, `keterangan`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 2, 15.00, 15.00, 25.00, 25.00, 10.00, 10.00, 1, 'Bobot untuk mata kuliah praktikum', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(2, 3, 25.00, 20.00, 25.00, 30.00, 0.00, 0.00, 1, 'Bobot untuk mata kuliah teori', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(3, 12, 20.00, 15.00, 30.00, 30.00, 5.00, 0.00, 1, 'Bobot standar teknik elektro', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(4, 18, 30.00, 20.00, 20.00, 30.00, 0.00, 0.00, 1, 'Bobot untuk MKU', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -110,11 +100,7 @@ CREATE TABLE `dosen` (
 --
 -- Dumping data untuk tabel `dosen`
 --
-
-INSERT INTO `dosen` (`id`, `user_id`, `nidn`, `nip`, `nama_lengkap`, `gelar_depan`, `gelar_belakang`, `jurusan_id`, `jenis_kelamin`, `tempat_lahir`, `tanggal_lahir`, `alamat`, `no_hp`, `email_pribadi`, `status_kepegawaian`, `jabatan`, `status`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 2, '0123456789', '197801012005011001', 'Andi Wijaya', 'Dr. Ir.', 'M.T.', 1, 'L', 'Jakarta', '1978-01-01', 'Jl. Mawar No. 123, Jakarta', '081234567890', 'andi.wijaya@gmail.com', 'Tetap', 'Lektor Kepala', 'Aktif', '2025-09-18 01:43:59', '2025-12-11 00:09:37', NULL),
-(2, 3, '0123456790', '198202152006022002', 'Maya Sari', 'Dr.', 'S.Kom., M.T.', 2, 'P', 'Bandung', '1982-02-15', 'Jl. Melati No. 456, Bandung', '081234567891', 'maya.sari@gmail.com', 'Tetap', 'Lektor', 'Aktif', '2025-09-18 01:43:59', '2025-10-13 21:36:49', NULL),
-(3, 4, '0123456791', '197512102003121003', 'Rudi Hartono', 'Prof. Dr. Ir.', 'M.T.', 3, 'L', 'Surabaya', '1975-12-10', 'Jl. Anggrek No. 789, Surabaya', '081234567892', 'rudi.hartono@gmail.com', 'Tetap', 'Profesor', 'Aktif', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL);
+ 4, '0123456791', '197512102003121003', 'Rudi Hartono', 'Prof. Dr. Ir.', 'M.T.', 3, 'L', 'Surabaya', '1975-12-10', 'Jl. Anggrek No. 789, Surabaya', '081234567892', 'rudi.hartono@gmail.com', 'Tetap', 'Profesor', 'Aktif', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL);
 
 -- --------------------------------------------------------
 
@@ -154,15 +140,6 @@ CREATE TABLE `fakultas` (
 --
 -- Dumping data untuk tabel `fakultas`
 --
-
-INSERT INTO `fakultas` (`id`, `kode_fakultas`, `nama_fakultas`, `dekan`, `alamat`, `telepon`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'FA', 'a', 'aa', 'null', 81294763785, 'a@a', '2025-09-18 01:43:59', '2025-12-24 01:58:12', NULL),
-(2, 'FEKON', 'Fakultas Ekonomi dan Bisnis', 'Dr. Siti Nurhaliza, S.E., M.M.', 'Jl. Raya Universitas No. 2', 81294763785, 'fekon@univ.ac.id', '2025-09-18 01:43:59', '2025-12-23 18:59:12', NULL),
-(3, 'FISIP', 'Fakultas Ilmu Sosial dan Politik', 'Dr. Ahmad Rahman, S.Sos., M.Si.', 'Jl. Raya Universitas No. 3', 21, 'fisip@univ.ac.id', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(4, 'test', 'test', 'test', 'test', 88888888, 'test@test.com', '2025-10-09 18:26:01', '2025-10-09 18:26:01', NULL),
-(5, 'test2', 'test2', 'test2', 'test2', 0, 'test@test', '2025-11-12 20:02:23', '2025-11-12 20:02:30', NULL),
-(8, 'test3', 'test3', 'test3', 'test3', 81294763785, 'test@test.com', '2025-12-11 18:33:01', '2025-12-11 18:33:01', NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -186,18 +163,6 @@ CREATE TABLE `grade_system` (
 --
 -- Dumping data untuk tabel `grade_system`
 --
-
-INSERT INTO `grade_system` (`id`, `grade`, `min_score`, `max_score`, `grade_point`, `status_kelulusan`, `keterangan`, `Status`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'A', 85.00, 100.00, 4.00, 'Lulus', 'Sangat Baik', '1', '2026-01-06 01:36:48', '2026-01-06 01:36:48', NULL),
-(2, 'A-', 80.00, 84.99, 3.75, 'Lulus', 'Baik Sekali', '1', '2026-01-06 01:36:48', '2026-01-06 01:36:48', NULL),
-(3, 'B+', 75.00, 79.99, 3.50, 'Lulus', 'Lebih dari Baik', '1', '2026-01-06 01:36:48', '2026-01-06 01:36:48', NULL),
-(4, 'B', 70.00, 74.99, 3.00, 'Lulus', 'Baik', '1', '2026-01-06 01:36:48', '2026-01-06 01:36:48', NULL),
-(5, 'B-', 65.00, 69.99, 2.75, 'Lulus', 'Cukup Baik', '1', '2026-01-06 01:36:48', '2026-01-06 01:36:48', NULL),
-(6, 'C+', 60.00, 64.99, 2.50, 'Lulus', 'Lebih dari Cukup', '1', '2026-01-06 01:36:48', '2026-01-06 01:36:48', NULL),
-(7, 'C', 55.00, 59.99, 2.00, 'Lulus', 'Cukup', '1', '2026-01-06 01:36:48', '2026-01-06 01:36:48', NULL),
-(8, 'D', 50.00, 54.99, 1.00, 'Tidak Lulus', 'Kurang', '1', '2026-01-06 01:36:48', '2026-01-06 01:36:48', NULL),
-(9, 'E', 0.00, 49.99, 0.00, 'Tidak Lulus', 'Sangat Kurang', '1', '2026-01-06 01:36:48', '2026-01-06 01:36:48', NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -220,19 +185,6 @@ CREATE TABLE `jadwal_kuliah` (
 --
 -- Dumping data untuk tabel `jadwal_kuliah`
 --
-
-INSERT INTO `jadwal_kuliah` (`id`, `kelas_id`, `ruangan_id`, `hari`, `jam_mulai`, `jam_selesai`, `keterangan`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 10, 1, 'Senin', '16:00:00', '02:36:00', 'Kuliah reguler', '2025-09-18 01:43:59', '2025-10-15 19:47:52', NULL),
-(2, 2, 4, 'Senin', '10:45:00', '13:15:00', 'Kuliah + Praktikum', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(3, 3, 2, 'Selasa', '08:00:00', '10:30:00', 'Kuliah reguler', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(4, 4, 3, 'Selasa', '10:45:00', '13:15:00', 'Kuliah reguler', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(5, 5, 5, 'Rabu', '08:00:00', '10:30:00', 'Praktikum Web', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(6, 6, 1, 'Rabu', '10:45:00', '13:15:00', 'Kuliah reguler', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(7, 7, 2, 'Kamis', '08:00:00', '09:30:00', 'Kuliah reguler', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(8, 8, 3, 'Kamis', '10:00:00', '11:30:00', 'Kuliah reguler', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(9, 11, 8, 'Sabtu', '09:55:00', '09:55:00', 'aw', '2025-10-15 19:55:18', '2025-10-15 19:55:18', NULL),
-(10, 8, 7, 'Sabtu', '16:52:00', '02:52:00', 'adasdadad', '2025-12-05 00:52:36', '2025-12-05 00:52:36', NULL),
-(11, 9, 3, 'Selasa', '08:27:00', '10:27:00', NULL, '2025-12-21 18:27:25', '2025-12-21 18:28:39', NULL);
 
 -- --------------------------------------------------------
 
@@ -292,17 +244,6 @@ CREATE TABLE `jurusan` (
 -- Dumping data untuk tabel `jurusan`
 --
 
-INSERT INTO `jurusan` (`id`, `kode_jurusan`, `nama_jurusan`, `fakultas_id`, `jenjang`, `akreditasi`, `kaprodi`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'TI', 'Teknik Informatika', 4, 'S3', 'A', 'Dr. Ir. Andi Wijaya, M.T.', '2025-09-18 01:43:59', '2025-11-06 18:50:18', NULL),
-(2, 'SI', 'Sistem Informasi', 1, 'S1', 'B', 'Dr. Maya Sari, S.Kom., M.T.', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(3, 'TE', 'Teknik Elektro', 1, 'S1', 'A', 'Prof. Dr. Ir. Rudi Hartono, M.T.', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(4, 'MN', 'Manajemen', 3, 'S1', 'A', 'Dr. Lina Marlina, S.E., M.M.', '2025-09-18 01:43:59', '2025-12-14 18:44:52', NULL),
-(5, 'AK', 'Akuntansi', 2, 'S1', 'B', 'Dr. Bambang Suryono, S.E., M.Ak.', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(6, 'HI', 'Hubungan Internasional', 3, 'S1', 'B', 'Dr. Dewi Ratna, S.IP., M.Si.', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(7, 'test', 'test', 2, 'S1', 'A', 'test', '2025-10-09 20:31:44', '2025-10-09 20:31:44', NULL),
-(8, 'test2', 'test2', 2, 'S2', 'Unggul', 'test2', '2025-10-09 20:37:03', '2025-11-06 19:14:15', NULL),
-(11, 'test3', 'test3', 5, 'S2', 'B', 'test4', '2025-11-12 20:05:49', '2025-11-12 20:05:56', NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -326,55 +267,6 @@ CREATE TABLE `kehadiran` (
 --
 -- Dumping data untuk tabel `kehadiran`
 --
-
-INSERT INTO `kehadiran` (`id`, `pertemuan_id`, `mahasiswa_id`, `krs_detail_id`, `status_kehadiran`, `waktu_input`, `keterangan`, `diinput_oleh`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 17, 1, 42, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(2, 18, 1, 42, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(3, 19, 1, 42, 'Izin', '2026-01-07 13:49:59', 'Keperluan keluarga', 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(4, 20, 1, 42, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(5, 21, 1, 42, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(6, 22, 1, 42, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(7, 23, 1, 42, 'Izin', '2026-01-07 13:49:59', 'Acara organisasi', 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(8, 24, 1, 42, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(9, 25, 1, 42, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(10, 26, 1, 42, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(11, 27, 1, 42, 'Sakit', '2026-01-07 13:49:59', 'Demam', 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(12, 28, 1, 42, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(13, 29, 1, 42, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(14, 30, 1, 42, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(15, 31, 1, 42, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(16, 33, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(17, 34, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(18, 35, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(19, 36, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(20, 37, 1, 43, 'Alpa', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(21, 38, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(22, 39, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(23, 40, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(24, 41, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(25, 42, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(26, 43, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(27, 44, 1, 43, 'Izin', '2026-01-07 13:49:59', 'Urusan keluarga', 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(28, 45, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(29, 46, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(30, 47, 1, 43, 'Hadir', '2026-01-07 13:49:59', NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(31, 17, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(32, 18, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(33, 19, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(34, 20, 2, 46, 'Alpa', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(35, 21, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(36, 22, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(37, 23, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(38, 24, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(39, 25, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(40, 26, 2, 46, 'Izin', '2026-01-07 13:49:59', 'Keperluan kuliah lain', 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(41, 27, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(42, 28, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(43, 29, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(44, 30, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(45, 31, 2, 46, 'Hadir', '2026-01-07 13:49:59', NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(46, 50, 1, 42, 'Alpa', '2026-01-07 15:05:35', 'Auto generated - belum diisi dosen', 4, '2026-01-07 08:05:35', '2026-01-07 08:05:35', NULL),
-(47, 50, 2, 46, 'Alpa', '2026-01-07 15:05:35', 'Auto generated - belum diisi dosen', 4, '2026-01-07 08:05:35', '2026-01-07 08:05:35', NULL);
 
 --
 -- Trigger `kehadiran`
@@ -587,19 +479,6 @@ CREATE TABLE `kelas` (
 -- Dumping data untuk tabel `kelas`
 --
 
-INSERT INTO `kelas` (`id`, `kode_kelas`, `nama_kelas`, `mata_kuliah_id`, `dosen_id`, `semester_id`, `kapasitas`, `kuota_terisi`, `status`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'TI101-A-2024', 'TI101 Kelas A', 1, 1, 1, 40, 0, 'Nonaktif', '2025-09-18 01:43:59', '2025-10-13 21:11:34', NULL),
-(2, 'TI102-A-2024', 'TI102 Kelas A', 2, 3, 1, 35, 7, 'Aktif', '2025-09-18 01:43:59', '2026-01-06 23:21:36', NULL),
-(3, 'TI103-A-2024', 'TI103 Kelas A', 3, 1, 1, 40, 3, 'Aktif', '2025-09-18 01:43:59', '2026-01-02 01:27:05', NULL),
-(4, 'SI101-A-2024', 'SI101 Kelas A', 8, 2, 1, 30, 1, 'Aktif', '2025-09-18 01:43:59', '2026-01-01 18:47:06', NULL),
-(5, 'SI102-A-2024', 'SI102 Kelas A', 9, 2, 1, 25, 1, 'Aktif', '2025-09-18 01:43:59', '2025-12-21 18:42:34', NULL),
-(6, 'TE101-A-2024', 'TE101 Kelas A', 12, 3, 1, 35, 2, 'Aktif', '2025-09-18 01:43:59', '2026-01-06 23:21:25', NULL),
-(7, 'MKU101-A-2024', 'Bahasa Indonesia A', 17, 1, 1, 50, 0, 'Aktif', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(8, 'MKU102-A-2024', 'Pancasila A', 18, 2, 1, 50, 2, 'Aktif', '2025-09-18 01:43:59', '2026-01-06 23:21:16', NULL),
-(9, 'asdfgh', 'asdasd', 9, 1, 2, 14, 0, 'Aktif', '2025-10-13 21:35:26', '2025-10-13 21:35:26', NULL),
-(10, 'asdadaq', 'qasd', 10, 1, 1, 15, 1, 'Aktif', '2025-10-13 21:35:56', '2025-12-21 18:41:49', NULL),
-(11, 'blabla', 'blabla', 1, 2, 4, 5, 0, 'Selesai', '2025-10-13 21:37:25', '2025-10-13 21:37:40', NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -755,34 +634,7 @@ CREATE TABLE `mata_kuliah` (
 --
 -- Dumping data untuk tabel `mata_kuliah`
 --
-
-INSERT INTO `mata_kuliah` (`id`, `kode_mk`, `nama_mk`, `jurusan_id`, `sks`, `semester_rekomendasi`, `jenis`, `deskripsi`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'TI101', 'Pengantar Teknologi Informasi', 3, 3, 5, 'Wajib', 'Mata kuliah pengantar mengenai dasar-dasar teknologi informasi', '2025-09-18 01:43:59', '2025-10-13 19:12:05', NULL),
-(2, 'TI102', 'Algoritma dan Pemrograman', 1, 9, 1, 'Wajib', 'Pembelajaran algoritma dasar dan pemrograman komputer', '2025-09-18 01:43:59', '2026-01-02 01:25:51', NULL),
-(3, 'TI103', 'Matematika Diskrit', 1, 3, 1, 'Wajib', 'Matematika untuk ilmu komputer', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(4, 'TI201', 'Struktur Data', 1, 3, 3, 'Wajib', 'Struktur data dan algoritma lanjutan', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(5, 'TI202', 'Basis Data', 1, 3, 3, 'Wajib', 'Desain dan implementasi basis data', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(6, 'TI301', 'Rekayasa Perangkat Lunak', 1, 3, 5, 'Wajib', 'Metodologi pengembangan perangkat lunak', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(7, 'TI302', 'Kecerdasan Buatan', 1, 3, 5, 'Pilihan', 'Pengantar artificial intelligence', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(8, 'SI101', 'Pengantar Sistem Informasi', 2, 3, 1, 'Wajib', 'Konsep dasar sistem informasi', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(9, 'SI102', 'Pemrograman Web', 2, 3, 2, 'Wajib', 'Pengembangan aplikasi berbasis web', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(10, 'SI201', 'Analisis dan Perancangan Sistem', 2, 3, 3, 'Wajib', 'Metodologi analisis sistem informasi', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(11, 'SI202', 'Manajemen Basis Data', 2, 3, 4, 'Wajib', 'Administrasi dan optimasi basis data', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(12, 'TE101', 'Rangkaian Listrik', 3, 3, 1, 'Wajib', 'Analisis rangkaian listrik dasar', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(13, 'TE102', 'Elektronika Dasar', 3, 4, 2, 'Wajib', 'Komponen dan rangkaian elektronika', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(14, 'TE201', 'Sistem Digital', 3, 3, 3, 'Wajib', 'Desain sistem digital', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(15, 'MN101', 'Pengantar Manajemen', 4, 3, 1, 'Wajib', 'Konsep dasar ilmu manajemen', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(16, 'MN102', 'Manajemen Sumber Daya Manusia', 4, 3, 3, 'Wajib', 'Pengelolaan SDM dalam organisasi', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(17, 'MN201', 'Manajemen Pemasaran', 4, 3, 4, 'Wajib', 'Strategi dan implementasi pemasaran', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(18, 'MKU101', 'Bahasa Indonesia', 1, 2, 1, 'Wajib', 'Kemampuan berbahasa Indonesia', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(19, 'MKU102', 'Pancasila', 1, 2, 1, 'Wajib', 'Ideologi dan nilai-nilai Pancasila', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(20, 'MKU103', 'Bahasa Inggris', 1, 2, 2, 'Wajib', 'Kemampuan berbahasa Inggris', '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(21, 'a', 'aa', 5, 5, 5, 'Wajib', 'a', '2025-10-13 18:07:44', '2025-10-13 18:07:44', NULL),
-(23, 'b', 'b', 3, 2, 1, 'Wajib', 'bla bla bla', '2025-10-13 18:13:10', '2025-10-13 18:13:10', NULL),
-(24, 'c', 'c', 7, 12, 5, 'Wajib', 'bla bla bla', '2025-10-13 18:14:15', '2025-10-13 18:14:15', NULL),
-(25, 'TA298', 'entahlah', 2, 12, 5, 'Pilihan', 'bla bla bla', '2025-10-13 18:16:50', '2025-10-13 18:16:50', NULL);
-
--- --------------------------------------------------------
+ --------------------------------------------------------
 
 --
 -- Struktur dari tabel `migrations`
@@ -832,13 +684,6 @@ CREATE TABLE `nilai` (
 --
 -- Dumping data untuk tabel `nilai`
 --
-
-INSERT INTO `nilai` (`id`, `krs_detail_id`, `bobot_nilai_id`, `tugas`, `quiz`, `uts`, `uas`, `kehadiran`, `praktikum`, `nilai_akhir`, `nilai_huruf`, `nilai_mutu`, `status`, `created_at`, `updated_at`, `deleted_at`, `tanggal_input`, `input_by`) VALUES
-(1, 42, 1, 85.00, 80.00, 78.00, 82.00, 95.00, 88.00, 83.50, 'A', 4.00, 'Final', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL, '2024-12-20 10:00:00', 4),
-(2, 43, 2, 88.00, 85.00, 80.00, 85.00, NULL, NULL, 84.75, 'A', 4.00, 'Final', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL, '2024-12-20 10:30:00', 2),
-(3, 44, 4, 90.00, 88.00, 85.00, 87.00, NULL, NULL, 87.50, 'A', 4.00, 'Final', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL, '2024-12-20 11:00:00', 3),
-(4, 45, 3, 82.00, 80.00, 78.00, 80.00, 90.00, NULL, 80.25, '', 3.75, 'Final', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL, '2024-12-20 11:30:00', 4),
-(5, 46, 1, 78.00, 75.00, 72.00, 76.00, 87.00, 80.00, 76.15, '', 3.50, 'Final', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL, '2024-12-20 12:00:00', 4);
 
 -- --------------------------------------------------------
 
@@ -899,59 +744,6 @@ CREATE TABLE `pertemuan` (
 
 --
 -- Dumping data untuk tabel `pertemuan`
---
-
-INSERT INTO `pertemuan` (`id`, `kelas_id`, `pertemuan_ke`, `tanggal`, `waktu_mulai`, `waktu_selesai`, `materi`, `metode`, `ruangan_id`, `status_pertemuan`, `link_daring`, `catatan`, `created_by`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 1, 1, '2024-09-02', '08:00:00', '10:30:00', 'Pengenalan Teknologi Informasi', 'Tatap Muka', 1, 'Selesai', NULL, 'Pertemuan pembuka semester', 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(2, 1, 2, '2024-09-09', '08:00:00', '10:30:00', 'Komponen Sistem Komputer', 'Tatap Muka', 1, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(3, 1, 3, '2024-09-16', '08:00:00', '10:30:00', 'Sistem Operasi', 'Tatap Muka', 1, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(4, 1, 4, '2024-09-23', '08:00:00', '10:30:00', 'Jaringan Komputer Dasar', 'Tatap Muka', 1, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(5, 1, 5, '2024-09-30', '08:00:00', '10:30:00', 'Database Fundamental', 'Tatap Muka', 1, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(6, 1, 6, '2024-10-07', '08:00:00', '10:30:00', 'Pemrograman Dasar', 'Tatap Muka', 1, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(7, 1, 7, '2024-10-14', '08:00:00', '10:30:00', 'Web Technology', 'Tatap Muka', 1, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(8, 1, 8, '2024-10-21', '08:00:00', '10:30:00', 'UTS - Ujian Tengah Semester', 'Tatap Muka', 1, 'Selesai', NULL, 'Ujian tertulis', 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(9, 1, 9, '2024-10-28', '08:00:00', '10:30:00', 'Keamanan Informasi', 'Tatap Muka', 1, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(10, 1, 10, '2024-11-04', '08:00:00', '10:30:00', 'Cloud Computing', 'Daring', 1, 'Selesai', NULL, 'Kuliah online via Zoom', 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(11, 1, 11, '2024-11-11', '08:00:00', '10:30:00', 'Big Data Introduction', 'Tatap Muka', 1, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(12, 1, 12, '2024-11-18', '08:00:00', '10:30:00', 'Internet of Things', 'Tatap Muka', 1, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(13, 1, 13, '2024-11-25', '08:00:00', '10:30:00', 'Mobile Technology', 'Tatap Muka', 1, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(14, 1, 14, '2024-12-02', '08:00:00', '10:30:00', 'AI & Machine Learning Intro', 'Tatap Muka', 1, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(15, 1, 15, '2024-12-09', '08:00:00', '10:30:00', 'Review & Diskusi', 'Tatap Muka', 1, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(16, 1, 16, '2024-12-16', '08:00:00', '10:30:00', 'UAS - Ujian Akhir Semester', 'Tatap Muka', 1, 'Dijadwalkan', NULL, 'Ujian tertulis', 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(17, 2, 1, '2024-09-02', '10:45:00', '13:15:00', 'Pengenalan Algoritma & Flowchart', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(18, 2, 2, '2024-09-09', '10:45:00', '13:15:00', 'Tipe Data & Variable', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(19, 2, 3, '2024-09-16', '10:45:00', '13:15:00', 'Operator & Ekspresi', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(20, 2, 4, '2024-09-23', '10:45:00', '13:15:00', 'Percabangan (IF-ELSE)', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(21, 2, 5, '2024-09-30', '10:45:00', '13:15:00', 'Perulangan (FOR, WHILE)', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(22, 2, 6, '2024-10-07', '10:45:00', '13:15:00', 'Array & Matrix', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(23, 2, 7, '2024-10-14', '10:45:00', '13:15:00', 'Function & Procedure', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(24, 2, 8, '2024-10-21', '10:45:00', '13:15:00', 'UTS - Ujian Tengah Semester', 'Tatap Muka', 4, 'Selesai', NULL, 'Ujian praktikum', 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(25, 2, 9, '2024-10-28', '10:45:00', '13:15:00', 'Searching Algorithm', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(26, 2, 10, '2024-11-04', '10:45:00', '13:15:00', 'Sorting Algorithm', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(27, 2, 11, '2024-11-11', '10:45:00', '13:15:00', 'Recursion', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(28, 2, 12, '2024-11-18', '10:45:00', '13:15:00', 'String Processing', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(29, 2, 13, '2024-11-25', '10:45:00', '13:15:00', 'File Handling', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(30, 2, 14, '2024-12-02', '10:45:00', '13:15:00', 'Dynamic Programming', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(31, 2, 15, '2024-12-09', '10:45:00', '13:15:00', 'Review & Latihan Soal', 'Tatap Muka', 4, 'Selesai', NULL, NULL, 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(32, 2, 16, '2024-12-16', '10:45:00', '13:15:00', 'UAS - Project Akhir', 'Tatap Muka', 4, 'Dijadwalkan', NULL, 'Presentasi project', 4, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(33, 3, 1, '2024-09-03', '08:00:00', '10:30:00', 'Logika Matematika', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(34, 3, 2, '2024-09-10', '08:00:00', '10:30:00', 'Himpunan & Operasi Himpunan', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(35, 3, 3, '2024-09-17', '08:00:00', '10:30:00', 'Relasi & Fungsi', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(36, 3, 4, '2024-09-24', '08:00:00', '10:30:00', 'Kombinatorika Dasar', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(37, 3, 5, '2024-10-01', '08:00:00', '10:30:00', 'Permutasi & Kombinasi', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(38, 3, 6, '2024-10-08', '08:00:00', '10:30:00', 'Prinsip Inklusi-Eksklusi', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(39, 3, 7, '2024-10-15', '08:00:00', '10:30:00', 'Teori Graf Dasar', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(40, 3, 8, '2024-10-22', '08:00:00', '10:30:00', 'UTS', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(41, 3, 9, '2024-10-29', '08:00:00', '10:30:00', 'Graf Berarah & Tidak Berarah', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(42, 3, 10, '2024-11-05', '08:00:00', '10:30:00', 'Pohon (Tree)', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(43, 3, 11, '2024-11-12', '08:00:00', '10:30:00', 'Algoritma Pohon Rentang', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(44, 3, 12, '2024-11-19', '08:00:00', '10:30:00', 'Teori Bilangan', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(45, 3, 13, '2024-11-26', '08:00:00', '10:30:00', 'Algoritma Euclidean', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(46, 3, 14, '2024-12-03', '08:00:00', '10:30:00', 'Induksi Matematika', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(47, 3, 15, '2024-12-10', '08:00:00', '10:30:00', 'Review Materi', 'Tatap Muka', 2, 'Selesai', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(48, 3, 16, '2024-12-17', '08:00:00', '10:30:00', 'UAS', 'Tatap Muka', 2, 'Dijadwalkan', NULL, NULL, 2, '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(49, 7, 5, '2026-01-07', '08:00:00', '10:30:00', 'a', 'Tatap Muka', 6, 'Dijadwalkan', NULL, NULL, 1, '2026-01-07 06:55:00', '2026-01-07 06:55:00', NULL),
-(50, 2, 1, '2026-01-10', '08:00:00', '10:00:00', 'Pengenalan Algoritma', 'Tatap Muka', 1, 'Dijadwalkan', NULL, NULL, 4, '2026-01-07 08:05:35', '2026-01-07 08:05:35', NULL);
 
 --
 -- Trigger `pertemuan`
@@ -1024,17 +816,7 @@ CREATE TABLE `rekap_kehadiran` (
 --
 -- Dumping data untuk tabel `rekap_kehadiran`
 --
-
-INSERT INTO `rekap_kehadiran` (`id`, `mahasiswa_id`, `kelas_id`, `semester_id`, `total_pertemuan`, `total_hadir`, `total_izin`, `total_sakit`, `total_alpa`, `nilai_kehadiran`, `status_minimal`, `keterangan`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 1, 2, 1, 15, 12, 2, 1, 0, 95.00, 'Memenuhi', 'Kehadiran sangat baik', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(2, 1, 3, 1, 15, 13, 1, 0, 1, 85.00, 'Memenuhi', 'Kehadiran baik', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(3, 2, 8, 1, 15, 15, 0, 0, 0, 100.00, 'Memenuhi', 'Kehadiran sempurna', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(4, 2, 6, 1, 15, 13, 0, 2, 0, 90.00, 'Memenuhi', 'Kehadiran baik', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(5, 2, 2, 1, 15, 13, 1, 0, 1, 87.00, 'Memenuhi', 'Kehadiran baik', '2026-01-07 06:49:59', '2026-01-07 06:49:59', NULL),
-(6, 1, 2, 1, 16, 12, 2, 1, 1, 75.00, 'Memenuhi', 'Auto update - persentase: 93.75%', '2026-01-07 08:05:35', '2026-01-07 08:05:35', NULL),
-(7, 2, 2, 1, 16, 13, 1, 0, 2, 81.25, 'Memenuhi', 'Auto update - persentase: 87.50%', '2026-01-07 08:05:35', '2026-01-07 08:05:35', NULL);
-
--- --------------------------------------------------------
+--------------------------------------------------------
 
 --
 -- Struktur dari tabel `roles`
@@ -1051,21 +833,7 @@ CREATE TABLE `roles` (
 
 --
 -- Dumping data untuk tabel `roles`
---
-
-INSERT INTO `roles` (`id`, `nama_role`, `deskripsi`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Admin', 'Administrator sistem', '2025-09-18 01:43:59', '2025-10-22 20:45:09', NULL),
-(2, 'Dosen', 'Dosen/Pengajar', '2025-09-18 01:43:59', '2025-10-23 03:05:57', NULL),
-(3, 'Mahasiswa', 'Mahasiswa', '2025-09-18 01:43:59', '2025-10-23 03:05:57', NULL),
-(4, 'Akademik', 'Staff Akademik', '2025-09-18 01:43:59', '2025-10-07 18:22:31', '2025-10-07 18:22:31'),
-(5, 'Test', NULL, '2025-10-01 23:41:47', '2025-10-07 18:22:34', '2025-10-07 18:22:34'),
-(6, 'test 2', NULL, '2025-10-01 23:42:41', '2025-10-07 18:22:37', '2025-10-07 18:22:37'),
-(7, 'deskripsi', 'ini adalah deskripsi', '2025-10-01 23:54:01', '2025-10-03 00:38:03', NULL),
-(9, 'test', 'test', '2025-10-02 21:28:42', '2025-11-12 18:44:06', NULL),
-(10, 'test4', 'test4', '2025-11-12 19:58:49', '2025-11-12 19:58:49', NULL),
-(11, 'test6', 'test6', '2025-11-12 19:59:15', '2025-11-12 20:01:19', NULL);
-
--- --------------------------------------------------------
+--------------------------------------------------------
 
 --
 -- Struktur dari tabel `ruangan`
@@ -1164,14 +932,6 @@ CREATE TABLE `sks_limits` (
 --
 -- Dumping data untuk tabel `sks_limits`
 --
-
-INSERT INTO `sks_limits` (`id`, `min_ipk`, `max_ipk`, `max_sks`, `keterangan`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 3.00, 4.00, 24, 'IPK Sangat Baik', '2026-01-08 02:44:46', '2026-01-08 02:51:51', NULL),
-(2, 2.50, 2.99, 21, 'IPK Baik', '2026-01-08 02:44:46', '2026-01-08 02:51:51', NULL),
-(3, 2.00, 2.49, 18, 'IPK Cukup', '2026-01-08 02:44:46', '2026-01-08 02:51:51', NULL),
-(4, 0.00, 1.99, 15, 'IPK Kurang', '2026-01-08 02:44:46', '2026-01-08 02:51:51', NULL),
-(5, 1.00, 1.00, 12, 'a', '2026-01-07 21:04:47', '2026-01-07 21:04:47', NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -1194,25 +954,6 @@ CREATE TABLE `users` (
 --
 -- Dumping data untuk tabel `users`
 --
-
-INSERT INTO `users` (`id`, `username`, `email`, `password`, `role_id`, `status`, `last_login`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'admin', 'admin@univ.ac.id', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'aktif', NULL, '2025-09-18 01:43:59', '2025-09-17 19:55:40', '2025-09-17 19:55:40'),
-(2, 'test edit dosen', 'dosen1@univ.ac.id', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'aktif', NULL, '2025-09-18 01:43:59', '2025-11-12 20:58:25', NULL),
-(3, 'dosen2', 'dosen2@univ.ac.id', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, 'aktif', NULL, '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(4, 'dosen3', 'dosen3@univ.ac.id', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, 'aktif', NULL, '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(5, 'mahasiswa1', 'mahasiswa1@student.univ.ac.id', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 9, 'aktif', NULL, '2025-09-18 01:43:59', '2025-12-05 00:30:30', NULL),
-(6, 'mahasiswa2', 'mahasiswa2@student.univ.ac.id', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, 'aktif', NULL, '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(7, 'mahasiswa3', 'mahasiswa3@student.univ.ac.id', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, 'aktif', NULL, '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(8, 'mahasiswa4', 'mahasiswa4@student.univ.ac.id', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, 'aktif', NULL, '2025-09-18 01:43:59', '2025-09-18 01:43:59', NULL),
-(9, 'test', 'test@test', '$2y$12$ePz0q4Yk6QWCw3gKLSYZCOyjNjY9Z95l/ZkcWCYye3CsF3xqWXNeu', 1, 'aktif', NULL, '2025-09-30 23:37:44', '2025-10-02 02:14:17', NULL),
-(10, 'shiro', 'shiro@shiro', '$2y$12$ePz0q4Yk6QWCw3gKLSYZCOyjNjY9Z95l/ZkcWCYye3CsF3xqWXNeu', 3, 'aktif', NULL, '2025-10-24 01:26:29', '2025-10-24 02:16:35', NULL),
-(12, 'test2', 'neko@neko.com', '$2y$12$VL9U8K8X7B7QJDzpDNPGCeF.hXwWmDhXtHLKMML2i6aMBcF1hKiWW', 1, 'aktif', NULL, '2025-11-12 18:41:02', '2025-11-12 18:41:02', NULL),
-(13, 'nekoneko', 'shironeko6351@gmail.com', '$2y$12$QfoRbm0nydeYVGmel/C4iOzxfrNGNnCEVT0Dd5FhXVhgdXLnmSh9G', 1, 'aktif', NULL, '2025-11-12 18:53:57', '2025-11-12 18:53:57', NULL),
-(14, 'test3', 'test@test3.com', '$2y$12$SX.7cLBglvXYKzePuFD3su4cy2tJIcN.hDtv8dRENuc93is8arne2', 1, 'aktif', NULL, '2025-11-12 19:50:33', '2025-11-12 19:50:33', NULL),
-(16, 'test4', 'test4@test', '$2y$12$7fNaY1QmFxCCOdh2F/RY..4Oh0UqBiL/MbiN7nBwXuAGLEKtvFN1a', 1, 'aktif', NULL, '2025-11-12 19:52:30', '2025-11-12 19:52:30', NULL),
-(17, 'test5', 'test5@test', '$2y$12$uiokz3Cth3n0UXK.zAcvq.Cwjs7Q7pw7rHk78P6HWz7.Y45INe7fK', 2, 'aktif', NULL, '2025-11-12 19:55:14', '2025-11-12 19:55:14', NULL),
-(18, 'test6', 'test6@test.com', '$2y$12$Nk3EwRMwcmx73c402bDot.4i5Lmsm.NZeZnZgilVjjalvMYAMTTSm', 1, 'aktif', NULL, '2025-11-12 20:55:48', '2025-11-12 20:55:48', NULL);
-
 --
 -- Indexes for dumped tables
 --

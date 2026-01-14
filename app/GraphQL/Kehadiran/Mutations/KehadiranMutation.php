@@ -7,16 +7,22 @@ use Illuminate\Support\Facades\DB;
 class KehadiranMutation
 {
     public function create($_, array $args)
-    {
-        $input = $args['input'];
-        
-        // Set waktu_input otomatis jika tidak disediakan
-        if (!isset($input['waktu_input'])) {
-            $input['waktu_input'] = now();
-        }
-        
-        return Kehadiran::create($input);
+{
+    // Karena @spread, semua field sudah langsung di $args
+    $data = $args;
+
+    // Set waktu_input otomatis jika tidak dikirim
+    if (!isset($data['waktu_input'])) {
+        $data['waktu_input'] = now();
     }
+
+    // Optional: isi diinput_oleh otomatis dari user login
+    if (!isset($data['diinput_oleh']) && auth()->check()) {
+        $data['diinput_oleh'] = auth()->id();
+    }
+
+    return Kehadiran::create($data);
+}
     
     public function restore($_, array $args): ?Kehadiran
     {
