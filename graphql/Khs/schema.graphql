@@ -48,39 +48,55 @@ type PageInfo {
 }
 
 extend type Query{
+    # Basic KHS queries
     allKhs: [Khs!]! @all(model: "Khs\\Khs")
     khs(id: ID! @eq(key: "id")): Khs @find(model: "Khs\\Khs")
+    
+    # Paginated queries
     allKhsPaginate(
-            search: String
-            first: Int
-            page: Int
-        ): KhsPaginator @field(resolver: "App\\GraphQL\\Khs\\Queries\\KhsQuery@all")   
+        search: String
+        first: Int
+        page: Int
+    ): KhsPaginator @field(resolver: "App\\GraphQL\\Khs\\Queries\\KhsQuery@all")   
+    
     allKhsArsip(
-            search: String  
-            first: Int
-            page: Int
-        ): KhsPaginator @field(resolver: "App\\GraphQL\\Khs\\Queries\\KhsQuery@allArsip")   
-    khsByMahasiswa( 
-        nama_mk: String! @where(operator: "like", key: "nama_mk")
-    ): [Khs]! @all(model: "Khs\\Khs")
+        search: String  
+        first: Int
+        page: Int
+    ): KhsPaginator @field(resolver: "App\\GraphQL\\Khs\\Queries\\KhsQuery@allArsip")   
+    
+    # Filter queries
+    khsByMahasiswa(mahasiswa_id: Int!): [Khs]! 
+        @field(resolver: "App\\GraphQL\\Khs\\Queries\\KhsQuery@byMahasiswa")
+
+    # Mahasiswa queries
+    mahasiswaByAngkatan(angkatan: String!): [Mahasiswa]! 
+        @field(resolver: "App\\GraphQL\\Mahasiswa\\Queries\\MahasiswaQuery@byAngkatan")
+    
+    # Nilai queries - menggunakan ID! untuk konsistensi
+    nilaiMahasiswaBySemester(mahasiswa_id: ID!, semester_id: ID!): [Nilai]!
+        @field(resolver: "App\\GraphQL\\Nilai\\Queries\\NilaiQuery@byMahasiswaSemester")
+    
+    nilaiMahasiswaKumulatif(mahasiswa_id: ID!, semester_id: ID!): [Nilai]!
+        @field(resolver: "App\\GraphQL\\Nilai\\Queries\\NilaiQuery@kumulatif")
 }
 
 extend type Mutation {
-  createKhs(input: CreateKhsInput! @spread): Khs
-    @create(model: "Khs\\Khs")
+    createKhs(input: CreateKhsInput! @spread): Khs
+        @create(model: "Khs\\Khs")
 
-  updateKhs(
-    id: ID! @eq(key: "id"),
-    input: UpdateKhsInput! @spread
-  ): Khs
-    @update(model: "Khs\\Khs")
+    updateKhs(
+        id: ID! @eq(key: "id"),
+        input: UpdateKhsInput! @spread
+    ): Khs
+        @update(model: "Khs\\Khs")
 
-  deleteKhs(id: ID! @eq(key: "id")): Khs
-    @delete(model: "Khs\\Khs")
+    deleteKhs(id: ID! @eq(key: "id")): Khs
+        @delete(model: "Khs\\Khs")
 
-  restoreKhs(id: ID!): Khs
-    @field(resolver: "Khs\\Mutations\\KhsMutation@restore")
+    restoreKhs(id: ID!): Khs
+        @field(resolver: "Khs\\Mutations\\KhsMutation@restore")
 
-  forceDeleteKhs(id: ID!): Khs
-    @field(resolver: "Khs\\Mutations\\KhsMutation@forceDelete")
+    forceDeleteKhs(id: ID!): Khs
+        @field(resolver: "Khs\\Mutations\\KhsMutation@forceDelete")
 }

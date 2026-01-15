@@ -351,6 +351,7 @@ function hitungNilaiAkhir() {
     if (gradeInfo) {
         document.getElementById('addNilaiHuruf').value = gradeInfo.grade;
         document.getElementById('addNilaiMutu').value = gradeInfo.grade_point;
+        console.log(gradeInfo);
     }
 }
 

@@ -4,6 +4,13 @@ namespace App\GraphQL\Mahasiswa\Queries;
 use App\Models\Mahasiswa\Mahasiswa;
 
 class MahasiswaQuery {
+    public function byAngkatan($root, array $args)
+{
+    return Mahasiswa::where('angkatan', $args['angkatan'])
+        ->where('deleted_at', null)
+        ->with(['jurusan'])
+        ->get();
+}
     public function allArsip($_, array $args)
     {
         $query = Mahasiswa::onlyTrashed();
