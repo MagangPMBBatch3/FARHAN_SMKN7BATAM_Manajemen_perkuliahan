@@ -1,35 +1,67 @@
-<?php 
+<?php
+
 namespace App\GraphQL\KrsDetail\Queries;
 
 use App\Models\KrsDetail\KrsDetail;
+use App\Models\krs\Krs;
 
-class KrsDetailQuery {
+class KrsDetailQuery
+{
+    public function byKelas($_, array $args)
+    {
+        $kelasId = $args['kelas_id'];
+
+        return KrsDetail::where('kelas_id', $kelasId)
+            ->with([
+                'krs.mahasiswa:id,nim,nama_lengkap',
+                'kelas:id,kode_kelas,nama_kelas',
+                'mataKuliah:id,nama_mk,kode_mk'
+            ])
+            ->get()
+            ->sortBy('krs.mahasiswa.nim');
+    }
+
+    public function byMahasiswa($_, array $args)
+    {
+        $mahasiswaId = $args['mahasiswa_id'];
+
+        $krsIds = Krs::where('mahasiswa_id', $mahasiswaId)
+            ->pluck('id')
+            ->toArray();
+
+        return KrsDetail::whereIn('krs_id', $krsIds)
+            ->with([
+                'krs.mahasiswa:id,nim,nama_lengkap',
+                'kelas:id,kode_kelas,nama_kelas',
+                'mataKuliah:id,nama_mk,kode_mk',
+                'nilai'
+            ])
+            ->get();
+    }
+
     public function all($_, array $args)
     {
-        $query = KrsDetail::query();
-        if (!empty($args['search'])) {
-            $query->where('nama_mk', 'like', '%' . $args['search'] . '%');
-        }
-        $perPage = $args['first'] ?? 10;
+        $first = $args['first'] ?? 10;
         $page = $args['page'] ?? 1;
+        $search = $args['search'] ?? null;
 
-        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
+        $query = KrsDetail::with([
+            'krs.mahasiswa',
+            'kelas',
+            'mataKuliah'
+        ]);
 
-        return [
-            'data' => $paginator->items(),
-            'paginatorInfo' => [
-                'hasMorePages' => $paginator->hasMorePages(),
-                'currentPage' => $paginator->currentPage(),
-                'lastPage' => $paginator->lastPage(),
-                'perPage' => $paginator->perPage(),
-                'total' => $paginator->total(),
-            ],
-        ];
+        if ($search) {
+            $query->whereHas('krs.mahasiswa', function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('nim', 'like', "%{$search}%");
+            })
+                ->orWhereHas('mataKuliah', function ($q) use ($search) {
+                    $q->where('nama_mk', 'like', "%{$search}%")
+                        ->orWhere('kode_mk', 'like', "%{$search}%");
+                });
+        }
+
+        return $query->paginate($first, ['*'], 'page', $page);
     }
-    public function byMahasiswa($root, array $args)
-{
-    return \App\Models\KrsDetail\KrsDetail::whereHas('krs', function($query) use ($args) {
-        $query->where('mahasiswa_id', $args['mahasiswa_id']);
-    })->with(['mataKuliah', 'krs.mahasiswa'])->get();
-}
 }

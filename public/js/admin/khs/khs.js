@@ -5,7 +5,7 @@ let currentPageArsip = 1;
 async function loadKhsData(pageAktif = 1, pageArsip = 1) {
     currentPageAktif = pageAktif;
     currentPageArsip = pageArsip;
-    
+
     const perPageAktif = parseInt(document.getElementById("perPage")?.value || 10);
     const perPageArsip = parseInt(document.getElementById("perPageArsip")?.value || 10);
     const searchValue = document.getElementById("search")?.value.trim() || "";
@@ -97,7 +97,7 @@ async function loadKhsData(pageAktif = 1, pageArsip = 1) {
 function renderKhsTable(khs, tableId, isActive) {
     const tbody = document.getElementById(tableId);
     tbody.innerHTML = '';
-    
+
     if (!khs.length) {
         tbody.innerHTML = `
             <tr>
@@ -106,11 +106,18 @@ function renderKhsTable(khs, tableId, isActive) {
         `;
         return;
     }
-
+    //! saved modal edit
+    // <button onclick="openEditModal(${item.id}, ${item.mahasiswa.id}, ${item.semester.id}, ${item.sks_semester}, ${item.sks_kumulatif}, ${item.ip_semester}, ${item.ipk})" 
+    //         class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
+    //         title="Edit">
+    //     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    //         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+    //     </svg>
+    // </button>
     khs.forEach(item => {
         const ipk = parseFloat(item.ipk);
         const ipkColor = getIPKColor(ipk);
-        
+
         let actions = '';
         if (isActive) {
             actions = `
@@ -123,13 +130,7 @@ function renderKhsTable(khs, tableId, isActive) {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                         </svg>
                     </button>
-                    <button onclick="openEditModal(${item.id}, ${item.mahasiswa.id}, ${item.semester.id}, ${item.sks_semester}, ${item.sks_kumulatif}, ${item.ip_semester}, ${item.ipk})" 
-                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
-                            title="Edit">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                    </button>
+
                     <button onclick="hapusKhs(${item.id})" 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                             title="Arsipkan">
@@ -206,10 +207,10 @@ function getIPKColor(ipk) {
 async function hapusKhs(id) {
     if (!confirm('Pindahkan ke arsip?')) return;
     const mutation = `mutation { deleteKhs(id: ${id}) { id } }`;
-    await fetch(API_URL, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ query: mutation }) 
+    await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: mutation })
     });
     loadKhsData(currentPageAktif, currentPageArsip);
 }
@@ -217,10 +218,10 @@ async function hapusKhs(id) {
 async function restoreKhs(id) {
     if (!confirm('Kembalikan dari arsip?')) return;
     const mutation = `mutation { restoreKhs(id: ${id}) { id } }`;
-    await fetch(API_URL, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ query: mutation }) 
+    await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: mutation })
     });
     loadKhsData(currentPageAktif, currentPageArsip);
 }
@@ -228,10 +229,10 @@ async function restoreKhs(id) {
 async function forceDeleteKhs(id) {
     if (!confirm('Hapus permanen? Data tidak bisa dikembalikan')) return;
     const mutation = `mutation { forceDeleteKhs(id: ${id}) { id } }`;
-    await fetch(API_URL, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ query: mutation }) 
+    await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: mutation })
     });
     loadKhsData(currentPageAktif, currentPageArsip);
 }
