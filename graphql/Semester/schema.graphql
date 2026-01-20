@@ -63,6 +63,9 @@ extend type Query{
     semesterByTahun(
         tahun_ajaran: String! @where(operator: "like", key: "tahun_ajaran")
     ): [Semester]! @all(model: "Semester\\Semester")
+    semesterMahasiswa: [Semester!]!
+        @field(resolver: "App\\GraphQL\\Semester\\Queries\\SemesterQuery@forMahasiswa")
+        
 }
 
 extend type Mutation {

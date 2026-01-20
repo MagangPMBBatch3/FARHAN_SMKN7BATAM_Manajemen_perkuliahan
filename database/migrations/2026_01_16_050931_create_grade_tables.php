@@ -23,7 +23,7 @@ return new class extends Migration {
             $table->decimal('kehadiran', 5, 2)->nullable();
             $table->decimal('praktikum', 5, 2)->nullable();
             $table->decimal('nilai_akhir', 5, 2)->nullable();
-            $table->enum('nilai_huruf', ['A', 'B', 'C', 'D', 'E'])->nullable();
+            $table->string('nilai_huruf', 3)->nullable();
             $table->decimal('nilai_mutu', 3, 2)->nullable();
             $table->enum('status', ['Draft', 'Final'])->default('Draft');
             $table->dateTime('tanggal_input')->useCurrent();

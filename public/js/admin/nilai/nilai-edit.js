@@ -123,8 +123,59 @@ function closeEditModal() {
     currentEditBobotNilai = null;
 }
 
+// Fungsi untuk ADD modal
+function hitungNilaiAkhir() {
+    if (!currentBobotNilai) {
+        console.warn('Bobot nilai belum tersedia');
+        return;
+    }
+
+    const tugas = parseFloat(document.getElementById('addTugas').value) || 0;
+    const quiz = parseFloat(document.getElementById('addQuiz').value) || 0;
+    const uts = parseFloat(document.getElementById('addUts').value) || 0;
+    const uas = parseFloat(document.getElementById('addUas').value) || 0;
+    const kehadiran = parseFloat(document.getElementById('addKehadiran').value) || 0;
+    const praktikum = parseFloat(document.getElementById('addPraktikum').value) || 0;
+
+    // Hitung nilai akhir berdasarkan bobot
+    const nilaiAkhir = (
+        (tugas * currentBobotNilai.tugas / 100) +
+        (quiz * currentBobotNilai.quiz / 100) +
+        (uts * currentBobotNilai.uts / 100) +
+        (uas * currentBobotNilai.uas / 100) +
+        (kehadiran * currentBobotNilai.kehadiran / 100) +
+        (praktikum * currentBobotNilai.praktikum / 100)
+    );
+
+    // Update nilai akhir
+    document.getElementById('addNilaiAkhir').value = nilaiAkhir.toFixed(2);
+
+    // Konversi ke grade
+    const gradeInfo = convertToGrade(nilaiAkhir);
+    
+    if (gradeInfo) {
+        document.getElementById('addNilaiHuruf').value = gradeInfo.grade;
+        document.getElementById('addNilaiMutu').value = gradeInfo.grade_point;
+        
+        console.log('Grade Info:', {
+            nilaiAkhir: nilaiAkhir.toFixed(2),
+            grade: gradeInfo.grade,
+            gradePoint: gradeInfo.grade_point
+        });
+    } else {
+        // Jika tidak ada grade yang cocok, kosongkan
+        document.getElementById('addNilaiHuruf').value = '';
+        document.getElementById('addNilaiMutu').value = '';
+        console.warn('Tidak ada grade yang cocok untuk nilai:', nilaiAkhir);
+    }
+}
+
+// Fungsi untuk EDIT modal - BARU
 function hitungNilaiAkhirEdit() {
-    if (!currentEditBobotNilai) return;
+    if (!currentEditBobotNilai) {
+        console.warn('Bobot nilai belum tersedia untuk edit');
+        return;
+    }
 
     const tugas = parseFloat(document.getElementById('editTugas').value) || 0;
     const quiz = parseFloat(document.getElementById('editQuiz').value) || 0;
@@ -143,14 +194,73 @@ function hitungNilaiAkhirEdit() {
         (praktikum * currentEditBobotNilai.praktikum / 100)
     );
 
+    // Update nilai akhir
     document.getElementById('editNilaiAkhir').value = nilaiAkhir.toFixed(2);
 
     // Konversi ke grade
     const gradeInfo = convertToGrade(nilaiAkhir);
+    
     if (gradeInfo) {
         document.getElementById('editNilaiHuruf').value = gradeInfo.grade;
         document.getElementById('editNilaiMutu').value = gradeInfo.grade_point;
+        
+        console.log('Edit Grade Info:', {
+            nilaiAkhir: nilaiAkhir.toFixed(2),
+            grade: gradeInfo.grade,
+            gradePoint: gradeInfo.grade_point
+        });
+    } else {
+        // Jika tidak ada grade yang cocok, kosongkan
+        document.getElementById('editNilaiHuruf').value = '';
+        document.getElementById('editNilaiMutu').value = '';
+        console.warn('Tidak ada grade yang cocok untuk nilai:', nilaiAkhir);
     }
+}
+
+// Convert nilai to grade - FIXED VERSION with proper sorting
+function convertToGrade(nilai) {
+    if (!currentGradeSystem || currentGradeSystem.length === 0) {
+        console.warn('Grade system belum dimuat');
+        return null;
+    }
+    
+    // Round nilai to 2 decimal places untuk consistency
+    const roundedNilai = Math.round(nilai * 100) / 100;
+    
+    // Sort grade system by min_score descending (dari A ke E)
+    // Ini penting agar nilai tinggi dicek duluan
+    const sortedGrades = [...currentGradeSystem].sort((a, b) => 
+        parseFloat(b.min_score) - parseFloat(a.min_score)
+    );
+    
+    // Cari grade yang sesuai dengan range
+    for (let grade of sortedGrades) {
+        const minScore = parseFloat(grade.min_score);
+        const maxScore = parseFloat(grade.max_score);
+        
+        // Gunakan >= dan <= untuk range inclusive
+        if (roundedNilai >= minScore && roundedNilai <= maxScore) {
+            console.log('Grade found:', {
+                nilai: roundedNilai,
+                range: `${minScore}-${maxScore}`,
+                grade: grade.grade,
+                gradePoint: grade.grade_point
+            });
+            return {
+                grade: grade.grade,
+                grade_point: parseFloat(grade.grade_point),
+                status_kelulusan: grade.status_kelulusan
+            };
+        }
+    }
+    
+    console.warn('No matching grade found for nilai:', roundedNilai);
+    console.log('Available grade ranges:', sortedGrades.map(g => ({
+        grade: g.grade,
+        range: `${g.min_score}-${g.max_score}`
+    })));
+    
+    return null;
 }
 
 async function updateNilai() {
@@ -169,6 +279,11 @@ async function updateNilai() {
     const status = document.getElementById('editStatus').value;
     
     if (!status) return alert("Status nilai harus diisi!");
+    
+    // Validasi nilai akhir sudah dihitung
+    if (!nilai_akhir || !nilai_huruf || !nilai_mutu) {
+        return alert("Nilai akhir, nilai huruf, dan nilai mutu harus terisi. Pastikan Anda sudah mengisi komponen nilai.");
+    }
 
     try {
         const mutation = `

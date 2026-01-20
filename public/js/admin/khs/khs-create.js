@@ -125,6 +125,7 @@ async function onMahasiswaSelected() {
         document.getElementById('addSemesterId').disabled = true;
         return;
     }
+    document.getElementById("addSemesterId").disabled = false;
 
     currentMahasiswaData = JSON.parse(selectedOption.getAttribute('data-mahasiswa'));
     

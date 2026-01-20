@@ -21,6 +21,12 @@ function resetAddForm() {
     document.getElementById('infoMataKuliah').classList.add('hidden');
     document.getElementById('addKrsDetailId').value = '';
     document.getElementById('addBobotNilaiId').value = '';
+    
+    // Reset nilai akhir fields
+    document.getElementById('addNilaiAkhir').value = '';
+    document.getElementById('addNilaiHuruf').value = '';
+    document.getElementById('addNilaiMutu').value = '';
+    
     currentBobotNilai = null;
     currentKelasData = null;
 }
@@ -81,6 +87,9 @@ async function loadGradeSystem() {
 
         const result = await response.json();
         currentGradeSystem = result.data.allGradeSystem || [];
+        
+        // Debug: tampilkan grade system yang dimuat
+        console.log('Grade System loaded:', currentGradeSystem);
     } catch (error) {
         console.error('Error loading grade system:', error);
     }
@@ -102,7 +111,6 @@ async function onSemesterChange() {
     selectKelas.innerHTML = '<option value="">Loading kelas...</option>';
 
     try {
-        // ✅ Change Int! to ID!
         const query = `
         query($semesterId: ID!) {
             kelasBySemester(semester_id: $semesterId) {
@@ -126,7 +134,7 @@ async function onSemesterChange() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 query,
-                variables: { semesterId: parseInt(semesterId) } // Can still pass as integer
+                variables: { semesterId: parseInt(semesterId) }
             })
         });
 
@@ -151,6 +159,7 @@ async function onSemesterChange() {
         alert('Gagal memuat data kelas');
     }
 }
+
 async function onKelasChange() {
     const semesterId = document.getElementById('addSemester').value;
     const kelasId = document.getElementById('addKelas').value;
@@ -167,7 +176,7 @@ async function onKelasChange() {
     selectMahasiswa.innerHTML = '<option value="">Loading mahasiswa...</option>';
 
     try {
-        // First, get kelas info - ✅ Change Int! to ID!
+        // First, get kelas info
         const kelasQuery = `
         query($kelasId: ID!) {
             kelas(id: $kelasId) {
@@ -193,7 +202,7 @@ async function onKelasChange() {
         const kelasResult = await kelasResponse.json();
         currentKelasData = kelasResult.data.kelas;
 
-        // Get bobot nilai - ✅ Change Int! to ID!
+        // Get bobot nilai
         const bobotQuery = `
         query($mataKuliahId: ID!, $semesterId: ID!) {
             bobotNilaiByMataKuliahSemester(mata_kuliah_id: $mataKuliahId, semester_id: $semesterId) {
@@ -233,7 +242,7 @@ async function onKelasChange() {
         // Display info mata kuliah & bobot
         displayMataKuliahInfo();
 
-        // Get mahasiswa di kelas ini - ✅ Change Int! to ID!
+        // Get mahasiswa di kelas ini
         const mahasiswaQuery = `
         query($kelasId: ID!) {
             krsDetailByKelas(kelas_id: $kelasId) {
@@ -323,9 +332,12 @@ function onMahasiswaChangeImproved() {
     document.getElementById('addKrsDetailId').value = krsDetailId;
 }
 
-// Hitung Nilai Akhir
+// Hitung Nilai Akhir - FIXED VERSION
 function hitungNilaiAkhir() {
-    if (!currentBobotNilai) return;
+    if (!currentBobotNilai) {
+        console.warn('Bobot nilai belum tersedia');
+        return;
+    }
 
     const tugas = parseFloat(document.getElementById('addTugas').value) || 0;
     const quiz = parseFloat(document.getElementById('addQuiz').value) || 0;
@@ -344,26 +356,72 @@ function hitungNilaiAkhir() {
         (praktikum * currentBobotNilai.praktikum / 100)
     );
 
+    // Update nilai akhir
     document.getElementById('addNilaiAkhir').value = nilaiAkhir.toFixed(2);
 
     // Konversi ke grade
     const gradeInfo = convertToGrade(nilaiAkhir);
+    
     if (gradeInfo) {
         document.getElementById('addNilaiHuruf').value = gradeInfo.grade;
         document.getElementById('addNilaiMutu').value = gradeInfo.grade_point;
-        console.log(gradeInfo);
+        
+        console.log('Grade Info:', {
+            nilaiAkhir: nilaiAkhir.toFixed(2),
+            grade: gradeInfo.grade,
+            gradePoint: gradeInfo.grade_point
+        });
+    } else {
+        // Jika tidak ada grade yang cocok, kosongkan
+        document.getElementById('addNilaiHuruf').value = '';
+        document.getElementById('addNilaiMutu').value = '';
+        console.warn('Tidak ada grade yang cocok untuk nilai:', nilaiAkhir);
     }
 }
 
-// Convert nilai to grade
+// Convert nilai to grade - FIXED VERSION with proper sorting
 function convertToGrade(nilai) {
-    if (!currentGradeSystem.length) return null;
+    if (!currentGradeSystem || currentGradeSystem.length === 0) {
+        console.warn('Grade system belum dimuat');
+        return null;
+    }
     
-    for (let grade of currentGradeSystem) {
-        if (nilai >= grade.min_score && nilai <= grade.max_score) {
-            return grade;
+    // Round nilai to 2 decimal places untuk consistency
+    const roundedNilai = Math.round(nilai * 100) / 100;
+    
+    // Sort grade system by min_score descending (dari A ke E)
+    // Ini penting agar nilai tinggi dicek duluan
+    const sortedGrades = [...currentGradeSystem].sort((a, b) => 
+        parseFloat(b.min_score) - parseFloat(a.min_score)
+    );
+    
+    // Cari grade yang sesuai dengan range
+    for (let grade of sortedGrades) {
+        const minScore = parseFloat(grade.min_score);
+        const maxScore = parseFloat(grade.max_score);
+        
+        // Gunakan >= dan <= untuk range inclusive
+        if (roundedNilai >= minScore && roundedNilai <= maxScore) {
+            console.log('Grade found:', {
+                nilai: roundedNilai,
+                range: `${minScore}-${maxScore}`,
+                grade: grade.grade,
+                gradePoint: grade.grade_point
+            });
+            return {
+                grade: grade.grade,
+                grade_point: parseFloat(grade.grade_point),
+                status_kelulusan: grade.status_kelulusan
+            };
         }
     }
+    
+    console.warn('No matching grade found for nilai:', roundedNilai);
+    console.log('Available grade ranges:', sortedGrades.map(g => ({
+        grade: g.grade,
+        range: `${g.min_score}-${g.max_score}`
+    })));
+    
     return null;
 }
 
@@ -384,6 +442,11 @@ async function createNilai() {
 
     if (!krsDetailId) return alert("Pilih mahasiswa terlebih dahulu!");
     if (!status) return alert("Status nilai harus diisi!");
+    
+    // Validasi nilai akhir sudah dihitung
+    if (!nilai_akhir || !nilai_huruf || !nilai_mutu) {
+        return alert("Nilai akhir, nilai huruf, dan nilai mutu harus terisi. Pastikan Anda sudah mengisi komponen nilai.");
+    }
 
     try {
         const mutation = `

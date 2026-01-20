@@ -70,6 +70,11 @@ extend type Query{
     krsByMahasiswa(
         nama_mk: String! @where(operator: "like", key: "nama_mk")
     ): [Krs]! @all(model: "Krs\\Krs")
+    jurusanByFakultas(fakultas_id: ID!): [Jurusan!]! 
+        @field(resolver: "App\\GraphQL\\Jurusan\\Queries\\JurusanQuery@byFakultas")
+    
+    mahasiswaByJurusan(jurusan_id: ID!): [Mahasiswa!]! 
+        @field(resolver: "App\\GraphQL\\Mahasiswa\\Queries\\MahasiswaQuery@byJurusan")
 }
 
 extend type Mutation {

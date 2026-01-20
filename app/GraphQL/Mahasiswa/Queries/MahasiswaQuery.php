@@ -4,6 +4,12 @@ namespace App\GraphQL\Mahasiswa\Queries;
 use App\Models\Mahasiswa\Mahasiswa;
 
 class MahasiswaQuery {
+    public function byJurusan($root, array $args)
+    {
+        return \App\Models\Mahasiswa\Mahasiswa::where('jurusan_id', $args['jurusan_id'])
+            ->orderBy('nim')
+            ->get();
+    }
     public function byAngkatan($root, array $args)
 {
     return Mahasiswa::where('angkatan', $args['angkatan'])

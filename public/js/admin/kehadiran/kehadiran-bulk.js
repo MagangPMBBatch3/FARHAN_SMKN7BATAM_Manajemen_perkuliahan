@@ -267,7 +267,7 @@ function renderMahasiswaList(krsDetails, kehadiranMap, pertemuanId) {
                         
                         <!-- Status Radio Buttons -->
                         <div class="grid grid-cols-4 gap-2 mb-3">
-                            <label class="relative flex items-center p-2.5 border-2 ${currentStatus === 'Hadir' ? 'border-green-500 bg-green-50' : 'border-gray-300'} rounded-lg cursor-pointer hover:border-green-400 transition-all">
+                            <label class="radio-label relative flex items-center p-2.5 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-green-400 transition-all" data-status="Hadir">
                                 <input type="radio" name="kehadiran[${index}][status]" value="Hadir" 
                                     ${currentStatus === 'Hadir' ? 'checked' : ''}
                                     class="w-4 h-4 text-green-600 focus:ring-green-500"
@@ -275,7 +275,7 @@ function renderMahasiswaList(krsDetails, kehadiranMap, pertemuanId) {
                                 <span class="ml-2 text-xs font-medium text-gray-700">✓ Hadir</span>
                             </label>
                             
-                            <label class="relative flex items-center p-2.5 border-2 ${currentStatus === 'Izin' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'} rounded-lg cursor-pointer hover:border-blue-400 transition-all">
+                            <label class="radio-label relative flex items-center p-2.5 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 transition-all" data-status="Izin">
                                 <input type="radio" name="kehadiran[${index}][status]" value="Izin"
                                     ${currentStatus === 'Izin' ? 'checked' : ''}
                                     class="w-4 h-4 text-blue-600 focus:ring-blue-500"
@@ -283,7 +283,7 @@ function renderMahasiswaList(krsDetails, kehadiranMap, pertemuanId) {
                                 <span class="ml-2 text-xs font-medium text-gray-700">ℹ Izin</span>
                             </label>
                             
-                            <label class="relative flex items-center p-2.5 border-2 ${currentStatus === 'Sakit' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-300'} rounded-lg cursor-pointer hover:border-yellow-400 transition-all">
+                            <label class="radio-label relative flex items-center p-2.5 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-yellow-400 transition-all" data-status="Sakit">
                                 <input type="radio" name="kehadiran[${index}][status]" value="Sakit"
                                     ${currentStatus === 'Sakit' ? 'checked' : ''}
                                     class="w-4 h-4 text-yellow-600 focus:ring-yellow-500"
@@ -291,7 +291,7 @@ function renderMahasiswaList(krsDetails, kehadiranMap, pertemuanId) {
                                 <span class="ml-2 text-xs font-medium text-gray-700">+ Sakit</span>
                             </label>
                             
-                            <label class="relative flex items-center p-2.5 border-2 ${currentStatus === 'Alpa' ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-lg cursor-pointer hover:border-red-400 transition-all">
+                            <label class="radio-label relative flex items-center p-2.5 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-red-400 transition-all" data-status="Alpa">
                                 <input type="radio" name="kehadiran[${index}][status]" value="Alpa"
                                     ${currentStatus === 'Alpa' ? 'checked' : ''}
                                     class="w-4 h-4 text-red-600 focus:ring-red-500"
@@ -316,6 +316,9 @@ function renderMahasiswaList(krsDetails, kehadiranMap, pertemuanId) {
 
     html += '</div>';
     container.innerHTML = html;
+    
+    // Update border colors after rendering
+    updateAllRadioBorders();
 }
 
 // ==================== EVENT HANDLERS ====================
@@ -328,6 +331,9 @@ function handleStatusChange(index) {
         if (radio.checked) selectedStatus = radio.value;
     });
 
+    // Update border colors for this row
+    updateRadioBorders(index);
+
     const keteranganContainer = document.getElementById(`keterangan-container-${index}`);
     const keteranganInput = document.querySelector(`input[name="kehadiran[${index}][keterangan]"]`);
 
@@ -336,7 +342,65 @@ function handleStatusChange(index) {
         keteranganInput.value = '';
     } else {
         keteranganContainer.classList.remove('hidden');
+        keteranganInput.value = '';
     }
+}
+
+function updateRadioBorders(index) {
+    const statusRadios = document.getElementsByName(`kehadiran[${index}][status]`);
+    
+    statusRadios.forEach(radio => {
+        const label = radio.closest('.radio-label');
+        const status = label.getAttribute('data-status');
+        
+        // Remove all status-specific classes
+        label.classList.remove(
+            'border-green-500', 'bg-green-50',
+            'border-blue-500', 'bg-blue-50',
+            'border-yellow-500', 'bg-yellow-50',
+            'border-red-500', 'bg-red-50'
+        );
+        
+        // Add default gray border
+        label.classList.add('border-gray-300');
+        
+        // If this radio is checked, add status-specific classes
+        if (radio.checked) {
+            label.classList.remove('border-gray-300');
+            
+            switch(status) {
+                case 'Hadir':
+                    label.classList.add('border-green-500', 'bg-green-50');
+                    break;
+                case 'Izin':
+                    label.classList.add('border-blue-500', 'bg-blue-50');
+                    break;
+                case 'Sakit':
+                    label.classList.add('border-yellow-500', 'bg-yellow-50');
+                    break;
+                case 'Alpa':
+                    label.classList.add('border-red-500', 'bg-red-50');
+                    break;
+            }
+        }
+    });
+}
+
+function updateAllRadioBorders() {
+    // Get all radio button groups
+    const allRadios = document.querySelectorAll('input[type="radio"][name^="kehadiran"]');
+    const processedIndexes = new Set();
+    
+    allRadios.forEach(radio => {
+        const match = radio.name.match(/\[(\d+)\]/);
+        if (match) {
+            const index = parseInt(match[1]);
+            if (!processedIndexes.has(index)) {
+                updateRadioBorders(index);
+                processedIndexes.add(index);
+            }
+        }
+    });
 }
 
 function setAllStatus(status) {
