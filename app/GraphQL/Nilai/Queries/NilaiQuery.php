@@ -8,6 +8,25 @@ use App\Models\KrsDetail\KrsDetail;
 use App\Models\Semester\Semester;
 
 class NilaiQuery {
+    public function byMahasiswaAndMataKuliah($rootValue, array $args)
+    {
+        return Nilai::with(['semester', 'mataKuliah'])
+            ->where('mahasiswa_id', $args['mahasiswa_id'])
+            ->where('mata_kuliah_id', $args['mata_kuliah_id'])
+            ->orderBy('semester_id', 'DESC')
+            ->get();
+    }
+
+    /**
+     * Get semua nilai mahasiswa
+     */
+    public function byMahasiswa($rootValue, array $args)
+    {
+        return Nilai::with(['semester', 'mataKuliah', 'krsDetail'])
+            ->where('mahasiswa_id', $args['mahasiswa_id'])
+            ->orderBy('semester_id', 'DESC')
+            ->get();
+    }
     public function byMahasiswaSemester($root, array $args)
 {
     return Nilai::whereHas('krsDetail.krs', function($query) use ($args) {

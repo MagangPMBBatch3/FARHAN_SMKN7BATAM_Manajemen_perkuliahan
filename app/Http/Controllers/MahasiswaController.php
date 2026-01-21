@@ -21,4 +21,7 @@ class MahasiswaController extends Controller
     public function krs(){
         return view('mahasiswa.krs.index');
     }
+    public function krsHistroy(){
+        return view('mahasiswa.krsHistory.index');
+    }
 }

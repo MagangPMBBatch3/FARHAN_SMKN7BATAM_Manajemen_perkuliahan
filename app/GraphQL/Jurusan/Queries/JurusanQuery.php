@@ -4,6 +4,12 @@ namespace App\GraphQL\Jurusan\Queries;
 use App\Models\Jurusan\Jurusan;
 
 class JurusanQuery {
+    public function byFakultas($rootValue, array $args)
+    {
+        return Jurusan::where('fakultas_id', $args['fakultas_id'])
+            ->orderBy('nama_jurusan')
+            ->get();
+    }
     public function byFakultas($root, array $args)
     {
         return \App\Models\Jurusan\Jurusan::where('fakultas_id', $args['fakultas_id'])

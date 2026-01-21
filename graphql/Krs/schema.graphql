@@ -1,5 +1,6 @@
 type Krs {
     id: ID!
+    user_id: ID!
     mahasiswa_id: Int!
     semester_id: Int!
     tanggal_pengisian: Date!
@@ -65,7 +66,7 @@ extend type Query{
     allKrsArsip(
             search: String
             first: Int
-            page: Int
+            page: Int 
         ): KrsPaginator @field(resolver: "App\\GraphQL\\Krs\\Queries\\KrsQuery@allArsip")   
     krsByMahasiswa(
         nama_mk: String! @where(operator: "like", key: "nama_mk")
@@ -75,6 +76,21 @@ extend type Query{
     
     mahasiswaByJurusan(jurusan_id: ID!): [Mahasiswa!]! 
         @field(resolver: "App\\GraphQL\\Mahasiswa\\Queries\\MahasiswaQuery@byJurusan")
+
+        mahasiswaByUserId(user_id: ID!): Mahasiswa
+        @field(resolver: "App\\GraphQL\\Mahasiswa\\Queries\\MahasiswaQuery@byUserId")
+    
+    # Get KRS aktif (semester berjalan) untuk mahasiswa
+    currentKrsByMahasiswa(mahasiswa_id: ID!): Krs
+        @field(resolver: "App\\GraphQL\\Krs\\Queries\\KrsQuery@currentByMahasiswa")
+    
+    # Get riwayat semua KRS mahasiswa
+    krsHistoryByMahasiswa(mahasiswa_id: ID!): [Krs!]!
+        @field(resolver: "App\\GraphQL\\Krs\\Queries\\KrsQuery@historyByMahasiswa")
+    
+    # Get semester yang sedang aktif
+    currentSemester: Semester
+        @field(resolver: "App\\GraphQL\\Semester\\Queries\\SemesterQuery@current")
 }
 
 extend type Mutation {

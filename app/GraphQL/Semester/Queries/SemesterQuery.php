@@ -5,11 +5,15 @@ use App\Models\Semester\Semester;
 use Illuminate\Pagination\LengthAwarePaginator; 
 use Illuminate\Support\Facades\Auth;
 class SemesterQuery {
+    public function current($rootValue, array $args)
+    {
+        return Semester::orderBy('id', 'DESC')
+            ->first();
+    }
     public function forMahasiswa($root, array $args)
     {
         $user = Auth::user();
         
-        // Debug: Log user info
         \Log::info('User:', ['user' => $user]);
         
         if (!$user) {
@@ -17,7 +21,6 @@ class SemesterQuery {
             return [];
         }
         
-        // Cari mahasiswa berdasarkan user_id atau email
         $mahasiswa = \App\Models\Mahasiswa\Mahasiswa::where('user_id', $user->id)
             ->orWhere('email_pribadi', $user->email)
             ->first();

@@ -103,6 +103,15 @@ extend type Query{
     mahasiswaByNama(
         nama_lengkap: String! @where(operator: "like", key: "nama_lengkap")
     ): [Mahasiswa]! @all(model: "Mahasiswa\\Mahasiswa")
+    
+    mahasiswaProfile: Mahasiswa 
+        @field(resolver: "App\\GraphQL\\Mahasiswa\\Queries\\MahasiswaQuery@MahasiswaProfile")
+        @guard
+    
+    # Query untuk mendapatkan nilai berdasarkan mahasiswa ID
+    nilaiByMahasiswa(mahasiswa_id: ID!): [Nilai!]! 
+        @field(resolver: "App\\GraphQL\\Mahasiswa\\Queries\\MahasiswaQuery@NilaiByMahasiswa")
+        @guard
 }
 
 extend type Mutation {

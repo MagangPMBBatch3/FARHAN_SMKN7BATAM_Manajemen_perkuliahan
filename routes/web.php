@@ -53,4 +53,5 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
     Route::get('/mahasiswa/nilai', [MahasiswaController::class, 'nilai'])->name('nilai.index');
     Route::get('/mahasiswa/khs', [MahasiswaController::class, 'khs'])->name('khs.index');
     Route::get('/mahasiswa/krs', [MahasiswaController::class, 'krs'])->name('krs.index');
+    Route::get('/mahasiswa/krsHistory', [MahasiswaController::class, 'krsHistory'])->name('krsHistroy.index');
 });

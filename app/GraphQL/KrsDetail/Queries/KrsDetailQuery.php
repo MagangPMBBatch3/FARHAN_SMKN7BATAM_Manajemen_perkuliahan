@@ -39,29 +39,46 @@ class KrsDetailQuery
             ->get();
     }
 
-    public function all($_, array $args)
+    public function all($rootValue, array $args)
     {
-        $first = $args['first'] ?? 10;
-        $page = $args['page'] ?? 1;
-        $search = $args['search'] ?? null;
-
         $query = KrsDetail::with([
             'krs.mahasiswa',
-            'kelas',
-            'mataKuliah'
+            'krs.semester',
+            'kelas.dosen',
+            'mataKuliah',
+            'nilai'
         ]);
 
-        if ($search) {
-            $query->whereHas('krs.mahasiswa', function ($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
-                    ->orWhere('nim', 'like', "%{$search}%");
-            })
-                ->orWhereHas('mataKuliah', function ($q) use ($search) {
-                    $q->where('nama_mk', 'like', "%{$search}%")
-                        ->orWhere('kode_mk', 'like', "%{$search}%");
-                });
+        if (!empty($args['search'])) {
+            $search = $args['search'];
+            $query->whereHas('mataKuliah', function($q) use ($search) {
+                $q->where('nama_mk', 'like', "%{$search}%")
+                  ->orWhere('kode_mk', 'like', "%{$search}%");
+            });
         }
 
-        return $query->paginate($first, ['*'], 'page', $page);
+        return $query->paginate(
+            $args['first'] ?? 10,
+            ['*'],
+            'page',
+            $args['page'] ?? 1
+        );
     }
+
+    /**
+     * Get KRS Detail berdasarkan mahasiswa
+     */
+    public function byMahasiswa($rootValue, array $args)
+    {
+        return KrsDetail::with([
+            'krs.semester',
+            'kelas.dosen',
+            'kelas.jadwalKuliah.ruangan',
+            'mataKuliah',
+            'nilai'
+        ])
+        ->whereHas('krs', function($q) use ($args) {
+            $q->where('mahasiswa_id', $args['mahasiswa_id']);
+        })
+        ->ge
 }

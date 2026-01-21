@@ -6,6 +6,7 @@ use App\Models\KrsDetail\KrsDetail;
 
 class KrsDetailMutation 
 {
+    
     public function restore($_, array $args): ?KrsDetail
     {
         return KrsDetail::withTrashed()->find($args['id'])?->restore()
