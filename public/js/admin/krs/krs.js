@@ -6,7 +6,6 @@ async function loadKrsData(pageAktif = 1, pageArsip = 1) {
     currentPageAktif = pageAktif;
     currentPageArsip = pageArsip;
     
-    // Ambil perPage dari select yang sesuai dengan tab aktif
     const perPageAktif = parseInt(document.getElementById("perPage")?.value || 10);
     const perPageArsip = parseInt(document.getElementById("perPageArsip")?.value || 10);
     const searchValue = document.getElementById("search")?.value.trim() || "";
@@ -15,7 +14,32 @@ async function loadKrsData(pageAktif = 1, pageArsip = 1) {
     const queryAktif = `
     query($first: Int, $page: Int, $search: String) {
         allKrsPaginate(first: $first, page: $page, search: $search) {
-            data { id mahasiswa{id nama_lengkap} semester{id nama_semester} tanggal_pengisian tanggal_persetujuan status total_sks catatan dosenPa{id nama_lengkap} }
+            data { 
+                id 
+                mahasiswa_id
+                semester_id
+                tanggal_pengisian 
+                tanggal_persetujuan 
+                status 
+                total_sks 
+                catatan 
+                dosen_pa_id
+                mahasiswa {
+                    id 
+                    nama_lengkap
+                    nim
+                }
+                semester {
+                    id 
+                    nama_semester
+                    kode_semester
+                }
+                dosenPa {
+                    id 
+                    nama_lengkap
+                    nidn
+                }
+            }
             paginatorInfo { currentPage lastPage total hasMorePages perPage }
         }
     }`;
@@ -27,13 +51,44 @@ async function loadKrsData(pageAktif = 1, pageArsip = 1) {
         body: JSON.stringify({ query: queryAktif, variables: variablesAktif })
     });
     const dataAktif = await resAktif.json();
-    renderKrsTable(dataAktif?.data?.allKrsPaginate?.data || [], 'dataKrs', true);
+    
+    if (dataAktif.errors) {
+        console.error('GraphQL Errors:', dataAktif.errors);
+        renderKrsTable([], 'dataKrs', true);
+    } else {
+        renderKrsTable(dataAktif?.data?.allKrsPaginate?.data || [], 'dataKrs', true);
+    }
 
     // --- Query Data Arsip ---
     const queryArsip = `
     query($first: Int, $page: Int, $search: String) {
         allKrsArsip(first: $first, page: $page, search: $search) {
-            data { id mahasiswa{id nama_lengkap} semester{id nama_semester} tanggal_pengisian tanggal_persetujuan status total_sks catatan dosenPa{id nama_lengkap} }
+            data { 
+                id 
+                mahasiswa_id
+                semester_id
+                tanggal_pengisian 
+                tanggal_persetujuan 
+                status 
+                total_sks 
+                catatan 
+                dosen_pa_id
+                mahasiswa {
+                    id 
+                    nama_lengkap
+                    nim
+                }
+                semester {
+                    id 
+                    nama_semester
+                    kode_semester
+                }
+                dosenPa {
+                    id 
+                    nama_lengkap
+                    nidn
+                }
+            }
             paginatorInfo { currentPage lastPage total hasMorePages perPage }
         }
     }`;
@@ -45,7 +100,13 @@ async function loadKrsData(pageAktif = 1, pageArsip = 1) {
         body: JSON.stringify({ query: queryArsip, variables: variablesArsip })
     });
     const dataArsip = await resArsip.json();
-    renderKrsTable(dataArsip?.data?.allKrsArsip?.data || [], 'dataKrsArsip', false);
+    
+    if (dataArsip.errors) {
+        console.error('GraphQL Errors:', dataArsip.errors);
+        renderKrsTable([], 'dataKrsArsip', false);
+    } else {
+        renderKrsTable(dataArsip?.data?.allKrsArsip?.data || [], 'dataKrsArsip', false);
+    }
 
     // --- Update info pagination untuk Data Aktif ---
     const pageInfoAktif = dataAktif?.data?.allKrsPaginate?.paginatorInfo;
@@ -69,10 +130,11 @@ async function loadKrsData(pageAktif = 1, pageArsip = 1) {
 function renderKrsTable(krs, tableId, isActive) {
     const tbody = document.getElementById(tableId);
     tbody.innerHTML = '';
+    
     if (!krs.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center text-gray-500 p-3">Tidak ada data</td>
+                <td colspan="9" class="text-center text-gray-500 p-3">Tidak ada data</td>
             </tr>
         `;
         return;
@@ -82,27 +144,30 @@ function renderKrsTable(krs, tableId, isActive) {
         let actions = '';
         if (isActive) {
             actions = `
-            <div class="flex items-center justify-end space-x-2">
-            <a href="/admin/krs-detail/${item.id}" 
-                class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                </svg>
-            </a>
-            <button onclick="openEditModal(${item.id})" 
-                class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors duration-200">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="flex items-center justify-end space-x-2">
+                    <a href="/admin/krs-detail/${item.id}" 
+                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                        title="Detail">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </a>
+                    <button onclick="openEditModal(${item.id})" 
+                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors duration-200"
+                        title="Edit">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
-            </button>
-            <button onclick="hapusDosen(${item.id})" 
-                class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    </button>
+                    <button onclick="hapusKrs(${item.id})" 
+                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+                        title="Arsipkan">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
                         </svg>
-            </button>
-        </div>
+                    </button>
+                </div>
             `;
         } else {
             actions = `
@@ -125,29 +190,56 @@ function renderKrsTable(krs, tableId, isActive) {
             `;
         }
 
+        // Format tanggal
+        const tanggalPengisian = item.tanggal_pengisian 
+            ? new Date(item.tanggal_pengisian).toLocaleDateString('id-ID')
+            : '-';
+        const tanggalPersetujuan = item.tanggal_persetujuan 
+            ? new Date(item.tanggal_persetujuan).toLocaleDateString('id-ID')
+            : 'Belum Disetujui';
+
+        // Status badge
+        const statusBadge = getStatusBadge(item.status);
+
         tbody.innerHTML += `
             <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.mahasiswa?.nama_lengkap}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.semester?.nama_semester}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.tanggal_pengisian|| "-"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.tanggal_persetujuan || "Belum Disetujui"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.status}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.total_sks}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.catatan || "-"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.dosenPa?.nama_lengkap}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    ${item.mahasiswa?.nama_lengkap || '-'}
+                    <div class="text-xs text-gray-500">${item.mahasiswa?.nim || '-'}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${item.semester?.nama_semester || '-'}
+                    <div class="text-xs text-gray-500">${item.semester?.kode_semester || '-'}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${tanggalPengisian}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${tanggalPersetujuan}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">${statusBadge}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.total_sks || 0}</td>
+                <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">${item.catatan || '-'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${item.dosenPa?.nama_lengkap || '-'}
+                    ${item.dosenPa?.nidn ? `<div class="text-xs text-gray-500">NIDN: ${item.dosenPa.nidn}</div>` : ''}
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">${actions}</td>
             </tr>
         `;
     });
 }
 
+function getStatusBadge(status) {
+    const badges = {
+        'Draft': '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Draft</span>',
+        'Diajukan': '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Diajukan</span>',
+        'Disetujui': '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Disetujui</span>',
+        'Ditolak': '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Ditolak</span>'
+    };
+    return badges[status] || `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">${status}</span>`;
+}
+
 // --- Mutations ---
 async function hapusKrs(id) {
     if (!confirm('Pindahkan ke arsip?')) return;
-    const mutation = `
-    mutation {
-        deleteKrs(id: ${id}) { id }
-    }`;
+    const mutation = `mutation { deleteKrs(id: ${id}) { id } }`;
     await fetch(API_URL, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
@@ -158,10 +250,7 @@ async function hapusKrs(id) {
 
 async function restoreKrs(id) {
     if (!confirm('Kembalikan dari arsip?')) return;
-    const mutation = `
-    mutation {
-        restoreKrs(id: ${id}) { id }
-    }`;
+    const mutation = `mutation { restoreKrs(id: ${id}) { id } }`;
     await fetch(API_URL, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
@@ -172,10 +261,7 @@ async function restoreKrs(id) {
 
 async function forceDeleteKrs(id) {
     if (!confirm('Hapus permanen? Data tidak bisa dikembalikan')) return;
-    const mutation = `
-    mutation {
-        forceDeleteKrs(id: ${id}) { id }
-    }`;
+    const mutation = `mutation { forceDeleteKrs(id: ${id}) { id } }`;
     await fetch(API_URL, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
@@ -189,7 +275,7 @@ async function searchKrs() {
     loadKrsData(1, 1);
 }
 
-// --- Pagination untuk Data Aktif ---
+// --- Pagination ---
 function prevPageAktif() {
     if (currentPageAktif > 1) loadKrsData(currentPageAktif - 1, currentPageArsip);
 }
@@ -198,7 +284,6 @@ function nextPageAktif() {
     loadKrsData(currentPageAktif + 1, currentPageArsip);
 }
 
-// --- Pagination untuk Data Arsip ---
 function prevPageArsip() {
     if (currentPageArsip > 1) loadKrsData(currentPageAktif, currentPageArsip - 1);
 }

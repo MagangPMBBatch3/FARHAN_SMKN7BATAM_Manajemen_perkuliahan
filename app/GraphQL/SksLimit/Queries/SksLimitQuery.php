@@ -4,6 +4,14 @@ namespace App\GraphQL\SksLimit\Queries;
 use App\Models\SksLimit\SksLimit;
 
 class SksLimitQuery {
+    public function byIpk($rootValue, array $args)
+    {
+        $ipk = $args['ipk'];
+
+        return SksLimit::where('min_ipk', '<=', $ipk)
+            ->where('max_ipk', '>=', $ipk)
+            ->first();
+    }
     public function allArsip($_, array $args)
     {
         $query = SksLimit::onlyTrashed();

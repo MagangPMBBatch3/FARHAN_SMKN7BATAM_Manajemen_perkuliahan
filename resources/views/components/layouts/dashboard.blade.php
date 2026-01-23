@@ -331,9 +331,9 @@
                             <i class="fas fa-chevron-down dropdown-arrow" id="arrow-perkuliahan"></i>
                         </button>
                         <div class="dropdown-content mt-1" id="dropdown-perkuliahan">
-                            <a href="{{ route('admin.jadwal') }}" class="submenu-item {{ request()->routeIs('admin.jadwal') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
+                            <!-- <a href="{{ route('admin.jadwal') }}" class="submenu-item {{ request()->routeIs('admin.jadwal') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
                                 <span class="font-medium">Jadwal Kuliah</span>
-                            </a>
+                            </a> -->
                             <a href="/admin/pertemuan" class="submenu-item {{ request()->is('admin/pertemuan') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
                                 <span class="font-medium">Pertemuan</span>
                             </a>
@@ -364,9 +364,9 @@
                             <a href="/admin/rekap-kehadiran" class="submenu-item {{ request()->is('admin/rekap-kehadiran') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
                                 <span class="font-medium">Rekap Kehadiran</span>
                             </a>
-                            <a href="/admin/pengaturan-kehadiran" class="submenu-item {{ request()->is('admin/pengaturan-kehadiran') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
+                            <!-- <a href="/admin/pengaturan-kehadiran" class="submenu-item {{ request()->is('admin/pengaturan-kehadiran') ? 'active' : '' }} flex items-center py-2 rounded-lg hover:bg-white/5 transition-all text-xs">
                                 <span class="font-medium">Pengaturan Kehadiran</span>
-                            </a>
+                            </a> -->
                         </div>
                     </div>
 

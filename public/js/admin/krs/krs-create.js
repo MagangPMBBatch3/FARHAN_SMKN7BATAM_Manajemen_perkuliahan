@@ -1,9 +1,13 @@
-async function loadMahasiswaOptions() {
+// ==================== ADD MODAL - LOAD OPTIONS ====================
+
+let addMahasiswaData = []; // Store mahasiswa data for search in ADD modal
+
+async function loadFakultasOptionsAdd() {
     const query = `
     query {
-        allMahasiswa {
+        allFakultas {
             id
-            nama_lengkap
+            nama_fakultas
         }
     }`;
 
@@ -15,104 +19,176 @@ async function loadMahasiswaOptions() {
         });
 
         const result = await response.json();
-        const mahasiswaList = result.data.allMahasiswa || [];
-        /* console.log(mahasiswaList); */
+        const fakultasList = result.data.allFakultas || [];
 
-        const selectAdd = document.getElementById('addMahasiswaId');
-        selectAdd.innerHTML = '<option value="">Pilih Mahasiswa</option>';
-        mahasiswaList.forEach(mahasiswa => {
-            selectAdd.innerHTML += `<option value="${mahasiswa.id}">${mahasiswa.nama_lengkap}</option>`;
-        });
-
-        const selectEdit = document.getElementById('editMahasiswaId');
-        selectEdit.innerHTML = '<option value="">Pilih Mahasiswa</option>';
-        mahasiswaList.forEach(mahasiswa => {
-            selectEdit.innerHTML += `<option value="${mahasiswa.id}">${mahasiswa.nama_lengkap}</option>`;
+        const selectAdd = document.getElementById('addFakultasId');
+        selectAdd.innerHTML = '<option value="">Pilih Fakultas</option>';
+        fakultasList.forEach(fakultas => {
+            selectAdd.innerHTML += `<option value="${fakultas.id}">${fakultas.nama_fakultas}</option>`;
         });
 
     } catch (error) {
-        console.error('Error loading mahasiswa:', error);
+        console.error('Error loading fakultas:', error);
     }
 }
 
-// async function onMahasiswaSelect(){
-//     const mahasiswaId = document.getElementById("addMahasiswaId").value;
+async function loadJurusanByFakultasAdd(fakultasId) {
+    const select = document.getElementById('addJurusanId');
+    const mahasiswaSelect = document.getElementById('addMahasiswaId');
+    const searchInput = document.getElementById('addMahasiswaSearch');
+    
+    if (!fakultasId) {
+        select.disabled = true;
+        select.innerHTML = '<option value="">Pilih fakultas terlebih dahulu</option>';
+        
+        mahasiswaSelect.disabled = true;
+        mahasiswaSelect.innerHTML = '<option value="">Pilih jurusan terlebih dahulu</option>';
+        searchInput.disabled = true;
+        searchInput.value = '';
+        addMahasiswaData = [];
+        return;
+    }
 
-//     if (!mahasiswaId){
-//         addTotalSks.disabled = true;
-//         addTotalSks.innerHTML = '<strong value=""> Silahkan Pilih Mahasiswa Terlebih Dahulu<strong>';
-//         return;
-//     }
-//     addTotalSks.disabled = true;
-//     addTotalSks.innerHTML = '<strong value=""> Loading Total SKS<strong>';
-// }
-// async function getSksLimitList() {
-//     const query = `query {
-//         allSksLimit {
-//             id
-//             min_ipk
-//             max_ipk
-//             max_sks
-//             keterangan
-//         }
-//     }`;
+    select.disabled = true;
+    select.innerHTML = '<option value="">Loading...</option>';
 
-//     try {
-//         const response = await fetch(API_URL, {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify({ query })
-//         });
+    try {
+        const query = `
+        query($fakultasId: ID!) {
+            jurusanByFakultas(fakultas_id: $fakultasId) {
+                id
+                nama_jurusan
+            }
+        }`;
 
-//         const result = await response.json();
-//         return result.data.allSksLimit || [];
-//     } catch (error) {
-//         console.error('Error getting SKS limit:', error);
-//         return [];
-//     }
-// }
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                query,
+                variables: { fakultasId: parseInt(fakultasId) }
+            })
+        });
 
-// /**
-//  * Menghitung maksimal SKS berdasarkan IPK mahasiswa
-//  */
-// async function getMaxSks(ipk) {
-//     try {
-//         const sksLimitList = await getSksLimitList();
+        const result = await response.json();
+        const jurusanList = result.data.jurusanByFakultas || [];
 
-//         // Mahasiswa baru (IPK = 0 atau null)
-//         if (!ipk || ipk === 0) {
-//             const mahasiswaBaru = sksLimitList.find(item =>
-//                 item.keterangan?.toLowerCase().includes('baru')
-//             );
-//             return mahasiswaBaru?.max_sks || 12;
-//         }
+        if (jurusanList.length === 0) {
+            select.innerHTML = '<option value="">Tidak ada jurusan tersedia</option>';
+            select.disabled = true;
+            return;
+        }
 
-//         // Cari batas SKS berdasarkan range IPK
-//         const matchedLimit = sksLimitList.find(item => {
-//             const minIpk = parseFloat(item.min_ipk) || 0;
-//             const maxIpk = parseFloat(item.max_ipk) || 4.0;
-//             return ipk >= minIpk && ipk <= maxIpk;
-//         });
+        select.innerHTML = '<option value="">Pilih Jurusan</option>';
+        jurusanList.forEach(jurusan => {
+            select.innerHTML += `<option value="${jurusan.id}">${jurusan.nama_jurusan}</option>`;
+        });
+        select.disabled = false;
 
-//         return matchedLimit?.max_sks || 16;
+    } catch (error) {
+        console.error('Error loading jurusan:', error);
+        select.innerHTML = '<option value="">Error loading data</option>';
+    }
+}
 
-//     } catch (error) {
-//         console.error('Error in getMaxSks:', error);
-//         // Fallback hardcoded
-//         if (!ipk || ipk === 0) return 12;
-//         if (ipk >= 3.50) return 24;
-//         if (ipk >= 3.00) return 22;
-//         if (ipk >= 2.50) return 20;
-//         if (ipk >= 2.00) return 18;
-//         return 16;
-//     }
-// }
-async function loadSemesterOptions() {
+async function loadMahasiswaByJurusanAdd(jurusanId) {
+    const select = document.getElementById('addMahasiswaId');
+    const searchInput = document.getElementById('addMahasiswaSearch');
+    
+    if (!jurusanId) {
+        select.disabled = true;
+        select.innerHTML = '<option value="">Pilih jurusan terlebih dahulu</option>';
+        searchInput.disabled = true;
+        searchInput.value = '';
+        addMahasiswaData = [];
+        return;
+    }
+
+    select.disabled = true;
+    select.innerHTML = '<option value="">Loading...</option>';
+    searchInput.disabled = true;
+
+    try {
+        const query = `
+        query($jurusanId: ID!) {
+            mahasiswaByJurusan(jurusan_id: $jurusanId) {
+                id
+                nim
+                nama_lengkap
+            }
+        }`;
+
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                query,
+                variables: { jurusanId: parseInt(jurusanId) }
+            })
+        });
+
+        const result = await response.json();
+        const mahasiswaList = result.data.mahasiswaByJurusan || [];
+
+        // Store data for search
+        addMahasiswaData = mahasiswaList;
+
+        if (mahasiswaList.length === 0) {
+            select.innerHTML = '<option value="">Tidak ada mahasiswa tersedia</option>';
+            select.disabled = true;
+            searchInput.disabled = true;
+            return;
+        }
+
+        // Render all mahasiswa
+        renderMahasiswaOptionsAdd(mahasiswaList);
+        select.disabled = false;
+        searchInput.disabled = false;
+
+    } catch (error) {
+        console.error('Error loading mahasiswa:', error);
+        select.innerHTML = '<option value="">Error loading data</option>';
+    }
+}
+
+function renderMahasiswaOptionsAdd(mahasiswaList) {
+    const select = document.getElementById('addMahasiswaId');
+    select.innerHTML = '<option value="">Pilih Mahasiswa</option>';
+    mahasiswaList.forEach(mhs => {
+        select.innerHTML += `<option value="${mhs.id}">${mhs.nim} - ${mhs.nama_lengkap}</option>`;
+    });
+}
+
+function searchMahasiswaAdd(searchTerm) {
+    if (!searchTerm || searchTerm.trim() === '') {
+        // Show all if search is empty
+        renderMahasiswaOptionsAdd(addMahasiswaData);
+        return;
+    }
+
+    // Filter mahasiswa based on search term
+    const searchLower = searchTerm.toLowerCase();
+    const filtered = addMahasiswaData.filter(mhs => 
+        mhs.nim.toLowerCase().includes(searchLower) ||
+        mhs.nama_lengkap.toLowerCase().includes(searchLower)
+    );
+
+    // Render filtered results
+    const select = document.getElementById('addMahasiswaId');
+    if (filtered.length === 0) {
+        select.innerHTML = '<option value="">Tidak ada hasil pencarian</option>';
+    } else {
+        renderMahasiswaOptionsAdd(filtered);
+    }
+}
+
+async function loadSemesterOptionsAdd() {
     const query = `
     query {
         allSemester {
             id
             nama_semester
+            tahun_ajaran
         }
     }`;
 
@@ -124,28 +200,20 @@ async function loadSemesterOptions() {
         });
 
         const result = await response.json();
-
         const semesterList = result.data.allSemester || [];
 
-        // Isi dropdown Add
         const selectAdd = document.getElementById('addSemesterId');
         selectAdd.innerHTML = '<option value="">Pilih Semester</option>';
-        semesterList.forEach(Semester => {
-            selectAdd.innerHTML += `<option value="${Semester.id}">${Semester.nama_semester}</option>`;
-        });
-
-        // Isi dropdown Edit
-        const selectEdit = document.getElementById('editSemesterId');
-        selectEdit.innerHTML = '<option value="">Pilih Semester</option>';
-        semesterList.forEach(Semester => {
-            selectEdit.innerHTML += `<option value="${Semester.id}">${Semester.nama_semester}</option>`;
+        semesterList.forEach(semester => {
+            selectAdd.innerHTML += `<option value="${semester.id}">${semester.nama_semester} (${semester.tahun_ajaran})</option>`;
         });
 
     } catch (error) {
-        console.error('Error loading Semester:', error);
+        console.error('Error loading semester:', error);
     }
 }
-async function loadDosenOptions() {
+
+async function loadDosenOptionsAdd() {
     const query = `
     query {
         allDosen {
@@ -164,19 +232,10 @@ async function loadDosenOptions() {
         const result = await response.json();
         const dosenList = result.data.allDosen || [];
 
-
-        // Isi dropdown Add
         const selectAdd = document.getElementById('addDosenId');
         selectAdd.innerHTML = '<option value="">Pilih Dosen</option>';
         dosenList.forEach(dosen => {
             selectAdd.innerHTML += `<option value="${dosen.id}">${dosen.nama_lengkap}</option>`;
-        });
-
-        // Isi dropdown Edit
-        const selectEdit = document.getElementById('editDosenId');
-        selectEdit.innerHTML = '<option value="">Pilih Dosen</option>';
-        dosenList.forEach(dosen => {
-            selectEdit.innerHTML += `<option value="${dosen.id}">${dosen.nama_lengkap}</option>`;
         });
 
     } catch (error) {
@@ -184,40 +243,48 @@ async function loadDosenOptions() {
     }
 }
 
+// ==================== ADD MODAL FUNCTIONS ====================
+
 function openAddModal() {
-    loadSemesterOptions();
-    loadMahasiswaOptions();
-    loadDosenOptions();
+    loadFakultasOptionsAdd();
+    loadSemesterOptionsAdd();
+    loadDosenOptionsAdd();
     document.getElementById('modalAdd').classList.remove('hidden');
 }
 
 function closeAddModal() {
     document.getElementById('modalAdd').classList.add('hidden');
-    document.getElementById('addMahasiswaId').value = '';
-    document.getElementById('addSemesterId').value = '';
-    document.getElementById('addPengisian').value = '';
-    document.getElementById('addStatus').value = '';
-    /* document.getElementById('addTotalSks').value = ''; */
-    document.getElementById('addCatatan').value = '';
-    document.getElementById('addDosenId').value = '';
+    document.getElementById('formAddKrs').reset();
+    
+    // Reset dropdowns
+    document.getElementById('addJurusanId').disabled = true;
+    document.getElementById('addJurusanId').innerHTML = '<option value="">Pilih fakultas dulu</option>';
+    
+    document.getElementById('addMahasiswaId').disabled = true;
+    document.getElementById('addMahasiswaId').innerHTML = '<option value="">Pilih jurusan dulu</option>';
+    
+    document.getElementById('addMahasiswaSearch').disabled = true;
+    document.getElementById('addMahasiswaSearch').value = '';
+    
+    addMahasiswaData = [];
 }
 
 async function createKrs() {
-    // Ambil data dari form
     const mahasiswa = document.getElementById('addMahasiswaId').value;
     const semester = document.getElementById('addSemesterId').value;
     const pengisian = document.getElementById('addPengisian').value;
     const status = document.getElementById('addStatus').value;
     const total_sks = 0;
-    const catatan = document.getElementById('addCatatan').value;
+    const catatan = document.getElementById('addCatatan').value || '';
     const dosen = document.getElementById('addDosenId').value;
 
-    // Validasi field required
-    if (!mahasiswa) return alert("mahasiswa harus diisi!");
-    if (!semester) return alert("semester harus diisi!");
-    if (!pengisian) return alert("sks semester harus dipilih!");
-    if (!status) return alert("ip semester dipilih!");
-    if (!dosen) return alert("ipk harus dipilih!");
+    // Validasi
+    if (!mahasiswa) return alert("Mahasiswa harus dipilih!");
+    if (!semester) return alert("Semester harus dipilih!");
+    if (!pengisian) return alert("Tanggal pengisian harus diisi!");
+    if (!status) return alert("Status harus dipilih!");
+    if (!dosen) return alert("Dosen PA harus dipilih!");
+
     const mutation = `
     mutation {
         createKrs(input: {
@@ -250,7 +317,7 @@ async function createKrs() {
             return;
         }
 
-        alert('Kelas berhasil ditambahkan!');
+        alert('KRS berhasil ditambahkan!');
         closeAddModal();
         loadKrsData(currentPageAktif, currentPageArsip);
 
@@ -259,8 +326,11 @@ async function createKrs() {
         alert('Terjadi kesalahan saat menambahkan KRS');
     }
 }
+
+// ==================== INIT ====================
+
 document.addEventListener('DOMContentLoaded', () => {
-    loadMahasiswaOptions();
-    loadSemesterOptions();
-    loadDosenOptions();
+    loadFakultasOptionsAdd();
+    loadSemesterOptionsAdd();
+    loadDosenOptionsAdd();
 });

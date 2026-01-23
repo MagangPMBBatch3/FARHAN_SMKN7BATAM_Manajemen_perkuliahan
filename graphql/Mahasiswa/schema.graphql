@@ -89,7 +89,7 @@ type PageInfo {
 
 extend type Query{
     allMahasiswa: [Mahasiswa!]! @all(model: "Mahasiswa\\Mahasiswa")
-    mahasiswa(id: ID! @eq(key: "id")): Mahasiswa @find(model: "Mahasiswa\\Mahasiswa")
+    mahasiswa(id: Int! @eq(key: "id")): Mahasiswa @find(model: "Mahasiswa\\Mahasiswa")
     allMahasiswaPaginate(
             search: String
             first: Int
@@ -103,6 +103,15 @@ extend type Query{
     mahasiswaByNama(
         nama_lengkap: String! @where(operator: "like", key: "nama_lengkap")
     ): [Mahasiswa]! @all(model: "Mahasiswa\\Mahasiswa")
+    
+    mahasiswaProfile: Mahasiswa 
+        @field(resolver: "App\\GraphQL\\Mahasiswa\\Queries\\MahasiswaQuery@MahasiswaProfile")
+        @guard
+    
+    # Query untuk mendapatkan nilai berdasarkan mahasiswa ID
+    nilaiByMahasiswa(mahasiswa_id: ID!): [Nilai!]! 
+        @field(resolver: "App\\GraphQL\\Mahasiswa\\Queries\\MahasiswaQuery@NilaiByMahasiswa")
+        @guard
 }
 
 extend type Mutation {

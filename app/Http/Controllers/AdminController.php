@@ -308,4 +308,11 @@ class AdminController extends Controller
     public function pengaturanKehadiran(){
         return view('admin.pengaturan-kehadiran.index');
     }
+    public function kelas_detail($id)
+{
+    if (!is_numeric($id)) {
+        abort(404);
+    }
+    return view('admin.kelas.detail', ['kelasId' => $id]);
+}
 }

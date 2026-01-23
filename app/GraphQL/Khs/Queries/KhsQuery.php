@@ -49,4 +49,16 @@ class KhsQuery {
             ],
         ];
     }
+    public function byMahasiswa($rootValue, array $args)
+    {
+        return Khs::with([
+            'semester',
+            'mahasiswa.jurusan'
+        ])
+        ->where('mahasiswa_id', $args['mahasiswa_id'])
+        ->whereNull('deleted_at')
+        ->orderBy('semester_id', 'DESC')
+        ->get();
+    }
+    
 }

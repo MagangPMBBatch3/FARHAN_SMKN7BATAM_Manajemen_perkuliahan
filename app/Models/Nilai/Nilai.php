@@ -9,6 +9,7 @@ use App\Models\KrsDetail\KrsDetail;
 
 class Nilai extends Model
 {
+    use HasFactory, SoftDeletes;
     protected $table = 'nilai';
     
     protected $fillable = [

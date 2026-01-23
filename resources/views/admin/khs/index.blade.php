@@ -13,7 +13,7 @@
                             </svg>
                         </div>
                         <input type="text" id="search" 
-                            placeholder="Cari NIM, Nama, atau Jurusan..." 
+                            placeholder="Cari NIM, Nama, atau Semester..." 
                             class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm"
                             oninput="searchKhs()">
                     </div>
@@ -24,7 +24,7 @@
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Tambah KHS  
+                        Generate KHS
                     </button>
                 </div>
             </div>
@@ -58,10 +58,10 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
-                        <tr>
+                            <tr>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mahasiswa</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Semester</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKS Semester</th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SKS Semester</th>
                                 <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SKS Kumulatif</th>
                                 <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">IP Semester</th>
                                 <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">IPK</th>
@@ -74,20 +74,10 @@
 
                 {{-- Pagination Data Aktif --}}
                 <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
-                    <div class="flex-1 flex justify-between sm:hidden">
-                        <button id="prevBtnAktifMobile" onclick="prevPageAktif()"
-                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                            Previous
-                        </button>
-                        <button id="nextBtnAktifMobile" onclick="nextPageAktif()"
-                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                            Next
-                        </button>
-                    </div>
                     <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                         <div>
                             <p id="pageInfoAktif" class="text-sm text-gray-700">
-                                Menampilkan <span class="font-medium">1</span> sampai <span class="font-medium">10</span> dari <span class="font-medium">0</span> hasil
+                                Halaman <span class="font-medium">1</span> dari <span class="font-medium">1</span>
                             </p>
                         </div>
                         <div class="flex items-center gap-3">
@@ -95,7 +85,6 @@
                             <select id="perPage"
                                 class="border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 onchange="loadKhsData(1, 1)">
-                                <option value="5">5</option>
                                 <option value="10" selected>10</option>
                                 <option value="25">25</option>
                                 <option value="50">50</option>
@@ -128,10 +117,10 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
-                        <tr>
+                            <tr>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mahasiswa</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Semester</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKS Semester</th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SKS Semester</th>
                                 <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SKS Kumulatif</th>
                                 <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">IP Semester</th>
                                 <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">IPK</th>
@@ -144,20 +133,10 @@
 
                 {{-- Pagination Data Arsip --}}
                 <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
-                    <div class="flex-1 flex justify-between sm:hidden">
-                        <button id="prevBtnArsipMobile" onclick="prevPageArsip()"
-                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                            Previous
-                        </button>
-                        <button id="nextBtnArsipMobile" onclick="nextPageArsip()"
-                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                            Next
-                        </button>
-                    </div>
                     <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                         <div>
                             <p id="pageInfoArsip" class="text-sm text-gray-700">
-                                Menampilkan <span class="font-medium">1</span> sampai <span class="font-medium">10</span> dari <span class="font-medium">0</span> hasil
+                                Halaman <span class="font-medium">1</span> dari <span class="font-medium">1</span>
                             </p>
                         </div>
                         <div class="flex items-center gap-3">
@@ -165,14 +144,13 @@
                             <select id="perPageArsip"
                                 class="border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 onchange="loadKhsData(1, 1)">
-                                <option value="5">5</option>
                                 <option value="10" selected>10</option>
                                 <option value="25">25</option>
                                 <option value="50">50</option>
                                 <option value="100">100</option>
                             </select>
                             
-                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                                 <button id="prevBtnArsip" onclick="prevPageArsip()"
                                     class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                                     <span class="sr-only">Previous</span>
@@ -192,16 +170,18 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
-    </div>
 
-    {{-- Modal --}}
+    {{-- Modals --}}
     @include('components.modal.khs.modal-add')
+    @include('components.modal.khs.modal-detail-khs')
     @include('components.modal.khs.modal-edit')
 
-    {{-- Script --}}
+    {{-- Scripts --}}
     <script src="{{ asset('js/admin/khs/khs.js') }}"></script>
     <script src="{{ asset('js/admin/khs/khs-create.js') }}"></script>
+    <script src="{{ asset('js/admin/khs/khs-detail.js') }}"></script>
     <script src="{{ asset('js/admin/khs/khs-edit.js') }}"></script>
 
     <script>

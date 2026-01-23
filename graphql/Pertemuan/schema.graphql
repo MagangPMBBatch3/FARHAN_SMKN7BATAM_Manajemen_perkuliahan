@@ -107,6 +107,15 @@ extend type Query {
         @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery@hariIni")
     pertemuanMendatang(kelas_id: Int): [Pertemuan!]!
         @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery@mendatang")
+
+        pertemuanMahasiswa(
+        first: Int
+        page: Int
+        search: String
+        semester_id: Int
+        status_pertemuan: StatusPertemuan
+    ): PertemuanPaginator 
+        @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery@forMahasiswa")@guard
 }
 
 extend type Mutation {

@@ -5,8 +5,7 @@ let currentPageArsip = 1;
 async function loadKhsData(pageAktif = 1, pageArsip = 1) {
     currentPageAktif = pageAktif;
     currentPageArsip = pageArsip;
-    
-    // Ambil perPage dari select yang sesuai dengan tab aktif
+
     const perPageAktif = parseInt(document.getElementById("perPage")?.value || 10);
     const perPageArsip = parseInt(document.getElementById("perPageArsip")?.value || 10);
     const searchValue = document.getElementById("search")?.value.trim() || "";
@@ -15,7 +14,22 @@ async function loadKhsData(pageAktif = 1, pageArsip = 1) {
     const queryAktif = `
     query($first: Int, $page: Int, $search: String) {
         allKhsPaginate(first: $first, page: $page, search: $search) {
-            data { id mahasiswa{id nama_lengkap} semester{id nama_semester} sks_semester sks_kumulatif ip_semester ipk }
+            data { 
+                id 
+                mahasiswa {
+                    id 
+                    nim
+                    nama_lengkap
+                } 
+                semester {
+                    id 
+                    nama_semester
+                } 
+                sks_semester 
+                sks_kumulatif 
+                ip_semester 
+                ipk 
+            }
             paginatorInfo { currentPage lastPage total hasMorePages perPage }
         }
     }`;
@@ -33,7 +47,22 @@ async function loadKhsData(pageAktif = 1, pageArsip = 1) {
     const queryArsip = `
     query($first: Int, $page: Int, $search: String) {
         allKhsArsip(first: $first, page: $page, search: $search) {
-            data { id mahasiswa{id nama_lengkap} semester{id nama_semester} sks_semester sks_kumulatif ip_semester ipk }
+            data { 
+                id 
+                mahasiswa {
+                    id
+                    nim
+                    nama_lengkap
+                } 
+                semester {
+                    id 
+                    nama_semester
+                } 
+                sks_semester 
+                sks_kumulatif 
+                ip_semester 
+                ipk 
+            }
             paginatorInfo { currentPage lastPage total hasMorePages perPage }
         }
     }`;
@@ -47,7 +76,7 @@ async function loadKhsData(pageAktif = 1, pageArsip = 1) {
     const dataArsip = await resArsip.json();
     renderKhsTable(dataArsip?.data?.allKhsArsip?.data || [], 'dataKhsArsip', false);
 
-    // --- Update info pagination untuk Data Aktif ---
+    // --- Update pagination info ---
     const pageInfoAktif = dataAktif?.data?.allKhsPaginate?.paginatorInfo;
     if (pageInfoAktif) {
         document.getElementById("pageInfoAktif").innerText =
@@ -56,7 +85,6 @@ async function loadKhsData(pageAktif = 1, pageArsip = 1) {
         document.getElementById("nextBtnAktif").disabled = !pageInfoAktif.hasMorePages;
     }
 
-    // --- Update info pagination untuk Data Arsip ---
     const pageInfoArsip = dataArsip?.data?.allKhsArsip?.paginatorInfo;
     if (pageInfoArsip) {
         document.getElementById("pageInfoArsip").innerText =
@@ -69,27 +97,40 @@ async function loadKhsData(pageAktif = 1, pageArsip = 1) {
 function renderKhsTable(khs, tableId, isActive) {
     const tbody = document.getElementById(tableId);
     tbody.innerHTML = '';
+
     if (!khs.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center text-gray-500 p-3">Tidak ada data</td>
+                <td colspan="7" class="text-center text-gray-500 p-3">Tidak ada data</td>
             </tr>
         `;
         return;
     }
-
+    //! saved modal edit
+    // <button onclick="openEditModal(${item.id}, ${item.mahasiswa.id}, ${item.semester.id}, ${item.sks_semester}, ${item.sks_kumulatif}, ${item.ip_semester}, ${item.ipk})" 
+    //         class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
+    //         title="Edit">
+    //     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    //         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+    //     </svg>
+    // </button>
     khs.forEach(item => {
+        const ipk = parseFloat(item.ipk);
+        const ipkColor = getIPKColor(ipk);
+
         let actions = '';
         if (isActive) {
             actions = `
                 <div class="flex items-center justify-end gap-2">
-                    <button onclick="openEditModal(${item.id}, ${item.mahasiswa.id}, ${item.semester.id}, ${item.sks_semester}, ${item.sks_kumulatif}, ${item.ip_semester}, ${item.ipk})" 
-                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
-                            title="Edit">
+                    <button onclick="openDetailModal(${item.id})" 
+                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                            title="Detail KHS">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                         </svg>
                     </button>
+
                     <button onclick="hapusKhs(${item.id})" 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                             title="Arsipkan">
@@ -122,57 +163,76 @@ function renderKhsTable(khs, tableId, isActive) {
 
         tbody.innerHTML += `
             <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.mahasiswa.nama_lengkap}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">${item.mahasiswa.nama_lengkap}</div>
+                    <div class="text-xs text-gray-500">${item.mahasiswa.nim}</div>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.semester.nama_semester}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.sks_semester|| "-"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.sks_kumulatif}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.ip_semester}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.ipk}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-semibold text-gray-900">${item.sks_semester || "-"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-semibold text-blue-600">${item.sks_kumulatif}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                    <span class="px-3 py-1 rounded-full text-sm font-bold ${getIPColor(parseFloat(item.ip_semester))}">
+                        ${parseFloat(item.ip_semester).toFixed(2)}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                    <span class="px-3 py-1 rounded-full text-sm font-bold ${ipkColor}">
+                        ${ipk.toFixed(2)}
+                    </span>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">${actions}</td>
             </tr>
         `;
     });
 }
 
+function getIPColor(ip) {
+    if (ip >= 3.50) return 'bg-green-100 text-green-800';
+    if (ip >= 3.00) return 'bg-blue-100 text-blue-800';
+    if (ip >= 2.75) return 'bg-yellow-100 text-yellow-800';
+    if (ip >= 2.00) return 'bg-orange-100 text-orange-800';
+    return 'bg-red-100 text-red-800';
+}
+
+function getIPKColor(ipk) {
+    if (ipk >= 3.75) return 'bg-green-100 text-green-800 border-2 border-green-400';
+    if (ipk >= 3.50) return 'bg-blue-100 text-blue-800 border-2 border-blue-400';
+    if (ipk >= 3.00) return 'bg-cyan-100 text-cyan-800 border-2 border-cyan-400';
+    if (ipk >= 2.75) return 'bg-yellow-100 text-yellow-800 border-2 border-yellow-400';
+    if (ipk >= 2.00) return 'bg-orange-100 text-orange-800 border-2 border-orange-400';
+    return 'bg-red-100 text-red-800 border-2 border-red-400';
+}
+
 // --- Mutations ---
 async function hapusKhs(id) {
     if (!confirm('Pindahkan ke arsip?')) return;
-    const mutation = `
-    mutation {
-        deleteKhs(id: ${id}) { id }
-    }`;
-    await fetch(API_URL, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ query: mutation }) 
+    const mutation = `mutation { deleteKhs(id: ${id}) { id } }`;
+    await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: mutation })
     });
     loadKhsData(currentPageAktif, currentPageArsip);
 }
 
 async function restoreKhs(id) {
     if (!confirm('Kembalikan dari arsip?')) return;
-    const mutation = `
-    mutation {
-        restoreKhs(id: ${id}) { id }
-    }`;
-    await fetch(API_URL, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ query: mutation }) 
+    const mutation = `mutation { restoreKhs(id: ${id}) { id } }`;
+    await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: mutation })
     });
     loadKhsData(currentPageAktif, currentPageArsip);
 }
 
 async function forceDeleteKhs(id) {
     if (!confirm('Hapus permanen? Data tidak bisa dikembalikan')) return;
-    const mutation = `
-    mutation {
-        forceDeleteKhs(id: ${id}) { id }
-    }`;
-    await fetch(API_URL, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ query: mutation }) 
+    const mutation = `mutation { forceDeleteKhs(id: ${id}) { id } }`;
+    await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: mutation })
     });
     loadKhsData(currentPageAktif, currentPageArsip);
 }
@@ -182,7 +242,7 @@ async function searchKhs() {
     loadKhsData(1, 1);
 }
 
-// --- Pagination untuk Data Aktif ---
+// --- Pagination ---
 function prevPageAktif() {
     if (currentPageAktif > 1) loadKhsData(currentPageAktif - 1, currentPageArsip);
 }
@@ -191,7 +251,6 @@ function nextPageAktif() {
     loadKhsData(currentPageAktif + 1, currentPageArsip);
 }
 
-// --- Pagination untuk Data Arsip ---
 function prevPageArsip() {
     if (currentPageArsip > 1) loadKhsData(currentPageAktif, currentPageArsip - 1);
 }

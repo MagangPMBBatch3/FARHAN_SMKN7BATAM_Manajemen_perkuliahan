@@ -1,343 +1,197 @@
-<x-layouts.mahasiswa>
-    
-    <x-slot:title>Jadwal Kuliah</x-slot:title>
-
-    <!-- Breadcrumb -->
-    <div class="mb-6">
-        <div class="flex items-center text-sm text-gray-600">
-            <i class="fas fa-home mr-2"></i>
-            <a href="" class="hover:text-emerald-600 transition-colors">Dashboard</a>
-            <i class="fas fa-chevron-right mx-2 text-xs"></i>
-            <span class="text-emerald-600 font-medium">Jadwal Kuliah</span>
-        </div>
-    </div>
-
-    <!-- Filter Section -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-6 card-hover border border-gray-100">
-
-        <form method="GET" action="{{ route('jadwal.index') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-calendar-day text-emerald-500 mr-1"></i> Hari
-                </label>
-                <select name="hari" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all">
-                    <option value="">Semua Hari</option>
-                    <option value="Senin" {{ request('hari') == 'Senin' ? 'selected' : '' }}>Senin</option>
-                    <option value="Selasa" {{ request('hari') == 'Selasa' ? 'selected' : '' }}>Selasa</option>
-                    <option value="Rabu" {{ request('hari') == 'Rabu' ? 'selected' : '' }}>Rabu</option>
-                    <option value="Kamis" {{ request('hari') == 'Kamis' ? 'selected' : '' }}>Kamis</option>
-                    <option value="Jumat" {{ request('hari') == 'Jumat' ? 'selected' : '' }}>Jumat</option>
-                    <option value="Sabtu" {{ request('hari') == 'Sabtu' ? 'selected' : '' }}>Sabtu</option>
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-building text-emerald-500 mr-1"></i> Jurusan
-                </label>
-                <select name="jurusan_id" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all">
-                    <option value="">Semua Jurusan</option>
-                    @foreach($jurusanList ?? [] as $jurusan)
-                        <option value="{{ $jurusan->id }}" {{ request('jurusan_id') == $jurusan->id ? 'selected' : '' }}>
-                            {{ $jurusan->nama_jurusan }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-layer-group text-emerald-500 mr-1"></i> Semester
-                </label>
-                <select name="semester" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all">
-                    <option value="">Semua Semester</option>
-                    @for($i = 1; $i <= 8; $i++)
-                        <option value="{{ $i }}" {{ request('semester') == $i ? 'selected' : '' }}>Semester {{ $i }}</option>
-                    @endfor
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-tag text-emerald-500 mr-1"></i> Jenis MK
-                </label>
-                <select name="jenis" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all">
-                    <option value="">Semua Jenis</option>
-                    <option value="Wajib" {{ request('jenis') == 'Wajib' ? 'selected' : '' }}>Wajib</option>
-                    <option value="Pilihan" {{ request('jenis') == 'Pilihan' ? 'selected' : '' }}>Pilihan</option>
-                </select>
-            </div>
-
-            <div class="flex items-end gap-2">
-                <button type="submit" class="flex-1 bg-gradient-to-r from-emerald-600 to-sky-600 text-white px-6 py-2.5 rounded-lg hover:from-emerald-700 hover:to-sky-700 transition-all duration-300 shadow-md hover:shadow-lg font-medium">
-                    <i class="fas fa-search mr-2"></i>Filter
-                </button>
-                <a href="{{ route('jadwal.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg hover:bg-gray-300 transition-all duration-300 font-medium">
-                    <i class="fas fa-redo"></i>
-                </a>
-            </div>
-        </form>
-    </div>
-
-    <!-- Jadwal Table -->
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-sky-50">
+<x-layouts.dashboard title="Jadwal Pertemuan Saya">
+    <div class="space-y-6">
+        <!-- Header Section -->
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <div class="bg-gradient-to-br from-emerald-500 to-sky-500 p-2 rounded-lg mr-3">
-                        <i class="fas fa-list text-white"></i>
-                    </div>
-                    <h2 class="text-lg font-bold text-gray-800">Daftar Jadwal Kuliah</h2>
+                <div>
+                    <h1 class="text-2xl font-bold mb-2">Jadwal Pertemuan Kuliah</h1>
+                    <p class="text-blue-100">Lihat jadwal pertemuan dari semua kelas yang Anda ambil</p>
+                </div>
+                <div class="hidden md:block">
+                    <svg class="w-16 h-16 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
                 </div>
             </div>
         </div>
-
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            <i class="fas fa-code mr-1 text-emerald-500"></i> Kode
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            <i class="fas fa-book-open mr-1 text-emerald-500"></i> Mata Kuliah
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            <i class="fas fa-credit-card mr-1 text-emerald-500"></i> SKS
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            <i class="fas fa-users mr-1 text-emerald-500"></i> Kelas
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            <i class="fas fa-clock mr-1 text-emerald-500"></i> Hari/Waktu
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            <i class="fas fa-door-open mr-1 text-emerald-500"></i> Ruangan
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            <i class="fas fa-chalkboard-teacher mr-1 text-emerald-500"></i> Dosen
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            <i class="fas fa-tag mr-1 text-emerald-500"></i> Jenis
-                        </th>
-                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            <i class="fas fa-cog mr-1 text-emerald-500"></i> Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($mataKuliahList ?? [] as $mk)
-                        @foreach($mk->kelas ?? [] as $kelas)
-                        <tr class="hover:bg-emerald-50/50 transition-all duration-200">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-bold text-gray-900">{{ $mk->kode_mk }}</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm font-semibold text-gray-900">{{ $mk->nama_mk }}</div>
-                                <div class="flex items-center mt-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
-                                        <i class="fas fa-building text-gray-500 mr-1 text-xs"></i>
-                                        {{ $mk->jurusan->nama_jurusan ?? '-' }}
-                                    </span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-sky-100 to-emerald-100 text-sky-800 border border-sky-200">
-                                    <i class="fas fa-credit-card mr-1 text-xs"></i>
-                                    {{ $mk->sks }} SKS
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-purple-100 text-purple-800">
-                                    {{ $kelas->nama_kelas ?? '-' }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center text-sm">
-                                    <div class="bg-emerald-100 p-1.5 rounded-lg mr-2">
-                                        <i class="fas fa-calendar text-emerald-600 text-xs"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold text-gray-900">{{ $kelas->hari ?? '-' }}</div>
-                                        <div class="text-xs text-gray-500">{{ $kelas->jam_mulai ?? '' }} - {{ $kelas->jam_selesai ?? '' }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">
-                                    <i class="fas fa-map-marker-alt mr-1 text-xs"></i>
-                                    {{ $kelas->ruangan ?? '-' }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center text-white text-xs font-bold mr-2">
-                                        {{ substr($kelas->dosen->nama ?? 'D', 0, 1) }}
-                                    </div>
-                                    <div class="text-sm font-medium text-gray-900">{{ $kelas->dosen->nama ?? '-' }}</div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($mk->jenis == 'Wajib')
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm">
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        Wajib
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm">
-                                        <i class="fas fa-star mr-1"></i>
-                                        Pilihan
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <button onclick="showDetail({{ $mk->id }})" class="inline-flex items-center px-3 py-1.5 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-all duration-300 text-sm font-medium shadow-sm hover:shadow-md">
-                                    <i class="fas fa-eye mr-1"></i>
-                                    Detail
-                                </button>
-                            </td>
-                        </tr>
-                        @endforeach
-                    @empty
-                        <tr>
-                            <td colspan="9" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <div class="bg-gray-100 p-6 rounded-full mb-4">
-                                        <i class="fas fa-calendar-times text-5xl text-gray-400"></i>
-                                    </div>
-                                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Tidak Ada Jadwal</h3>
-                                    <p class="text-gray-500">Tidak ada jadwal kuliah yang sesuai dengan filter yang dipilih</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        @if(isset($mataKuliahList) && method_exists($mataKuliahList, 'links'))
-        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-            {{ $mataKuliahList->links() }}
-        </div>
-        @endif
-    </div>
-
-    <!-- Modal Detail -->
-    <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 backdrop-blur-sm" onclick="closeModalOnOutside(event)">
-        <div class="relative top-20 mx-auto p-6 border w-11/12 md:w-3/4 lg:w-1/2 shadow-2xl rounded-2xl bg-white" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-                <div class="flex items-center">
-                    <div class="bg-gradient-to-br from-emerald-500 to-sky-500 p-3 rounded-xl mr-3">
-                        <i class="fas fa-book-open text-white text-xl"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900">Detail Mata Kuliah</h3>
-                </div>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-all">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-            </div>
-            <div id="modalContent" class="mt-4">
-                <div class="flex items-center justify-center py-8">
-                    <i class="fas fa-spinner fa-spin text-3xl text-emerald-500"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @push('scripts')
-    <script>
-    function showDetail(mkId) {
-        const modal = document.getElementById('detailModal');
-        modal.classList.remove('hidden');
         
-        // Simulasi fetch data - ganti dengan actual API call
-        setTimeout(() => {
-            document.getElementById('modalContent').innerHTML = `
-                <div class="space-y-6">
-                    <div class="bg-gradient-to-r from-emerald-50 to-sky-50 p-4 rounded-xl">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-xs font-medium text-gray-600 uppercase tracking-wide">Kode Mata Kuliah</label>
-                                <p class="text-lg font-bold text-gray-900 mt-1">MK001</p>
+        <!-- Filter & Search Section -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Search -->
+                    <div>
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Cari Pertemuan
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
                             </div>
-                            <div>
-                                <label class="text-xs font-medium text-gray-600 uppercase tracking-wide">SKS</label>
-                                <p class="text-lg font-bold text-gray-900 mt-1">3 SKS</p>
+                            <input type="text" id="search" 
+                                placeholder="Cari mata kuliah atau materi..." 
+                                oninput="searchPertemuan()"
+                                class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <!-- Filter Semester -->
+                    <div>
+                        <label for="filterSemester" class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Filter Semester
+                        </label>
+                        <select id="filterSemester"
+                            onchange="searchPertemuan()"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Semua Semester</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Status -->
+                    <div>
+                        <label for="filterStatus" class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Filter Status
+                        </label>
+                        <select id="filterStatus"
+                            onchange="searchPertemuan()"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Semua Status</option>
+                            <option value="Dijadwalkan">Dijadwalkan</option>
+                            <option value="Berlangsung">Berlangsung</option>
+                            <option value="Selesai">Selesai</option>
+                            <option value="Dibatalkan">Dibatalkan</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="p-6 bg-gray-50 border-b border-gray-200">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-500">Total Kelas</p>
+                                <p id="totalKelas" class="text-xl font-bold text-gray-900">0</p>
                             </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 flex items-center mb-2">
-                            <i class="fas fa-book text-emerald-500 mr-2"></i>
-                            Nama Mata Kuliah
-                        </label>
-                        <p class="text-gray-900 bg-gray-50 p-3 rounded-lg">Pemrograman Web</p>
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-500">Selesai</p>
+                                <p id="totalSelesai" class="text-xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 flex items-center mb-2">
-                            <i class="fas fa-layer-group text-emerald-500 mr-2"></i>
-                            Semester Rekomendasi
-                        </label>
-                        <p class="text-gray-900 bg-gray-50 p-3 rounded-lg">Semester 4</p>
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-500">Dijadwalkan</p>
+                                <p id="totalDijadwalkan" class="text-xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 flex items-center mb-2">
-                            <i class="fas fa-tag text-emerald-500 mr-2"></i>
-                            Jenis Mata Kuliah
-                        </label>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-emerald-500 to-green-500 text-white">
-                            <i class="fas fa-check-circle mr-1"></i> Wajib
-                        </span>
-                    </div>
-
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 flex items-center mb-2">
-                            <i class="fas fa-align-left text-emerald-500 mr-2"></i>
-                            Deskripsi
-                        </label>
-                        <p class="text-gray-700 bg-gray-50 p-4 rounded-lg leading-relaxed">
-                            Mata kuliah ini membahas tentang pengembangan aplikasi web modern menggunakan berbagai teknologi dan framework terkini.
-                        </p>
-                    </div>
-
-                    <div class="flex gap-3 pt-4">
-                        <button onclick="closeModal()" class="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-all duration-300 font-medium">
-                            <i class="fas fa-times mr-2"></i>Tutup
-                        </button>
-                        <button class="flex-1 bg-gradient-to-r from-emerald-600 to-sky-600 text-white px-6 py-3 rounded-lg hover:from-emerald-700 hover:to-sky-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
-                            <i class="fas fa-print mr-2"></i>Cetak Detail
-                        </button>
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-500">Total Pertemuan</p>
+                                <p id="totalPertemuan" class="text-xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            `;
-        }, 500);
-    }
+            </div>
 
-    function closeModal() {
-        document.getElementById('detailModal').classList.add('hidden');
-    }
+            <!-- Pertemuan Cards -->
+            <div class="p-6">
+                <div id="pertemuanContainer" class="space-y-4">
+                    <!-- Cards will be rendered here -->
+                </div>
 
-    function closeModalOnOutside(event) {
-        if (event.target.id === 'detailModal') {
-            closeModal();
-        }
-    }
+                <!-- Empty State -->
+                <div id="emptyState" class="hidden text-center py-12">
+                    <svg class="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">Tidak ada jadwal pertemuan</h3>
+                    <p class="mt-2 text-sm text-gray-500">Belum ada pertemuan yang dijadwalkan untuk kelas Anda.</p>
+                </div>
 
-    function printJadwal() {
-        window.print();
-    }
+                <!-- Pagination -->
+                <div class="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
+                    <div>
+                        <p id="pageInfo" class="text-sm text-gray-700">Halaman 1 dari 1 (Total: 0)</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <label class="text-sm text-gray-700">Tampilkan:</label>
+                        <select id="perPage"
+                            class="border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onchange="loadPertemuanData(1)">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                        </select>
+                        
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                            <button id="prevBtn" onclick="prevPage()"
+                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="sr-only">Previous</span>
+                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                            <button id="nextBtn" onclick="nextPage()"
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="sr-only">Next</span>
+                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    // Keyboard shortcut
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeModal();
-        }
-    });
-    </script>
-    @endpush
+    <!-- Detail Modal -->
+    @include('components.modal.mahasiswaModal.pertemuan-detail')
 
+    <!-- Scripts -->
+    <script src="{{ asset('js/mahasiswa/pertemuan/pertemuan.js') }}"></script>
 </x-layouts.dashboard>

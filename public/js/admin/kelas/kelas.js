@@ -1,3 +1,5 @@
+// File: public/js/admin/kelas/kelas.js
+
 const API_URL = "/graphql";
 let currentPageAktif = 1;
 let currentPageArsip = 1;
@@ -6,19 +8,28 @@ async function loadKelasData(pageAktif = 1, pageArsip = 1) {
     currentPageAktif = pageAktif;
     currentPageArsip = pageArsip;
     
-    // Ambil perPage dari select yang sesuai dengan tab aktif
     const perPageAktif = parseInt(document.getElementById("perPage")?.value || 10);
     const perPageArsip = parseInt(document.getElementById("perPageArsip")?.value || 10);
     const searchValue = document.getElementById("search")?.value.trim() || "";
 
     // --- Query Data Aktif ---
     const queryAktif = `
-                query($first: Int, $page: Int, $search: String) {
-                    allKelasPaginate(first: $first, page: $page, search: $search) {
-                        data { id kode_kelas nama_kelas mataKuliah{id nama_mk} dosen{id nama_lengkap} semester{id nama_semester} kapasitas kuota_terisi status }
-                        paginatorInfo { currentPage lastPage total hasMorePages perPage }
-                    }
-                }`;
+        query($first: Int, $page: Int, $search: String) {
+            allKelasPaginate(first: $first, page: $page, search: $search) {
+                data { 
+                    id 
+                    kode_kelas 
+                    nama_kelas 
+                    mataKuliah { id nama_mk } 
+                    dosen { id nama_lengkap } 
+                    semester { id nama_semester } 
+                    kapasitas 
+                    kuota_terisi 
+                    status 
+                }
+                paginatorInfo { currentPage lastPage total hasMorePages perPage }
+            }
+        }`;
     const variablesAktif = { first: perPageAktif, page: pageAktif, search: searchValue };
 
     const resAktif = await fetch(API_URL, {
@@ -31,12 +42,22 @@ async function loadKelasData(pageAktif = 1, pageArsip = 1) {
 
     // --- Query Data Arsip ---
     const queryArsip = `
-    query($first: Int, $page: Int, $search: String) {
-        allKelasArsip(first: $first, page: $page, search: $search) {
-            data { id kode_kelas nama_kelas mataKuliah{id nama_mk} dosen{id nama_lengkap} semester{id nama_semester} kapasitas kuota_terisi status  }
-            paginatorInfo { currentPage lastPage total hasMorePages perPage }
-        }
-    }`;
+        query($first: Int, $page: Int, $search: String) {
+            allKelasArsip(first: $first, page: $page, search: $search) {
+                data { 
+                    id 
+                    kode_kelas 
+                    nama_kelas 
+                    mataKuliah { id nama_mk } 
+                    dosen { id nama_lengkap } 
+                    semester { id nama_semester } 
+                    kapasitas 
+                    kuota_terisi 
+                    status 
+                }
+                paginatorInfo { currentPage lastPage total hasMorePages perPage }
+            }
+        }`;
     const variablesArsip = { first: perPageArsip, page: pageArsip, search: searchValue };
 
     const resArsip = await fetch(API_URL, {
@@ -47,7 +68,7 @@ async function loadKelasData(pageAktif = 1, pageArsip = 1) {
     const dataArsip = await resArsip.json();
     renderKelasTable(dataArsip?.data?.allKelasArsip?.data || [], 'dataKelasArsip', false);
 
-    // --- Update info pagination untuk Data Aktif ---
+    // --- Update pagination info ---
     const pageInfoAktif = dataAktif?.data?.allKelasPaginate?.paginatorInfo;
     if (pageInfoAktif) {
         document.getElementById("pageInfoAktif").innerText =
@@ -56,7 +77,6 @@ async function loadKelasData(pageAktif = 1, pageArsip = 1) {
         document.getElementById("nextBtnAktif").disabled = !pageInfoAktif.hasMorePages;
     }
 
-    // --- Update info pagination untuk Data Arsip ---
     const pageInfoArsip = dataArsip?.data?.allKelasArsip?.paginatorInfo;
     if (pageInfoArsip) {
         document.getElementById("pageInfoArsip").innerText =
@@ -69,11 +89,11 @@ async function loadKelasData(pageAktif = 1, pageArsip = 1) {
 function renderKelasTable(Kelas, tableId, isActive) {
     const tbody = document.getElementById(tableId);
     tbody.innerHTML = '';
-    console.log(Kelas);
+
     if (!Kelas.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center text-gray-500 p-3">Tidak ada data</td>
+                <td colspan="9" class="text-center text-gray-500 p-3">Tidak ada data</td>
             </tr>
         `;
         return;
@@ -84,6 +104,14 @@ function renderKelasTable(Kelas, tableId, isActive) {
         if (isActive) {
             actions = `
                 <div class="flex items-center justify-end gap-2">
+                    <button onclick="window.location.href='/admin/kelas/${item.id}'" 
+                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                            title="Detail">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </button>
                     <button onclick="openEditModal(${item.id}, '${item.kode_kelas}', '${item.nama_kelas}', '${item.mataKuliah.id}', '${item.dosen.id}', '${item.semester.id}', ${item.kapasitas}, ${item.kuota_terisi}, '${item.status}')" 
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
                             title="Edit">
@@ -140,10 +168,7 @@ function renderKelasTable(Kelas, tableId, isActive) {
 // --- Mutations ---
 async function hapusKelas(id) {
     if (!confirm('Pindahkan ke arsip?')) return;
-    const mutation = `
-    mutation {
-        deleteKelas(id: ${id}) { id }
-    }`;
+    const mutation = `mutation { deleteKelas(id: ${id}) { id } }`;
     await fetch(API_URL, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
@@ -154,10 +179,7 @@ async function hapusKelas(id) {
 
 async function restoreKelas(id) {
     if (!confirm('Kembalikan dari arsip?')) return;
-    const mutation = `
-    mutation {
-        restoreKelas(id: ${id}) { id }
-    }`;
+    const mutation = `mutation { restoreKelas(id: ${id}) { id } }`;
     await fetch(API_URL, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
@@ -168,10 +190,7 @@ async function restoreKelas(id) {
 
 async function forceDeleteKelas(id) {
     if (!confirm('Hapus permanen? Data tidak bisa dikembalikan')) return;
-    const mutation = `
-    mutation {
-        forceDeleteKelas(id: ${id}) { id }
-    }`;
+    const mutation = `mutation { forceDeleteKelas(id: ${id}) { id } }`;
     await fetch(API_URL, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
@@ -185,7 +204,7 @@ async function searchKelas() {
     loadKelasData(1, 1);
 }
 
-// --- Pagination untuk Data Aktif ---
+// --- Pagination ---
 function prevPageAktif() {
     if (currentPageAktif > 1) loadKelasData(currentPageAktif - 1, currentPageArsip);
 }
@@ -194,7 +213,6 @@ function nextPageAktif() {
     loadKelasData(currentPageAktif + 1, currentPageArsip);
 }
 
-// --- Pagination untuk Data Arsip ---
 function prevPageArsip() {
     if (currentPageArsip > 1) loadKelasData(currentPageAktif, currentPageArsip - 1);
 }

@@ -5,8 +5,55 @@ use App\Models\Nilai\Nilai;
 use App\Models\Kelas\Kelas;
 use App\Models\BobotNilai\BobotNilai;
 use App\Models\KrsDetail\KrsDetail;
+use App\Models\Semester\Semester;
 
 class NilaiQuery {
+    public function byMahasiswaAndMataKuliah($rootValue, array $args)
+    {
+        return Nilai::with(['semester', 'mataKuliah'])
+            ->where('mahasiswa_id', $args['mahasiswa_id'])
+            ->where('mata_kuliah_id', $args['mata_kuliah_id'])
+            ->orderBy('semester_id', 'DESC')
+            ->get();
+    }
+
+    /**
+     * Get semua nilai mahasiswa
+     */
+    public function byMahasiswa($rootValue, array $args)
+    {
+        return Nilai::with(['semester', 'mataKuliah', 'krsDetail'])
+            ->where('mahasiswa_id', $args['mahasiswa_id'])
+            ->orderBy('semester_id', 'DESC')
+            ->get();
+    }
+    public function byMahasiswaSemester($root, array $args)
+{
+    return Nilai::whereHas('krsDetail.krs', function($query) use ($args) {
+            $query->where('mahasiswa_id', $args['mahasiswa_id']);
+        })
+        ->whereHas('krsDetail.kelas', function($query) use ($args) {
+            $query->where('semester_id', $args['semester_id']);
+        })
+        ->where('deleted_at', null)
+        ->with(['krsDetail.mataKuliah', 'krsDetail.kelas.semester'])
+        ->get();
+}
+
+public function kumulatif($root, array $args)
+{
+    return Nilai::whereHas('krsDetail.krs', function($query) use ($args) {
+            $query->where('mahasiswa_id', $args['mahasiswa_id']);
+        })
+        ->whereHas('krsDetail.kelas.semester', function($query) use ($args) {
+            // Get all semesters up to the selected semester
+            $selectedSemester = Semester::find($args['semester_id']);
+            $query->where('tanggal_mulai', '<=', $selectedSemester->tanggal_selesai);
+        })
+        ->where('deleted_at', null)
+        ->with(['krsDetail.mataKuliah'])
+        ->get();
+}
     public function kelasBySemester($root, array $args)
     {
         // Cast to int if needed for database query
