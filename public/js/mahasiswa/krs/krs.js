@@ -3,7 +3,7 @@
 // ============================================================================
 
 const API_URL = "/graphql";
-const MIN_SKS = 12;
+const MIN_SKS = 10;
 
 let currentMahasiswaId = null;
 let currentKrsId = null;
@@ -391,7 +391,7 @@ function updateButtonStates() {
 
     if (!currentKrsData) return;
 
-    const canEdit = currentKrsData.status === 'DRAFT' || currentKrsData.status === 'DITOLAK';
+    const canEdit = currentKrsData.status === 'Draft' || currentKrsData.status === 'Ditolak';
     const canSubmit = canEdit && krsDetailList.length > 0;
 
     if (btnAddMk) {

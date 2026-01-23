@@ -1,3 +1,5 @@
+# File: graphql/kelas.graphql (Update/tambahkan query ini)
+
 type Kelas {
     id: ID!
     kode_kelas: String!
@@ -18,8 +20,164 @@ type Kelas {
     semester: Semester! @belongsTo
     jadwalKuliah: [JadwalKuliah!]! @hasMany
     krsDetail: [KrsDetail!]! @hasMany
+    pertemuan: [Pertemuan!]! @hasMany
 }
 
+type JadwalKuliah {
+    id: ID!
+    kelas_id: Int!
+    ruangan_id: Int!
+    hari: String!
+    jam_mulai: String!
+    jam_selesai: String!
+    keterangan: String
+    created_at: DateTime
+    updated_at: DateTime
+    
+    # Relations
+    kelas: Kelas! @belongsTo
+    ruangan: Ruangan! @belongsTo
+}
+
+type Ruangan {
+    id: ID!
+    kode_ruangan: String!
+    nama_ruangan: String!
+    gedung: String
+    lantai: Int
+    kapasitas: Int
+    jenis_ruangan: String
+    fasilitas: String
+}
+
+type KrsDetail {
+    id: ID!
+    krs_id: Int!
+    kelas_id: Int!
+    mata_kuliah_id: Int!
+    sks: Int!
+    status_ambil: String!
+    
+    # Relations
+    krs: Krs! @belongsTo
+    kelas: Kelas! @belongsTo
+    mataKuliah: MataKuliah! @belongsTo
+}
+
+type Krs {
+    id: ID!
+    mahasiswa_id: Int!
+    semester_id: Int!
+    tanggal_pengisian: DateTime
+    tanggal_persetujuan: DateTime
+    status: String!
+    total_sks: Int
+    catatan: String
+    
+    # Relations
+    mahasiswa: Mahasiswa! @belongsTo
+    semester: Semester! @belongsTo
+    krsDetail: [KrsDetail!]! @hasMany
+}
+
+type Mahasiswa {
+    id: ID!
+    user_id: Int!
+    nim: String!
+    nama_lengkap: String!
+    jurusan_id: Int!
+    angkatan: Int!
+    jenis_kelamin: String!
+    status: String!
+    semester_saat_ini: Int
+    ipk: Float
+    
+    # Relations
+    jurusan: Jurusan! @belongsTo
+}
+
+type Pertemuan {
+    id: ID!
+    kelas_id: Int!
+    pertemuan_ke: Int!
+    tanggal: Date!
+    waktu_mulai: String!
+    waktu_selesai: String!
+    materi: String
+    metode: String!
+    ruangan_id: Int
+    status_pertemuan: String!
+    link_daring: String
+    catatan: String
+    created_at: DateTime
+    updated_at: DateTime
+    
+    # Relations
+    kelas: Kelas! @belongsTo
+    ruangan: Ruangan @belongsTo
+    kehadiran: [Kehadiran!]! @hasMany
+}
+
+type MataKuliah {
+    id: ID!
+    kode_mk: String!
+    nama_mk: String!
+    jurusan_id: Int!
+    sks: Int!
+    semester_rekomendasi: Int
+    jenis: String!
+    deskripsi: String
+    
+    # Relations
+    jurusan: Jurusan! @belongsTo
+}
+
+type Dosen {
+    id: ID!
+    user_id: Int!
+    nidn: String!
+    nip: String
+    nama_lengkap: String!
+    gelar_depan: String
+    gelar_belakang: String
+    jurusan_id: Int!
+    jenis_kelamin: String!
+    status: String!
+    
+    # Relations
+    jurusan: Jurusan! @belongsTo
+}
+
+type Semester {
+    id: ID!
+    kode_semester: String!
+    nama_semester: String!
+    tahun_ajaran: String!
+    periode: String!
+    tanggal_mulai: Date!
+    tanggal_selesai: Date!
+}
+
+type Jurusan {
+    id: ID!
+    kode_jurusan: String!
+    nama_jurusan: String!
+    fakultas_id: Int!
+    jenjang: String!
+    akreditasi: String
+    
+    # Relations
+    fakultas: Fakultas! @belongsTo
+}
+
+type Fakultas {
+    id: ID!
+    kode_fakultas: String!
+    nama_fakultas: String!
+    dekan: String
+}
+
+# Input Types
 input CreateKelasInput {
     kode_kelas: String!
     nama_kelas: String!
@@ -43,6 +201,7 @@ input UpdateKelasInput {
     status: String
 }
 
+# Paginator Types
 type KelasPaginator {
     data: [Kelas]!
     paginatorInfo: PageInfo!
@@ -56,40 +215,56 @@ type PageInfo {
     total: Int!
 }
 
-extend type Query{
+# Queries
+extend type Query {
+    # Semua kelas
     allKelas: [Kelas!]! @all(model: "Kelas\\Kelas")
-    kelas(id: ID! @eq(key: "id")): Kelas @find(model: "Kelas\\Kelas")
+    
+    # Kelas by ID (untuk detail)
+    kelas(id: ID! @eq): Kelas @find(model: "Kelas\\Kelas")
+    
+    # Kelas dengan pagination
     allKelasPaginate(
-            search: String
-            first: Int
-            page: Int
-        ): KelasPaginator @field(resolver: "App\\GraphQL\\Kelas\\Queries\\KelasQuery@all")   
+        search: String
+        first: Int
+        page: Int
+    ): KelasPaginator @field(resolver: "App\\GraphQL\\Kelas\\Queries\\KelasQuery@all")
+    
+    # Kelas arsip
     allKelasArsip(
-            search: String
-            first: Int
-            page: Int
-        ): KelasPaginator @field(resolver: "App\\GraphQL\\Kelas\\Queries\\KelasQuery@allArsip")   
+        search: String
+        first: Int
+        page: Int
+    ): KelasPaginator @field(resolver: "App\\GraphQL\\Kelas\\Queries\\KelasQuery@allArsip")
+    
+    # Kelas by nama
     kelasByNama(
         nama_kelas: String! @where(operator: "like", key: "nama_kelas")
     ): [Kelas]! @all(model: "Kelas\\Kelas")
 }
 
+# Mutations
 extend type Mutation {
-  createKelas(input: CreateKelasInput! @spread): Kelas
-    @create(model: "Kelas\\Kelas")
+    # Create kelas
+    createKelas(input: CreateKelasInput! @spread): Kelas
+        @create(model: "Kelas\\Kelas")
 
-  updateKelas(
-    id: ID! @eq(key: "id"),
-    input: UpdateKelasInput! @spread
-  ): Kelas
-    @update(model: "Kelas\\Kelas")
+    # Update kelas
+    updateKelas(
+        id: ID! @eq,
+        input: UpdateKelasInput! @spread
+    ): Kelas
+        @update(model: "Kelas\\Kelas")
 
-  deleteKelas(id: ID! @eq(key: "id")): Kelas
-    @delete(model: "Kelas\\Kelas")
+    # Soft delete kelas
+    deleteKelas(id: ID! @eq): Kelas
+        @delete(model: "Kelas\\Kelas")
 
-  restoreKelas(id: ID!): Kelas
-    @field(resolver: "Kelas\\Mutations\\KelasMutation@restore")
+    # Restore kelas
+    restoreKelas(id: ID!): Kelas
+        @field(resolver: "App\\GraphQL\\Kelas\\Mutations\\KelasMutation@restore")
 
-  forceDeleteKelas(id: ID!): Kelas
-    @field(resolver: "Kelas\\Mutations\\KelasMutation@forceDelete")
+    # Force delete kelas
+    forceDeleteKelas(id: ID!): Kelas
+        @field(resolver: "App\\GraphQL\\Kelas\\Mutations\\KelasMutation@forceDelete")
 }

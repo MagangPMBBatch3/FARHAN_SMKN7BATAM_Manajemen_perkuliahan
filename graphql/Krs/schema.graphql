@@ -1,10 +1,9 @@
 type Krs {
     id: ID!
-    user_id: ID!
     mahasiswa_id: Int!
     semester_id: Int!
-    tanggal_pengisian: Date!
-    tanggal_persetujuan: Date
+    tanggal_pengisian: DateTime!
+    tanggal_persetujuan: DateTime
     status: String!
     total_sks: Int
     catatan: String
@@ -23,7 +22,7 @@ type Krs {
 input CreateKrsInput {
     mahasiswa_id: Int!
     semester_id: Int!
-    tanggal_pengisian: Date
+    tanggal_pengisian: DateTime
     status: String
     total_sks: Int
     catatan: String
@@ -34,8 +33,8 @@ input UpdateKrsInput {
     id: Int
     mahasiswa_id: Int
     semester_id: Int
-    tanggal_pengisian: Date
-    tanggal_persetujuan: Date
+    tanggal_pengisian: DateTime
+    tanggal_persetujuan: DateTime
     status: String
     total_sks: Int
     catatan: String
@@ -55,30 +54,21 @@ type PageInfo {
     total: Int!
 }
 
-extend type Query{
-    allKrs: [Krs!]! @all(model: "Krs\\Krs")
-    krs(id: ID! @eq(key: "id")): Krs @find(model: "Krs\\Krs")
-    allKrsPaginate(
-            search: String
-            first: Int
-            page: Int
-        ): KrsPaginator @field(resolver: "App\\GraphQL\\Krs\\Queries\\KrsQuery@all")   
-    allKrsArsip(
-            search: String
-            first: Int
-            page: Int 
-        ): KrsPaginator @field(resolver: "App\\GraphQL\\Krs\\Queries\\KrsQuery@allArsip")   
-    krsByMahasiswa(
-        nama_mk: String! @where(operator: "like", key: "nama_mk")
-    ): [Krs]! @all(model: "Krs\\Krs")
-    jurusanByFakultas(fakultas_id: ID!): [Jurusan!]! 
-        @field(resolver: "App\\GraphQL\\Jurusan\\Queries\\JurusanQuery@byFakultas")
+extend type Query {
+    allKrs: [Krs!]! @all(model: "App\\Models\\Krs")
+    krs(id: ID! @eq): Krs @find(model: "App\\Models\\Krs")
     
-    mahasiswaByJurusan(jurusan_id: ID!): [Mahasiswa!]! 
-        @field(resolver: "App\\GraphQL\\Mahasiswa\\Queries\\MahasiswaQuery@byJurusan")
-
-        mahasiswaByUserId(user_id: ID!): Mahasiswa
-        @field(resolver: "App\\GraphQL\\Mahasiswa\\Queries\\MahasiswaQuery@byUserId")
+    allKrsPaginate(
+        search: String
+        first: Int
+        page: Int
+    ): KrsPaginator @field(resolver: "App\\GraphQL\\Krs\\Queries\\KrsQuery@all")
+    
+    allKrsArsip(
+        search: String
+        first: Int
+        page: Int 
+    ): KrsPaginator @field(resolver: "App\\GraphQL\\Krs\\Queries\\KrsQuery@allArsip")
     
     # Get KRS aktif (semester berjalan) untuk mahasiswa
     currentKrsByMahasiswa(mahasiswa_id: ID!): Krs
@@ -87,28 +77,24 @@ extend type Query{
     # Get riwayat semua KRS mahasiswa
     krsHistoryByMahasiswa(mahasiswa_id: ID!): [Krs!]!
         @field(resolver: "App\\GraphQL\\Krs\\Queries\\KrsQuery@historyByMahasiswa")
-    
-    # Get semester yang sedang aktif
-    currentSemester: Semester
-        @field(resolver: "App\\GraphQL\\Semester\\Queries\\SemesterQuery@current")
 }
 
 extend type Mutation {
-  createKrs(input: CreateKrsInput! @spread): Krs
-    @create(model: "Krs\\Krs")
+    createKrs(input: CreateKrsInput! @spread): Krs
+        @create(model: "App\\Models\\Krs")
 
-  updateKrs(
-    id: ID! @eq(key: "id"),
-    input: UpdateKrsInput! @spread
-  ): Krs
-    @update(model: "Krs\\Krs")
+    updateKrs(
+        id: ID! @eq,
+        input: UpdateKrsInput! @spread
+    ): Krs
+        @update(model: "App\\Models\\Krs")
 
-  deleteKrs(id: ID! @eq(key: "id")): Krs
-    @delete(model: "Krs\\Krs")
+    deleteKrs(id: ID! @eq): Krs
+        @delete(model: "App\\Models\\Krs")
 
-  restoreKrs(id: ID!): Krs
-    @field(resolver: "Krs\\Mutations\\KrsMutation@restore")
+    restoreKrs(id: ID!): Krs
+        @field(resolver: "App\\GraphQL\\Krs\\Mutations\\KrsMutation@restore")
 
-  forceDeleteKrs(id: ID!): Krs
-    @field(resolver: "Krs\\Mutations\\KrsMutation@forceDelete")
+    forceDeleteKrs(id: ID!): Krs
+        @field(resolver: "App\\GraphQL\\Krs\\Mutations\\KrsMutation@forceDelete")
 }

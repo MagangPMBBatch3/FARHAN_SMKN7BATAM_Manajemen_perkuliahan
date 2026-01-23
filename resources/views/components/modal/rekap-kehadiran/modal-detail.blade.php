@@ -110,7 +110,8 @@
                             <p id="detailNilaiKehadiran" class="text-lg font-bold text-gray-900">0.00</p>
                             <p class="text-xs text-gray-500 mt-1">Skala 0-100</p>
                         </div>
-                        <div>
+                        <!-- //! checkpoint 1 -->
+                        <div hidden>
                             <p class="text-xs text-gray-600 mb-1">Status Minimal 75%</p>
                             <div id="detailStatusMinimal" class="text-lg font-bold">-</div>
                             <p class="text-xs text-gray-500 mt-1">Syarat UAS</p>

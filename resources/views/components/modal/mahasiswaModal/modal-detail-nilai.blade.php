@@ -74,7 +74,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">Tugas</p>
-                                        <p id="detailBobotTugas" class="text-xs text-gray-500">Bobot: -</p>
+                                        <!-- <p id="detailBobotTugas" class="text-xs text-gray-500">Bobot: -</p> -->
                                     </div>
                                 </div>
                                 <div class="text-right">
@@ -93,7 +93,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">Quiz</p>
-                                        <p id="detailBobotQuiz" class="text-xs text-gray-500">Bobot: -</p>
+                                        <!-- <p id="detailBobotQuiz" class="text-xs text-gray-500">Bobot: -</p> -->
                                     </div>
                                 </div>
                                 <div class="text-right">
@@ -112,7 +112,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">UTS</p>
-                                        <p id="detailBobotUTS" class="text-xs text-gray-500">Bobot: -</p>
+                                        <!-- <p id="detailBobotUTS" class="text-xs text-gray-500">Bobot: -</p> -->
                                     </div>
                                 </div>
                                 <div class="text-right">
@@ -131,7 +131,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">UAS</p>
-                                        <p id="detailBobotUAS" class="text-xs text-gray-500">Bobot: -</p>
+                                        <!-- <p id="detailBobotUAS" class="text-xs text-gray-500">Bobot: -</p> -->
                                     </div>
                                 </div>
                                 <div class="text-right">
@@ -150,7 +150,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">Kehadiran</p>
-                                        <p id="detailBobotKehadiran" class="text-xs text-gray-500">Bobot: -</p>
+                                        <!-- <p id="detailBobotKehadiran" class="text-xs text-gray-500">Bobot: -</p> -->
                                     </div>
                                 </div>
                                 <div class="text-right">
@@ -169,7 +169,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">Praktikum</p>
-                                        <p id="detailBobotPraktikum" class="text-xs text-gray-500">Bobot: -</p>
+                                        <!-- <p id="detailBobotPraktikum" class="text-xs text-gray-500">Bobot: -</p> -->
                                     </div>
                                 </div>
                                 <div class="text-right">
@@ -243,12 +243,12 @@ function openDetailModal(nilaiData) {
     
     // Bobot (jika ada di data, bisa ditambahkan query terpisah untuk mendapatkan bobot)
     // Untuk sekarang tampilkan placeholder
-    document.getElementById('detailBobotTugas').textContent = 'Bobot: -';
-    document.getElementById('detailBobotQuiz').textContent = 'Bobot: -';
-    document.getElementById('detailBobotUTS').textContent = 'Bobot: -';
-    document.getElementById('detailBobotUAS').textContent = 'Bobot: -';
-    document.getElementById('detailBobotKehadiran').textContent = 'Bobot: -';
-    document.getElementById('detailBobotPraktikum').textContent = 'Bobot: -';
+    // document.getElementById('detailBobotTugas').textContent = 'Bobot: -';
+    // document.getElementById('detailBobotQuiz').textContent = 'Bobot: -';
+    // document.getElementById('detailBobotUTS').textContent = 'Bobot: -';
+    // document.getElementById('detailBobotUAS').textContent = 'Bobot: -';
+    // document.getElementById('detailBobotKehadiran').textContent = 'Bobot: -';
+    // document.getElementById('detailBobotPraktikum').textContent = 'Bobot: -';
     
     // Nilai Akhir
     document.getElementById('detailNilaiAkhir').textContent = nilaiData.nilai_akhir || '0';

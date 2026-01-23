@@ -89,7 +89,7 @@ type PageInfo {
 
 extend type Query{
     allMahasiswa: [Mahasiswa!]! @all(model: "Mahasiswa\\Mahasiswa")
-    mahasiswa(id: ID! @eq(key: "id")): Mahasiswa @find(model: "Mahasiswa\\Mahasiswa")
+    mahasiswa(id: Int! @eq(key: "id")): Mahasiswa @find(model: "Mahasiswa\\Mahasiswa")
     allMahasiswaPaginate(
             search: String
             first: Int

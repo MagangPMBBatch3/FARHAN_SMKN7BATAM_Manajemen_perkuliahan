@@ -80,7 +80,6 @@ async function loadRekapKehadiranData(page = 1) {
     const filterMahasiswa = parseInt(document.getElementById("filterMahasiswa")?.value) || null;
     const filterStatus = document.getElementById("filterStatus")?.value || null;
     
-    // Map the filter value to GraphQL enum values
     let statusMinimal = null;
     if (filterStatus === "Memenuhi") {
         statusMinimal = "Memenuhi";
@@ -167,7 +166,7 @@ function renderRekapKehadiranTable(data) {
                 <td class="px-6 py-4 text-sm text-center text-yellow-600">${item.total_sakit || 0}</td>
                 <td class="px-6 py-4 text-sm text-center text-red-600">${item.total_alpa || 0}</td>
                 <td class="px-6 py-4 text-sm text-center">${persentaseBadge}</td>
-                <td class="px-6 py-4 text-sm text-center">${statusBadge}</td>
+                <td hidden class="px-6 py-4 text-sm text-center">${statusBadge}</td>
                 <td class="px-6 py-4 text-sm">
                     <button onclick='viewDetailKehadiran(${JSON.stringify(item)})' 
                             class="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700">
@@ -197,7 +196,6 @@ function getPersentaseBadge(persentase) {
 }
 
 function getStatusMinimalBadge(status) {
-    // Handle both enum value and display value
     const statusMap = {
         'Memenuhi': 'Memenuhi',
         'TidakMemenuhi': 'Tidak Memenuhi',

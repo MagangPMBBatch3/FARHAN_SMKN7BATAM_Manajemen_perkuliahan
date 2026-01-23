@@ -19,7 +19,7 @@ class KrsQuery {
 
     $krs = Krs::with([
         'semester:id,nama_semester,tahun_ajaran',
-        'dosenPa:id,nama_lengkap',
+        'dosen_pa_id:id,nama_lengkap',
         'krsDetail.kelas:id,nama_kelas,kapasitas,kuota_terisi',
         'krsDetail.kelas.dosen:id,nama_lengkap',
         'krsDetail.kelas.jadwalKuliah:id,kelas_id,hari,jam_mulai,jam_selesai,ruangan_id',
@@ -35,20 +35,21 @@ class KrsQuery {
 
     return $krs;
 }
-    public function historyByMahasiswa($rootValue, array $args)
-    {
-        return Krs::with([
-            'semester',
-            'dosenPa',
-            'krsDetail.kelas.dosen',
-            'krsDetail.kelas.jadwalKuliah.ruangan',
-            'krsDetail.mataKuliah',
-            'krsDetail.nilai'
-        ])
-        ->where('mahasiswa_id', $args['mahasiswa_id'])
-        ->orderBy('semester_id', 'DESC')
-        ->get();
-    }
+public function historyByMahasiswa($rootValue, array $args)
+{
+    return Krs::with([
+        'semester',
+        'mahasiswa.jurusan',
+        'dosen_pa_id',
+        'krsDetail.kelas.dosen',
+        'krsDetail.kelas.jadwalKuliah.ruangan',
+        'krsDetail.mataKuliah',
+        'krsDetail.nilai'
+    ])
+    ->where('mahasiswa_id', $args['mahasiswa_id'])
+    ->orderBy('semester_id', 'DESC')
+    ->get();
+}
 
     /**
      * Get KRS dengan detail lengkap
@@ -58,7 +59,7 @@ class KrsQuery {
         return Krs::with([
             'mahasiswa.jurusan',
             'semester',
-            'dosenPa',
+            'dosen_pa_id',
             'krsDetail.kelas.dosen',
             'krsDetail.kelas.jadwalKuliah.ruangan',
             'krsDetail.mataKuliah',
@@ -71,28 +72,38 @@ class KrsQuery {
      * Get all KRS dengan pagination (untuk admin)
      */
     public function all($rootValue, array $args)
-    {
-        $query = Krs::with([
-            'mahasiswa',
-            'semester',
-            'dosenPa'
-        ])->whereNull('deleted_at');
+{
+    $query = Krs::with([
+        'mahasiswa',
+        'semester',
+        'dosen_pa_id'
+    ]);
 
-        if (!empty($args['search'])) {
-            $search = $args['search'];
-            $query->whereHas('mahasiswa', function($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
-                  ->orWhere('nim', 'like', "%{$search}%");
-            });
-        }
-
-        return $query->paginate(
-            $args['first'] ?? 10,
-            ['*'],
-            'page',
-            $args['page'] ?? 1
-        );
+    if (!empty($args['search'])) {
+        $search = $args['search'];
+        $query->whereHas('mahasiswa', function($q) use ($search) {
+            $q->where('nama_lengkap', 'like', "%{$search}%")
+              ->orWhere('nim', 'like', "%{$search}%");
+        });
     }
+
+    $perPage = $args['first'] ?? 10;
+    $page = $args['page'] ?? 1;
+
+    $paginator = $query->paginate($perPage, ['*'], 'page', $page);
+
+    return [
+        'data' => $paginator->items(),         
+        'paginatorInfo' => [
+            'hasMorePages' => $paginator->hasMorePages(),
+            'currentPage' => $paginator->currentPage(),
+            'lastPage' => $paginator->lastPage(),
+            'perPage' => $paginator->perPage(),
+            'total' => $paginator->total(),
+        ],
+    ];
+}
+
     public function allArsip($_, array $args)
     {
         $query = Krs::onlyTrashed();

@@ -272,7 +272,7 @@ async function loadKrsById(id) {
             status
             total_sks
             catatan
-            dosenPa {
+            dosen_pa_id {
                 id
                 nama_lengkap
             }
@@ -313,7 +313,7 @@ async function openEditModal(id) {
     document.getElementById('editTotalSks').value = krsData.total_sks || '';
     document.getElementById('editCatatan').value = krsData.catatan || '';
     document.getElementById('editSemesterId').value = krsData.semester?.id || '';
-    document.getElementById('editDosenId').value = krsData.dosenPa?.id || '';
+    document.getElementById('editDosenId').value = krsData.dosen_pa_id?.id || '';
     
     // Load cascading data if mahasiswa exists
     if (krsData.mahasiswa?.jurusan?.fakultas?.id) {

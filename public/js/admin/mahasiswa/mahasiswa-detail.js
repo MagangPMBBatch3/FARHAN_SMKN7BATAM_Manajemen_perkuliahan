@@ -13,7 +13,7 @@ async function loadMahasiswaDetail() {
     currentMahasiswaId = getMahasiswaIdFromUrl();
     
     const query = `
-    query($id: ID!) {
+    query($id: Int!) {
         mahasiswa(id: $id) {
             id
             user_id
@@ -48,7 +48,7 @@ async function loadMahasiswaDetail() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 query: query, 
-                variables: { id: currentMahasiswaId } 
+                variables: { id: parseInt(currentMahasiswaId) } 
             })
         });
 
