@@ -19,7 +19,7 @@ class KrsQuery {
 
     $krs = Krs::with([
         'semester:id,nama_semester,tahun_ajaran',
-        'dosen_pa_id:id,nama_lengkap',
+        'dosenPa:id,nama_lengkap',
         'krsDetail.kelas:id,nama_kelas,kapasitas,kuota_terisi',
         'krsDetail.kelas.dosen:id,nama_lengkap',
         'krsDetail.kelas.jadwalKuliah:id,kelas_id,hari,jam_mulai,jam_selesai,ruangan_id',
@@ -40,7 +40,7 @@ public function historyByMahasiswa($rootValue, array $args)
     return Krs::with([
         'semester',
         'mahasiswa.jurusan',
-        'dosen_pa_id',
+        'dosenPa',
         'krsDetail.kelas.dosen',
         'krsDetail.kelas.jadwalKuliah.ruangan',
         'krsDetail.mataKuliah',
@@ -59,7 +59,7 @@ public function historyByMahasiswa($rootValue, array $args)
         return Krs::with([
             'mahasiswa.jurusan',
             'semester',
-            'dosen_pa_id',
+            'dosenPa',
             'krsDetail.kelas.dosen',
             'krsDetail.kelas.jadwalKuliah.ruangan',
             'krsDetail.mataKuliah',
@@ -76,7 +76,7 @@ public function historyByMahasiswa($rootValue, array $args)
     $query = Krs::with([
         'mahasiswa',
         'semester',
-        'dosen_pa_id'
+        'dosenPa'
     ]);
 
     if (!empty($args['search'])) {
