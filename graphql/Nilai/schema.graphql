@@ -129,6 +129,11 @@ extend type Query{
     
     nilaiByKelas(kelas_id: ID!): [Nilai]
         @field(resolver: "App\\GraphQL\\Nilai\\Queries\\NilaiQuery@nilaiByKelas")
+    nilaiByMahasiswaAndMataKuliah(
+        mahasiswa_id: ID!
+        mata_kuliah_id: ID!
+    ): [Nilai]
+        @field(resolver: "App\\GraphQL\\Nilai\\Queries\\NilaiQuery@byMahasiswaAndMataKuliah")
 }
 
 extend type Mutation {

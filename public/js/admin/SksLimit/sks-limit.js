@@ -12,6 +12,8 @@ async function loadSksLimitData(pageAktif = 1, pageArsip = 1) {
     const perPageAktif = parseInt(document.getElementById("perPage")?.value || 10);
     const perPageArsip = parseInt(document.getElementById("perPageArsip")?.value || 10);
     const searchValue = document.getElementById("search")?.value.trim() || "";
+    showTableLoading('dataSksLimit', 5, 5);
+    showTableLoading('dataSksLimitArsip', 5, 5);
 
     // Query Data Aktif
     const queryAktif = `

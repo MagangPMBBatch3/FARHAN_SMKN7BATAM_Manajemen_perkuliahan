@@ -65,6 +65,8 @@ async function loadPertemuanData(pageAktif = 1, pageArsip = 1) {
     const searchValue = document.getElementById("search")?.value.trim() || "";
     const filterKelas = parseInt(document.getElementById("filterKelas")?.value) || null;
     const filterStatus = document.getElementById("filterStatus")?.value || null;
+    showTableLoading('dataPertemuan', 5, 10);
+    showTableLoading('dataPertemuanArsip', 5, 10);
 
     const queryAktif = `
     query($first: Int, $page: Int, $search: String, $kelas_id: Int, $status_pertemuan: StatusPertemuan) {

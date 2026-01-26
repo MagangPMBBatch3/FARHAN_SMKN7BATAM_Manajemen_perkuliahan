@@ -304,6 +304,7 @@
     @include('components.modal.kehadiran.modal-bulk-input')
 
     <!-- Scripts -->
+    <script src="{{ asset('js/services/loading.js') }}"></script>
     <script src="{{ asset('js/admin/kehadiran/kehadiran.js') }}"></script>
     <script src="{{ asset('js/admin/kehadiran/kehadiran-create.js') }}"></script>
     <script src="{{ asset('js/admin/kehadiran/kehadiran-edit.js') }}"></script>

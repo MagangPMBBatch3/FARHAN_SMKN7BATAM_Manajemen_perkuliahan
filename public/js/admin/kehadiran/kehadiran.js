@@ -78,7 +78,8 @@ async function loadKehadiranData(pageAktif = 1, pageArsip = 1) {
     const filterPertemuan = parseInt(document.getElementById("filterPertemuan")?.value) || null;
     const filterMahasiswa = parseInt(document.getElementById("filterMahasiswa")?.value) || null;
     const filterStatus = document.getElementById("filterStatus")?.value || null;
-
+    showTableLoading('dataKehadiran', 5, 9);
+    showTableLoading('dataKehadiranArsip', 5, 9);
     const queryAktif = `
     query($first: Int, $page: Int, $search: String, $pertemuan_id: Int, $mahasiswa_id: Int, $status_kehadiran: StatusKehadiran) {
         allKehadiranPaginate(first: $first, page: $page, search: $search, pertemuan_id: $pertemuan_id, mahasiswa_id: $mahasiswa_id, status_kehadiran: $status_kehadiran) {
@@ -164,12 +165,6 @@ function renderKehadiranTable(data, tableId, isActive) {
         if (isActive) {
             actions = `
                 <div class="flex items-center justify-end gap-2">
-                    <button onclick='openEditModal(${JSON.stringify(item)})' 
-                            class="px-3 py-1.5 text-xs bg-yellow-500 text-white rounded-md hover:bg-yellow-600">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                    </button>
                     <button onclick="hapusKehadiran(${item.id})" 
                             class="px-3 py-1.5 text-xs bg-red-600 text-white rounded-md hover:bg-red-700">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

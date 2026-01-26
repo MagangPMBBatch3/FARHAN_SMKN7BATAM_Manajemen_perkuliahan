@@ -8,14 +8,19 @@ use App\Models\KrsDetail\KrsDetail;
 use App\Models\Semester\Semester;
 
 class NilaiQuery {
-    public function byMahasiswaAndMataKuliah($rootValue, array $args)
-    {
-        return Nilai::with(['semester', 'mataKuliah'])
-            ->where('mahasiswa_id', $args['mahasiswa_id'])
-            ->where('mata_kuliah_id', $args['mata_kuliah_id'])
-            ->orderBy('semester_id', 'DESC')
-            ->get();
-    }
+
+public function byMahasiswaAndMataKuliah($root, array $args)
+{
+    return \App\Models\Nilai\Nilai::whereHas('krsDetail', function ($query) use ($args) {
+        $query->where('mata_kuliah_id', $args['mata_kuliah_id'])
+              ->whereHas('krs', function ($krsQuery) use ($args) {
+                  $krsQuery->where('mahasiswa_id', $args['mahasiswa_id']);
+              });
+    })
+    ->with(['krsDetail.krs.semester'])
+    ->orderBy('created_at', 'desc')
+    ->get();
+}
 
     /**
      * Get semua nilai mahasiswa
@@ -142,5 +147,6 @@ public function kumulatif($root, array $args)
             ],
         ];
     }
+    
     
 }

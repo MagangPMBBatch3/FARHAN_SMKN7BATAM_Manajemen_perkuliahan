@@ -15,7 +15,7 @@
 
             <!-- Body -->
             <div class="flex-1 overflow-y-auto px-6 py-6">
-                <form id="formEditKrs" onsubmit="updateKrs(); return false;">
+                <form onsubmit="event.preventDefault(); createKrs();">
                     <input type="hidden" id="editId">
                     
                     <div class="space-y-4">

@@ -1,17 +1,32 @@
-// ==================== EDIT MODAL - LOAD OPTIONS ====================
+// ==================== OPTIMIZED EDIT MODAL ====================
+// File: krs-edit.js
 
-let editMahasiswaData = []; // Store mahasiswa data for search in EDIT modal
+let editMahasiswaData = [];
+let currentEditingKrsId = null;
+
+// ==================== LOAD OPTIONS FOR EDIT ====================
 
 async function loadFakultasOptionsEdit() {
-    const query = `
-    query {
-        allFakultas {
-            id
-            nama_fakultas
-        }
-    }`;
+    const select = document.getElementById('editFakultasId');
+    if (!select) return;
+
+    // Gunakan cache jika ada
+    if (dataCache.fakultas && isCacheValid('fakultas')) {
+        renderFakultasOptions(dataCache.fakultas, select);
+        return;
+    }
+
+    select.innerHTML = getSelectLoadingOption();
 
     try {
+        const query = `
+        query {
+            allFakultas {
+                id
+                nama_fakultas
+            }
+        }`;
+
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -21,14 +36,14 @@ async function loadFakultasOptionsEdit() {
         const result = await response.json();
         const fakultasList = result.data.allFakultas || [];
 
-        const selectEdit = document.getElementById('editFakultasId');
-        selectEdit.innerHTML = '<option value="">Pilih Fakultas</option>';
-        fakultasList.forEach(fakultas => {
-            selectEdit.innerHTML += `<option value="${fakultas.id}">${fakultas.nama_fakultas}</option>`;
-        });
+        dataCache.fakultas = fakultasList;
+        dataCache.lastFetch.fakultas = Date.now();
+
+        renderFakultasOptions(fakultasList, select);
 
     } catch (error) {
         console.error('Error loading fakultas:', error);
+        select.innerHTML = '<option value="">Error loading data</option>';
     }
 }
 
@@ -38,19 +53,12 @@ async function loadJurusanByFakultasEdit(fakultasId) {
     const searchInput = document.getElementById('editMahasiswaSearch');
     
     if (!fakultasId) {
-        select.disabled = true;
-        select.innerHTML = '<option value="">Pilih fakultas terlebih dahulu</option>';
-        
-        mahasiswaSelect.disabled = true;
-        mahasiswaSelect.innerHTML = '<option value="">Pilih jurusan terlebih dahulu</option>';
-        searchInput.disabled = true;
-        searchInput.value = '';
-        editMahasiswaData = [];
+        resetJurusanAndMahasiswaEdit(select, mahasiswaSelect, searchInput);
         return;
     }
 
     select.disabled = true;
-    select.innerHTML = '<option value="">Loading...</option>';
+    select.innerHTML = getSelectLoadingOption();
 
     try {
         const query = `
@@ -91,6 +99,17 @@ async function loadJurusanByFakultasEdit(fakultasId) {
     }
 }
 
+function resetJurusanAndMahasiswaEdit(select, mahasiswaSelect, searchInput) {
+    select.disabled = true;
+    select.innerHTML = '<option value="">Pilih fakultas terlebih dahulu</option>';
+    
+    mahasiswaSelect.disabled = true;
+    mahasiswaSelect.innerHTML = '<option value="">Pilih jurusan terlebih dahulu</option>';
+    searchInput.disabled = true;
+    searchInput.value = '';
+    editMahasiswaData = [];
+}
+
 async function loadMahasiswaByJurusanEdit(jurusanId) {
     const select = document.getElementById('editMahasiswaId');
     const searchInput = document.getElementById('editMahasiswaSearch');
@@ -105,7 +124,7 @@ async function loadMahasiswaByJurusanEdit(jurusanId) {
     }
 
     select.disabled = true;
-    select.innerHTML = '<option value="">Loading...</option>';
+    select.innerHTML = getSelectLoadingOption();
     searchInput.disabled = true;
 
     try {
@@ -130,7 +149,6 @@ async function loadMahasiswaByJurusanEdit(jurusanId) {
         const result = await response.json();
         const mahasiswaList = result.data.mahasiswaByJurusan || [];
 
-        // Store data for search
         editMahasiswaData = mahasiswaList;
 
         if (mahasiswaList.length === 0) {
@@ -140,7 +158,6 @@ async function loadMahasiswaByJurusanEdit(jurusanId) {
             return;
         }
 
-        // Render all mahasiswa
         renderMahasiswaOptionsEdit(mahasiswaList);
         select.disabled = false;
         searchInput.disabled = false;
@@ -159,40 +176,47 @@ function renderMahasiswaOptionsEdit(mahasiswaList) {
     });
 }
 
-function searchMahasiswaEdit(searchTerm) {
+const searchMahasiswaEdit = debounce((searchTerm) => {
     if (!searchTerm || searchTerm.trim() === '') {
-        // Show all if search is empty
         renderMahasiswaOptionsEdit(editMahasiswaData);
         return;
     }
 
-    // Filter mahasiswa based on search term
     const searchLower = searchTerm.toLowerCase();
     const filtered = editMahasiswaData.filter(mhs => 
         mhs.nim.toLowerCase().includes(searchLower) ||
         mhs.nama_lengkap.toLowerCase().includes(searchLower)
     );
 
-    // Render filtered results
     const select = document.getElementById('editMahasiswaId');
     if (filtered.length === 0) {
         select.innerHTML = '<option value="">Tidak ada hasil pencarian</option>';
     } else {
         renderMahasiswaOptionsEdit(filtered);
     }
-}
+}, 300);
 
 async function loadSemesterOptionsEdit() {
-    const query = `
-    query {
-        allSemester {
-            id
-            nama_semester
-            tahun_ajaran
-        }
-    }`;
+    const select = document.getElementById('editSemesterId');
+    if (!select) return;
+
+    if (dataCache.semester && isCacheValid('semester')) {
+        renderSemesterOptions(dataCache.semester, select);
+        return;
+    }
+
+    select.innerHTML = getSelectLoadingOption();
 
     try {
+        const query = `
+        query {
+            allSemester {
+                id
+                nama_semester
+                tahun_ajaran
+            }
+        }`;
+
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -202,27 +226,37 @@ async function loadSemesterOptionsEdit() {
         const result = await response.json();
         const semesterList = result.data.allSemester || [];
 
-        const selectEdit = document.getElementById('editSemesterId');
-        selectEdit.innerHTML = '<option value="">Pilih Semester</option>';
-        semesterList.forEach(semester => {
-            selectEdit.innerHTML += `<option value="${semester.id}">${semester.nama_semester} (${semester.tahun_ajaran})</option>`;
-        });
+        dataCache.semester = semesterList;
+        dataCache.lastFetch.semester = Date.now();
+
+        renderSemesterOptions(semesterList, select);
 
     } catch (error) {
         console.error('Error loading semester:', error);
+        select.innerHTML = '<option value="">Error loading data</option>';
     }
 }
 
 async function loadDosenOptionsEdit() {
-    const query = `
-    query {
-        allDosen {
-            id
-            nama_lengkap
-        }
-    }`;
+    const select = document.getElementById('editDosenId');
+    if (!select) return;
+
+    if (dataCache.dosen && isCacheValid('dosen')) {
+        renderDosenOptions(dataCache.dosen, select);
+        return;
+    }
+
+    select.innerHTML = getSelectLoadingOption();
 
     try {
+        const query = `
+        query {
+            allDosen {
+                id
+                nama_lengkap
+            }
+        }`;
+
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -232,19 +266,22 @@ async function loadDosenOptionsEdit() {
         const result = await response.json();
         const dosenList = result.data.allDosen || [];
 
-        const selectEdit = document.getElementById('editDosenId');
-        selectEdit.innerHTML = '<option value="">Pilih Dosen</option>';
-        dosenList.forEach(dosen => {
-            selectEdit.innerHTML += `<option value="${dosen.id}">${dosen.nama_lengkap}</option>`;
-        });
+        dataCache.dosen = dosenList;
+        dataCache.lastFetch.dosen = Date.now();
+
+        renderDosenOptions(dosenList, select);
 
     } catch (error) {
         console.error('Error loading dosen:', error);
+        select.innerHTML = '<option value="">Error loading data</option>';
     }
 }
 
 // ==================== EDIT MODAL FUNCTIONS ====================
 
+/**
+ * Load KRS by ID dengan optimasi
+ */
 async function loadKrsById(id) {
     const query = `
     query($id: ID!) {
@@ -263,19 +300,13 @@ async function loadKrsById(id) {
                     }
                 }
             }
-            semester {
-                id
-                nama_semester
-            }
+            semester { id nama_semester }
             tanggal_pengisian
             tanggal_persetujuan
             status
             total_sks
             catatan
-            dosen_pa_id {
-                id
-                nama_lengkap
-            }
+            dosenPa { id nama_lengkap }
         }
     }`;
     
@@ -287,68 +318,138 @@ async function loadKrsById(id) {
         });
         
         const result = await response.json();
+        
+        if (result.errors) {
+            console.error('GraphQL Errors:', result.errors);
+            return null;
+        }
+        
         return result.data.krs;
     } catch (error) {
         console.error('Error loading KRS data:', error);
-        alert('Gagal memuat data KRS');
         return null;
     }
 }
 
+/**
+ * Open edit modal dengan loading state
+ */
 async function openEditModal(id) {
-    const krsData = await loadKrsById(id);
+    currentEditingKrsId = id;
     
-    if (!krsData) return;
-    
-    // Load all options
-    await loadFakultasOptionsEdit();
-    await loadSemesterOptionsEdit();
-    await loadDosenOptionsEdit();
-    
-    // Fill basic form fields
-    document.getElementById('editId').value = krsData.id;
-    document.getElementById('editPengisian').value = krsData.tanggal_pengisian || '';
-    document.getElementById('editPersetujuan').value = krsData.tanggal_persetujuan || '';
-    document.getElementById('editStatus').value = krsData.status || '';
-    document.getElementById('editTotalSks').value = krsData.total_sks || '';
-    document.getElementById('editCatatan').value = krsData.catatan || '';
-    document.getElementById('editSemesterId').value = krsData.semester?.id || '';
-    document.getElementById('editDosenId').value = krsData.dosen_pa_id?.id || '';
-    
-    // Load cascading data if mahasiswa exists
-    if (krsData.mahasiswa?.jurusan?.fakultas?.id) {
-        // Set fakultas
-        document.getElementById('editFakultasId').value = krsData.mahasiswa.jurusan.fakultas.id;
-        
-        // Load and set jurusan
-        await loadJurusanByFakultasEdit(krsData.mahasiswa.jurusan.fakultas.id);
-        document.getElementById('editJurusanId').value = krsData.mahasiswa.jurusan.id;
-        
-        // Load and set mahasiswa
-        await loadMahasiswaByJurusanEdit(krsData.mahasiswa.jurusan.id);
-        document.getElementById('editMahasiswaId').value = krsData.mahasiswa.id;
+    // Show modal terlebih dahulu
+    const modal = document.getElementById('modalEdit');
+    if (!modal) {
+        console.error('Modal edit tidak ditemukan');
+        alert('Modal edit tidak ditemukan di halaman');
+        return;
     }
     
-    document.getElementById('modalEdit').classList.remove('hidden');
+    modal.classList.remove('hidden');
+    
+    // Tunggu sebentar agar DOM modal ter-render
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Disable form sementara
+    const form = document.getElementById('formEditKrs');
+    if (form) {
+        const inputs = form.querySelectorAll('input, select, textarea, button');
+        inputs.forEach(input => input.disabled = true);
+    }
+    
+    try {
+        // Load options dan data KRS secara paralel
+        const [krsData] = await Promise.all([
+            loadKrsById(id),
+            loadFakultasOptionsEdit(),
+            loadSemesterOptionsEdit(),
+            loadDosenOptionsEdit()
+        ]);
+        
+        if (!krsData) {
+            alert('Gagal memuat data KRS');
+            closeEditModal();
+            return;
+        }
+        
+        // Fill basic form fields dengan null checking
+        const setFieldValue = (fieldId, value) => {
+            const field = document.getElementById(fieldId);
+            if (field) field.value = value || '';
+        };
+        
+        setFieldValue('editId', krsData.id);
+        setFieldValue('editPengisian', krsData.tanggal_pengisian);
+        setFieldValue('editPersetujuan', krsData.tanggal_persetujuan);
+        setFieldValue('editStatus', krsData.status);
+        setFieldValue('editTotalSks', krsData.total_sks);
+        setFieldValue('editCatatan', krsData.catatan);
+        setFieldValue('editSemesterId', krsData.semester?.id);
+        setFieldValue('editDosenId', krsData.dosenPa?.id);
+        
+        // Load cascading data jika mahasiswa exists
+        if (krsData.mahasiswa?.jurusan?.fakultas?.id) {
+            setFieldValue('editFakultasId', krsData.mahasiswa.jurusan.fakultas.id);
+            
+            await loadJurusanByFakultasEdit(krsData.mahasiswa.jurusan.fakultas.id);
+            setFieldValue('editJurusanId', krsData.mahasiswa.jurusan.id);
+            
+            await loadMahasiswaByJurusanEdit(krsData.mahasiswa.jurusan.id);
+            setFieldValue('editMahasiswaId', krsData.mahasiswa.id);
+        }
+        
+        // Enable form kembali
+        if (form) {
+            const inputs = form.querySelectorAll('input, select, textarea, button');
+            inputs.forEach(input => input.disabled = false);
+        }
+        
+    } catch (error) {
+        console.error('Error opening edit modal:', error);
+        alert('Terjadi kesalahan saat membuka form edit: ' + error.message);
+        closeEditModal();
+    }
 }
 
 function closeEditModal() {
-    document.getElementById('modalEdit').classList.add('hidden');
-    document.getElementById('formEditKrs').reset();
+    const modal = document.getElementById('modalEdit');
+    const form = document.getElementById('formEditKrs');
     
-    // Reset dropdowns
-    document.getElementById('editJurusanId').disabled = true;
-    document.getElementById('editJurusanId').innerHTML = '<option value="">Pilih fakultas dulu</option>';
+    if (modal) {
+        modal.classList.add('hidden');
+    }
     
-    document.getElementById('editMahasiswaId').disabled = true;
-    document.getElementById('editMahasiswaId').innerHTML = '<option value="">Pilih jurusan dulu</option>';
+    if (form) {
+        form.reset();
+    }
     
-    document.getElementById('editMahasiswaSearch').disabled = true;
-    document.getElementById('editMahasiswaSearch').value = '';
+    // Reset dropdowns dengan null checking
+    const editJurusan = document.getElementById('editJurusanId');
+    const editMahasiswa = document.getElementById('editMahasiswaId');
+    const editSearch = document.getElementById('editMahasiswaSearch');
+    
+    if (editJurusan) {
+        editJurusan.disabled = true;
+        editJurusan.innerHTML = '<option value="">Pilih fakultas dulu</option>';
+    }
+    
+    if (editMahasiswa) {
+        editMahasiswa.disabled = true;
+        editMahasiswa.innerHTML = '<option value="">Pilih jurusan dulu</option>';
+    }
+    
+    if (editSearch) {
+        editSearch.disabled = true;
+        editSearch.value = '';
+    }
     
     editMahasiswaData = [];
+    currentEditingKrsId = null;
 }
 
+/**
+ * Update KRS dengan validasi
+ */
 async function updateKrs() {
     const id = document.getElementById('editId').value;
     const mahasiswa = document.getElementById('editMahasiswaId').value;
@@ -368,25 +469,39 @@ async function updateKrs() {
     if (!totalSks) return alert("Total SKS tidak boleh kosong");
     if (!dosen) return alert("Dosen PA tidak boleh kosong");
     
-    const mutation = `
-    mutation {
-        updateKrs(id: ${id}, input: {
-            mahasiswa_id: ${mahasiswa}
-            semester_id: ${semester}
-            tanggal_pengisian: "${pengisian}"
-            tanggal_persetujuan: ${persetujuan ? `"${persetujuan}"` : 'null'}
-            status: "${status}"
-            total_sks: ${totalSks}
-            catatan: "${catatan}"
-            dosen_pa_id: ${dosen}
-        }) {
-            id
-            mahasiswa_id
-            semester_id
+    // Cari submit button
+    const submitBtn = document.querySelector('#modalEdit button[type="submit"]');
+    
+    let originalText = '';
+    if (submitBtn) {
+        originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        if (typeof getInlineSpinner === 'function') {
+            submitBtn.innerHTML = getInlineSpinner();
+        } else {
+            submitBtn.innerHTML = '<span>Loading...</span>';
         }
-    }`;
+    }
     
     try {
+        const mutation = `
+        mutation {
+            updateKrs(id: ${id}, input: {
+                mahasiswa_id: ${mahasiswa}
+                semester_id: ${semester}
+                tanggal_pengisian: "${pengisian}"
+                tanggal_persetujuan: ${persetujuan ? `"${persetujuan}"` : 'null'}
+                status: "${status}"
+                total_sks: ${totalSks}
+                catatan: "${catatan.replace(/"/g, '\\"')}"
+                dosen_pa_id: ${dosen}
+            }) {
+                id
+                mahasiswa_id
+                semester_id
+            }
+        }`;
+        
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -403,17 +518,36 @@ async function updateKrs() {
         
         alert('Data KRS berhasil diupdate!');
         closeEditModal();
-        loadKrsData(currentPageAktif, currentPageArsip);
+        
+        // Reload data jika fungsi tersedia
+        if (typeof loadKrsData === 'function') {
+            loadKrsData(currentPageAktif, currentPageArsip);
+        }
+        
     } catch (error) {
         console.error('Error updating KRS:', error);
         alert('Gagal mengupdate data KRS');
+    } finally {
+        if (submitBtn && originalText) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
     }
 }
 
-// ==================== INIT ====================
+// ==================== INITIALIZATION ====================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Pre-load data untuk edit modal
     loadFakultasOptionsEdit();
     loadSemesterOptionsEdit();
     loadDosenOptionsEdit();
+    
+    // Setup search listener
+    const searchInput = document.getElementById('editMahasiswaSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchMahasiswaEdit(e.target.value);
+        });
+    }
 });

@@ -231,6 +231,7 @@
     @include('components.modal.pertemuan.modal-edit')
 
     <!-- Scripts -->
+    <script src="{{ asset('js/services/loading.js') }}"></script>
     <script src="{{ asset('js/admin/pertemuan/pertemuan.js') }}"></script>
     <script src="{{ asset('js/admin/pertemuan/pertemuan-create.js') }}"></script>
     <script src="{{ asset('js/admin/pertemuan/pertemuan-edit.js') }}"></script>

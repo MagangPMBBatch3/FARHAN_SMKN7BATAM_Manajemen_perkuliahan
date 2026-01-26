@@ -1,8 +1,38 @@
 let currentEditBobotNilai = null;
 
+async function loadGradeSystem() {
+    const query = `
+    query {
+        allGradeSystem {
+            id
+            grade
+            min_score
+            max_score
+            grade_point
+            status_kelulusan
+        }
+    }`;
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query })
+        });
+
+        const result = await response.json();
+        currentGradeSystem = result.data.allGradeSystem || [];
+        
+        // Debug: tampilkan grade system yang dimuat
+        console.log('Grade System loaded:', currentGradeSystem);
+    } catch (error) {
+        console.error('Error loading grade system:', error);
+    }
+}
+
 async function openEditModal(itemData) {
     console.log('Edit data:', itemData);
-    
+    await loadGradeSystem();
     document.getElementById('editId').value = itemData.id;
     document.getElementById('editKrsDetailId').value = itemData.krsDetail.id;
     

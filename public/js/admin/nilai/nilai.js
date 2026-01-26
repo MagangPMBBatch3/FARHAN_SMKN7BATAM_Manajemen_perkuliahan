@@ -9,7 +9,8 @@ async function loadNilaiData(pageAktif = 1, pageArsip = 1) {
     const perPageAktif = parseInt(document.getElementById("perPage")?.value || 10);
     const perPageArsip = parseInt(document.getElementById("perPageArsip")?.value || 10);
     const searchValue = document.getElementById("search")?.value.trim() || "";
-
+    showTableLoading('dataNilai', 5, 10);
+    showTableLoading('dataNilaiArsip', 5, 10);
     // --- Query Data Aktif ---
     const queryAktif = `
     query($first: Int, $page: Int, $search: String) {

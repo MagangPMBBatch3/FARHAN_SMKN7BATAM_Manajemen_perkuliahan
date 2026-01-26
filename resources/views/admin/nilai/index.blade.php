@@ -206,6 +206,7 @@
     @include('components.modal.nilai.modal-laporan-nilai')
 
     {{-- Scripts --}}
+    <script src="{{ asset('js/services/loading.js') }}"></script>
     <script src="{{ asset('js/admin/nilai/nilai.js') }}"></script>
     <script src="{{ asset('js/admin/nilai/nilai-create.js') }}"></script>
     <script src="{{ asset('js/admin/nilai/nilai-edit.js') }}"></script>

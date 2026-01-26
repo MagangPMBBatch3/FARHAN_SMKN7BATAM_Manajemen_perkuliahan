@@ -10,7 +10,6 @@ class KrsQuery {
         ->orderBy('id', 'desc')
         ->first();
 
-    // DEBUG: Log semester yang ditemukan
     \Log::info('Current Semester:', ['semester' => $currentSemester]);
 
     if (!$currentSemester) {

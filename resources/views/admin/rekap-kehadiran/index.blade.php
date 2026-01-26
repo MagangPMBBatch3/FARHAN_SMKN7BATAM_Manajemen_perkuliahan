@@ -216,5 +216,6 @@
     @include('components.modal.rekap-kehadiran.modal-detail')
 
     <!-- Scripts -->
+    <script src="{{ asset('js/services/loading.js') }}"></script>
     <script src="{{ asset('js/admin/rekap-kehadiran/rekap-kehadiran.js') }}"></script>
 </x-layouts.dashboard>

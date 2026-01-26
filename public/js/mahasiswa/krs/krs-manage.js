@@ -99,9 +99,19 @@ async function loadAvailableMataKuliah() {
 
 async function checkPreviousEnrollment(mataKuliahId) {
     const query = `query($mahasiswaId: ID!, $mataKuliahId: ID!) {
-        allNilai(mahasiswa_id: $mahasiswaId, mata_kuliah_id: $mataKuliahId) {
-            id nilai_huruf
-            semester { nama_semester }
+        nilaiByMahasiswaAndMataKuliah(
+            mahasiswa_id: $mahasiswaId, 
+            mata_kuliah_id: $mataKuliahId
+        ) {
+            id 
+            nilai_huruf
+            krsDetail {
+                krs {
+                    semester {
+                        nama_semester
+                    }
+                }
+            }
         }
     }`;
 
@@ -122,8 +132,18 @@ async function checkPreviousEnrollment(mataKuliahId) {
         
         if (result.errors) return null;
 
-        const nilais = result.data?.allNilai || [];
-        return nilais.length > 0 ? nilais[nilais.length - 1] : null;
+        const nilais = result.data?.nilaiByMahasiswaAndMataKuliah || [];
+        
+        if (nilais.length > 0) {
+            const lastNilai = nilais[nilais.length - 1];
+            return {
+                id: lastNilai.id,
+                nilai_huruf: lastNilai.nilai_huruf,
+                semester: lastNilai.krsDetail?.krs?.semester
+            };
+        }
+        
+        return null;
 
     } catch (error) {
         console.error('Error checking enrollment:', error);
@@ -168,16 +188,12 @@ function populateMataKuliahSelect() {
         showAddMkInfo('Semua mata kuliah sudah diambil atau tidak tersedia');
         return;
     }
-
-    // Group by semester
     const grouped = {};
     filteredMk.forEach(mk => {
         const sem = mk.semester_rekomendasi || 0;
         if (!grouped[sem]) grouped[sem] = [];
         grouped[sem].push(mk);
     });
-
-    // Render with optgroup
     Object.keys(grouped).sort((a, b) => a - b).forEach(sem => {
         const optgroup = document.createElement('optgroup');
         optgroup.label = `Semester ${sem || 'Umum'}`;

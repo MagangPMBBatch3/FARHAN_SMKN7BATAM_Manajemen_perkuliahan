@@ -9,6 +9,8 @@ async function loadGradeSystemData(pageAktif = 1, pageArsip = 1) {
     const perPageAktif = parseInt(document.getElementById("perPage")?.value || 10);
     const perPageArsip = parseInt(document.getElementById("perPageArsip")?.value || 10);
     const searchValue = document.getElementById("search")?.value.trim() || "";
+    showTableLoading('dataGradeSystem', 5, 10);
+    showTableLoading('dataGradeSystemArsip', 5, 10);
 
     // Query Data Aktif
     const queryAktif = `
