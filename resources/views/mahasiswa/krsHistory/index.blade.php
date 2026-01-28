@@ -1,4 +1,4 @@
-<x-layouts.dashboard title="Riwayat KRS">
+<x-layouts.mahasiswa title="Riwayat KRS">
     <div class="space-y-6">
         {{-- Header --}}
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

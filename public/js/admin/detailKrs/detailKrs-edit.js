@@ -334,8 +334,8 @@ async function submitEditKrsDetail(event) {
 
         // Update kuota jika ganti kelas
         if (hasKelasChange) {
-            await updateKuotaKelas(editKrsDetailData.kelas_id, -1); // Kurangi kelas lama
-            await updateKuotaKelas(newKelasId, 1); // Tambah kelas baru
+            // await updateKuotaKelas(editKrsDetailData.kelas_id, -1); // Kurangi kelas lama
+            // await updateKuotaKelas(newKelasId, 1); // Tambah kelas baru
         }
 
         // Reload data

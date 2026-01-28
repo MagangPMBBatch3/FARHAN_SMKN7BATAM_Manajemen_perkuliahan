@@ -11,26 +11,27 @@ function getCurrentMahasiswaId() {
     // 1. Coba dari URL params (?mahasiswa_id=1)
     const urlParams = new URLSearchParams(window.location.search);
     const urlId = urlParams.get('mahasiswa_id');
-    if (urlId) return urlId;
+    if (urlId) return parseInt(urlId); // PERBAIKAN: Parse ke integer
     
     // 2. Coba dari data attribute di body/container
     const dataId = document.body.dataset.mahasiswaId || 
                    document.querySelector('[data-mahasiswa-id]')?.dataset.mahasiswaId;
-    if (dataId) return dataId;
+    if (dataId) return parseInt(dataId); // PERBAIKAN: Parse ke integer
     
     // 3. Coba dari meta tag
     const metaId = document.querySelector('meta[name="mahasiswa-id"]')?.content;
-    if (metaId) return metaId;
+    if (metaId) return parseInt(metaId); // PERBAIKAN: Parse ke integer
     
     // 4. Coba dari localStorage
     const storageId = localStorage.getItem('mahasiswa_id');
-    if (storageId) return storageId;
+    if (storageId) return parseInt(storageId); // PERBAIKAN: Parse ke integer
     
     // 5. Jika tidak ada, prompt user (untuk development/testing)
     const promptId = prompt('Masukkan ID Mahasiswa untuk testing:');
     if (promptId) {
-        localStorage.setItem('mahasiswa_id', promptId);
-        return promptId;
+        const parsedId = parseInt(promptId);
+        localStorage.setItem('mahasiswa_id', parsedId);
+        return parsedId;
     }
     
     return null;
@@ -108,10 +109,18 @@ function updateElementHTML(selector, html) {
     }
 }
 
+/**
+ * Get CSRF Token
+ */
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+}
+
 // ===== GRAPHQL QUERIES =====
 
+// PERBAIKAN: Ubah tipe dari ID! menjadi Int!
 const DASHBOARD_QUERY = `
-query ($id: ID!){
+query ($id: Int!){
   mahasiswa(id: $id) {
       id
       nim
@@ -194,16 +203,26 @@ async function loadDashboard() {
             return;
         }
         
+        // Validasi bahwa ID adalah integer
+        if (!Number.isInteger(mahasiswaId)) {
+            showError('ID Mahasiswa tidak valid. Harus berupa angka.');
+            return;
+        }
+        
         showLoading();
         
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
                 query: DASHBOARD_QUERY,
-                variables: { id: mahasiswaId }
+                variables: { id: mahasiswaId } // Sudah dalam format integer
             })
         });
 
@@ -223,7 +242,7 @@ async function loadDashboard() {
         }
 
         const data = result.data;
-        console.log(data);
+        console.log('Dashboard data loaded:', data);
         
         // Render semua komponen dashboard
         renderWelcomeBanner(data.mahasiswa);
@@ -233,7 +252,7 @@ async function loadDashboard() {
         
         hideLoading();
         
-        console.log('Dashboard berhasil dimuat', data);
+        console.log('Dashboard berhasil dimuat');
         
     } catch (error) {
         console.error('Error loading dashboard:', error);
@@ -267,9 +286,12 @@ function renderWelcomeBanner(mahasiswa) {
         } else if (ipk >= 3.0) {
             badgeElement.className = 'bg-green-400 text-green-900 text-xs px-3 py-1 rounded-full font-semibold';
             badgeElement.textContent = 'Sangat Baik';
-        } else {
+        } else if (ipk >= 2.5) {
             badgeElement.className = 'bg-blue-400 text-blue-900 text-xs px-3 py-1 rounded-full font-semibold';
             badgeElement.textContent = 'Baik';
+        } else {
+            badgeElement.className = 'bg-orange-400 text-orange-900 text-xs px-3 py-1 rounded-full font-semibold';
+            badgeElement.textContent = 'Cukup';
         }
     }
 }
@@ -286,7 +308,7 @@ function renderQuickStats(mahasiswa) {
     updateElement('[data-stat-total-sks]', totalSKS);
     const progressBar = document.querySelector('[data-stat-progress]');
     if (progressBar) {
-        progressBar.style.width = `${progressPercentage}%`;
+        progressBar.style.width = `${progressPercentage.toFixed(1)}%`;
     }
     
     // Semester Aktif
@@ -308,6 +330,9 @@ function renderQuickStats(mahasiswa) {
         if (mahasiswa.status === 'Aktif') {
             statusBadge.className = 'inline-block mt-2 bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full';
             statusBadge.innerHTML = '<i class="fas fa-check-circle mr-1"></i>Aktif';
+        } else if (mahasiswa.status === 'Cuti') {
+            statusBadge.className = 'inline-block mt-2 bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full';
+            statusBadge.innerHTML = '<i class="fas fa-pause-circle mr-1"></i>Cuti';
         } else {
             statusBadge.className = 'inline-block mt-2 bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full';
             statusBadge.textContent = mahasiswa.status || 'Tidak Diketahui';
@@ -436,7 +461,7 @@ function renderJadwalHariIni(mahasiswa) {
     });
     
     container.innerHTML = jadwalHariIni.map(jadwal => `
-        <div class="bg-white p-4 rounded-lg shadow border-l-4 border-emerald-500 hover:shadow-md transition">
+        <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-emerald-500 hover:shadow-md transition">
             <div class="flex justify-between items-start mb-2">
                 <h4 class="font-semibold text-gray-800">${jadwal.mataKuliah?.nama_mk || '-'}</h4>
                 <span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded font-semibold">
@@ -483,6 +508,8 @@ function hideLoading() {
     const loader = document.getElementById('dashboard-loader');
     if (loader) {
         loader.classList.add('hidden');
+        // Atau hapus dari DOM
+        // loader.remove();
     }
 }
 
@@ -505,6 +532,13 @@ function showError(message) {
                 </div>
             </div>
         `;
+        
+        // Auto hide after 10 seconds
+        setTimeout(() => {
+            if (errorContainer.firstElementChild) {
+                errorContainer.firstElementChild.remove();
+            }
+        }, 10000);
     } else {
         alert(message);
     }
@@ -517,6 +551,7 @@ function showError(message) {
 // Load dashboard saat halaman dimuat
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Dashboard script loaded');
+    console.log('Mahasiswa ID:', getCurrentMahasiswaId());
     loadDashboard();
     
     // Auto refresh setiap 5 menit
@@ -526,6 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Refresh saat tab menjadi aktif kembali
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
+        console.log('Tab visible again, reloading dashboard...');
         loadDashboard();
     }
 });
@@ -534,5 +570,21 @@ document.addEventListener('visibilitychange', () => {
 window.dashboardDebug = {
     reload: loadDashboard,
     getMahasiswaId: getCurrentMahasiswaId,
-    API_URL: API_URL
+    API_URL: API_URL,
+    testQuery: () => {
+        const id = getCurrentMahasiswaId();
+        console.log('Testing with ID:', id, 'Type:', typeof id);
+        return fetch(API_URL, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                query: DASHBOARD_QUERY,
+                variables: { id: id }
+            })
+        }).then(r => r.json()).then(console.log);
+    }
 };

@@ -1,4 +1,4 @@
-<x-layouts.dashboard title="KHS Saya">
+<x-layouts.mahasiswa title="KHS Saya">
     <div class="space-y-6">
         {{-- Header Section --}}
         <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl shadow-lg overflow-hidden">

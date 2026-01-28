@@ -24,10 +24,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 // DATA LOADING
 // ============================================================================
 
-/**
- * Load data mahasiswa yang sedang login
- */
-
 async function getMahasiswaProfile() {
     const query = `
     query {
@@ -57,6 +53,7 @@ async function getMahasiswaProfile() {
 
     return result.data.mahasiswaProfile;
 }
+
 async function loadMahasiswaData() {
     try {
         const profile = await getMahasiswaProfile();
@@ -135,6 +132,15 @@ async function loadCurrentKrs() {
         
         currentKrsData = result.data.currentKrsByMahasiswa;
         
+        // ✅ Jika KRS belum ada, buat otomatis
+        if (!currentKrsData) {
+            console.log('KRS belum ada, membuat KRS baru...');
+            await createNewKrs();
+            // Reload setelah create
+            await loadCurrentKrs();
+            return;
+        }
+        
         if (currentKrsData) {
             currentKrsId = currentKrsData.id;
             krsDetailList = currentKrsData.krsDetail || [];
@@ -148,9 +154,6 @@ async function loadCurrentKrs() {
     }
 }
 
-/**
- * Buat KRS baru untuk semester aktif
- */
 async function createNewKrs() {
     const query = `query {
         currentSemester {
@@ -191,7 +194,7 @@ async function createNewKrs() {
                         mahasiswa_id: parseInt(currentMahasiswaId),
                         semester_id: parseInt(currentSemester.id),
                         tanggal_pengisian: today,
-                        status: 'DRAFT',
+                        status: 'Draft', // ✅ Sesuaikan dengan trigger (bukan DRAFT)
                         total_sks: 0
                     }
                 }
@@ -216,9 +219,6 @@ async function createNewKrs() {
 // RENDERING
 // ============================================================================
 
-/**
- * Render informasi mahasiswa
- */
 function renderMahasiswaInfo() {
     if (!mahasiswaData) return;
 
@@ -232,9 +232,6 @@ function renderMahasiswaInfo() {
     setContent('ipkMhs', (mahasiswaData.ipk || 0).toFixed(2));
 }
 
-/**
- * Render data KRS
- */
 async function renderKrsData() {
     if (!currentKrsData) return;
 
@@ -243,8 +240,8 @@ async function renderKrsData() {
         `${currentKrsData.semester?.nama_semester} ${currentKrsData.semester?.tahun_ajaran}`
     );
 
-    // Stats
-    const totalSks = krsDetailList.reduce((sum, d) => sum + (d.sks || 0), 0);
+    // Stats - ✅ total_sks sudah auto-update dari trigger
+    const totalSks = currentKrsData.total_sks || 0;
     const ipk = mahasiswaData?.ipk || 0;
     const maxSks = await getMaxSks(ipk);
 
@@ -262,30 +259,27 @@ async function renderKrsData() {
     updateButtonStates();
 }
 
-/**
- * Render alert status KRS
- */
 function renderStatusAlert(status, totalSks, maxSks) {
     const alertEl = document.getElementById('alertStatusKrs');
     if (!alertEl) return;
 
     let alertClass, icon, message;
 
-    // Check status
-    if (status === 'DISETUJUI') {
+    // ✅ Sesuaikan dengan status dari database (Title Case)
+    if (status === 'Disetujui') {
         alertClass = 'bg-green-50 border-green-500 text-green-800';
         icon = '✓';
         message = `<strong>KRS Anda telah disetujui!</strong> Anda dapat melihat jadwal dan mengikuti perkuliahan.`;
-    } else if (status === 'DITOLAK') {
+    } else if (status === 'Ditolak') {
         alertClass = 'bg-red-50 border-red-500 text-red-800';
         icon = '✗';
         message = `<strong>KRS Anda ditolak.</strong> Silakan revisi dan ajukan kembali. ${currentKrsData.catatan ? `<br><em>Catatan: ${currentKrsData.catatan}</em>` : ''}`;
-    } else if (status === 'DIAJUKAN') {
+    } else if (status === 'Diajukan') {
         alertClass = 'bg-yellow-50 border-yellow-500 text-yellow-800';
         icon = '⏳';
         message = `<strong>KRS sedang menunggu persetujuan dosen PA.</strong> Mohon tunggu konfirmasi.`;
     } else {
-        // DRAFT - check SKS
+        // Draft - check SKS
         if (totalSks < MIN_SKS) {
             alertClass = 'bg-red-50 border-red-500 text-red-800';
             icon = '⚠️';
@@ -312,9 +306,6 @@ function renderStatusAlert(status, totalSks, maxSks) {
     alertEl.classList.remove('hidden');
 }
 
-/**
- * Render tabel KRS
- */
 function renderKrsTable() {
     const tbody = document.getElementById('tableKrsBody');
     const emptyState = document.getElementById('emptyState');
@@ -337,7 +328,8 @@ function renderKrsTable() {
         ).join('<br>') || '-';
 
         const statusBadge = getStatusAmbilBadge(detail.status_ambil);
-        const canEdit = currentKrsData.status === 'DRAFT' || currentKrsData.status === 'DITOLAK';
+        // ✅ Sesuaikan dengan status dari database
+        const canEdit = currentKrsData.status === 'Draft' || currentKrsData.status === 'Ditolak';
 
         return `
             <tr class="hover:bg-gray-50 transition-colors">
@@ -382,15 +374,13 @@ function renderKrsTable() {
     }).join('');
 }
 
-/**
- * Update button states based on KRS status
- */
 function updateButtonStates() {
     const btnAddMk = document.getElementById('btnAddMk');
     const btnSubmitKrs = document.getElementById('btnSubmitKrs');
 
     if (!currentKrsData) return;
 
+    // ✅ Sesuaikan dengan status dari database
     const canEdit = currentKrsData.status === 'Draft' || currentKrsData.status === 'Ditolak';
     const canSubmit = canEdit && krsDetailList.length > 0;
 
@@ -417,13 +407,11 @@ function updateButtonStates() {
 // KRS ACTIONS
 // ============================================================================
 
-/**
- * Submit/Ajukan KRS
- */
 async function submitKrs() {
     if (!currentKrsData || !currentKrsId) return;
 
-    const totalSks = krsDetailList.reduce((sum, d) => sum + (d.sks || 0), 0);
+    // ✅ total_sks sudah auto-update dari trigger, ambil dari currentKrsData
+    const totalSks = currentKrsData.total_sks || 0;
     const ipk = mahasiswaData?.ipk || 0;
     const maxSks = await getMaxSks(ipk);
 
@@ -457,8 +445,8 @@ async function submitKrs() {
                 variables: {
                     id: parseInt(currentKrsId),
                     input: {
-                        status: 'DIAJUKAN',
-                        total_sks: totalSks
+                        status: 'Diajukan', // ✅ Sesuaikan dengan trigger
+                        // total_sks tidak perlu diupdate manual, trigger akan handle
                     }
                 }
             })
@@ -477,19 +465,14 @@ async function submitKrs() {
     }
 }
 
-/**
- * Hapus mata kuliah dari KRS
- */
 async function deleteMataKuliah(detailId, namaMk) {
     if (!confirm(`Hapus "${namaMk}" dari KRS?`)) return;
 
     const mutation = `mutation($id: ID!) {
-        deleteKrsDetail(id: $id) { id }
+        forceDeleteKrsDetail(id: $id) { id }
     }`;
 
     try {
-        const detail = krsDetailList.find(d => d.id == detailId);
-
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -503,12 +486,12 @@ async function deleteMataKuliah(detailId, namaMk) {
         
         if (result.errors) throw new Error(result.errors[0].message);
 
-        // Update kuota kelas
-        if (detail?.kelas_id) {
-            await updateKuotaKelas(detail.kelas_id, -1);
-        }
+        // ✅ HAPUS manual update kuota - trigger akan handle
+        // await updateKuotaKelas(detail.kelas_id, -1);
 
         showNotification(`"${namaMk}" berhasil dihapus`, 'success');
+        
+        // ✅ Tunggu reload selesai
         await loadCurrentKrs();
 
     } catch (error) {
@@ -568,47 +551,8 @@ async function getMaxSks(ipk) {
 }
 
 // ============================================================================
-// KUOTA MANAGEMENT
+// ✅ HAPUS FUNGSI updateKuotaKelas - Trigger akan handle
 // ============================================================================
-
-async function updateKuotaKelas(kelasId, increment) {
-    try {
-        const queryKuota = `query($id: ID!) {
-            kelas(id: $id) { id kuota_terisi }
-        }`;
-        
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                query: queryKuota,
-                variables: { id: parseInt(kelasId) }
-            })
-        });
-
-        const result = await res.json();
-        const currentKuota = result.data?.kelas?.kuota_terisi ?? 0;
-        const newKuota = Math.max(0, currentKuota + increment);
-
-        const mutation = `mutation($id: ID!, $input: UpdateKelasInput!) {
-            updateKelas(id: $id, input: $input) { id kuota_terisi }
-        }`;
-
-        await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                query: mutation,
-                variables: {
-                    id: parseInt(kelasId),
-                    input: { kuota_terisi: newKuota }
-                }
-            })
-        });
-    } catch (error) {
-        console.error('Error updating kuota:', error);
-    }
-}
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -649,8 +593,5 @@ function showNotification(message, type = 'info') {
 }
 
 function getUserIdFromSession() {
-    // Implementasi sesuai sistem autentikasi
-    // Contoh: return sessionStorage.getItem('userId');
-    // Atau ambil dari meta tag, cookie, dll
     return document.querySelector('meta[name="user-id"]')?.content || '1';
 }

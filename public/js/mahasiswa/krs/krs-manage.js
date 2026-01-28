@@ -10,8 +10,26 @@ let selectedKelasData = null;
 // ============================================================================
 
 async function openAddMkModal() {
+    console.log('openAddMkModal called');
+    
     const modal = document.getElementById('modalAddMk');
-    if (!modal) return;
+    if (!modal) {
+        console.error('Modal tidak ditemukan!');
+        return;
+    }
+
+    // Validasi KRS sudah ada
+    if (!currentKrsId) {
+        console.log('currentKrsId null, creating new KRS...');
+        showNotification('Membuat KRS baru...', 'info');
+        await createNewKrs();
+        await loadCurrentKrs();
+        
+        if (!currentKrsId) {
+            showNotification('Gagal membuat KRS. Silakan refresh halaman.', 'error');
+            return;
+        }
+    }
 
     resetAddMkForm();
     await loadAvailableMataKuliah();
@@ -21,7 +39,10 @@ async function openAddMkModal() {
 }
 
 function closeAddMkModal() {
-    document.getElementById('modalAddMk')?.classList.add('hidden');
+    const modal = document.getElementById('modalAddMk');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
     document.body.style.overflow = 'auto';
     resetAddMkForm();
 }
@@ -42,6 +63,11 @@ function resetAddMkForm() {
     if (selectKelas) {
         selectKelas.innerHTML = '<option value="">-- Pilih Mata Kuliah Terlebih Dahulu --</option>';
         selectKelas.disabled = true;
+    }
+
+    const selectMk = document.getElementById('addMkMataKuliahId');
+    if (selectMk) {
+        selectMk.innerHTML = '<option value="">-- Pilih Mata Kuliah --</option>';
     }
 
     hideAddMkError();
@@ -188,12 +214,14 @@ function populateMataKuliahSelect() {
         showAddMkInfo('Semua mata kuliah sudah diambil atau tidak tersedia');
         return;
     }
+    
     const grouped = {};
     filteredMk.forEach(mk => {
         const sem = mk.semester_rekomendasi || 0;
         if (!grouped[sem]) grouped[sem] = [];
         grouped[sem].push(mk);
     });
+    
     Object.keys(grouped).sort((a, b) => a - b).forEach(sem => {
         const optgroup = document.createElement('optgroup');
         optgroup.label = `Semester ${sem || 'Umum'}`;
@@ -383,8 +411,26 @@ async function submitAddMk(event) {
     if (submitBtn) submitBtn.disabled = true;
 
     try {
+        console.log('submitAddMk started');
+        console.log('currentKrsId:', currentKrsId);
+        console.log('selectedKelasData:', selectedKelasData);
+
+        // Validasi currentKrsId
+        if (!currentKrsId) {
+            throw new Error('KRS belum tersedia. Silakan refresh halaman.');
+        }
+
         if (!selectedKelasData) {
             throw new Error('Silakan pilih mata kuliah dan kelas');
+        }
+
+        // Cek duplikat berdasarkan kelas_id
+        const isDuplicate = krsDetailList.some(detail => 
+            detail.kelas_id == selectedKelasData.id
+        );
+        
+        if (isDuplicate) {
+            throw new Error('Anda sudah mengambil kelas ini di KRS Anda!');
         }
 
         const isValid = await validateKelasSelection(selectedKelasData);
@@ -408,6 +454,14 @@ async function submitAddMk(event) {
             }
         }`;
 
+        console.log('Sending mutation with variables:', {
+            krs_id: parseInt(currentKrsId),
+            kelas_id: parseInt(selectedKelasData.id),
+            mata_kuliah_id: parseInt(selectedKelasData.mkData.id),
+            sks: parseInt(selectedKelasData.mkData.sks),
+            status_ambil: statusAmbil
+        });
+
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -426,20 +480,32 @@ async function submitAddMk(event) {
         });
 
         const result = await response.json();
+        console.log('GraphQL response:', result);
         
-        if (result.errors) throw new Error(result.errors[0].message);
+        if (result.errors) {
+            const errorMsg = result.errors[0].message;
+            if (errorMsg.includes('Duplicate entry')) {
+                throw new Error('Kelas ini sudah ada di KRS Anda. Silakan refresh halaman.');
+            }
+            throw new Error(errorMsg);
+        }
 
         // Update kuota kelas
-        await updateKuotaKelas(selectedKelasData.id, 1);
+        // await updateKuotaKelas(selectedKelasData.id, 1);
 
         // Reload KRS
         await loadCurrentKrs();
 
-        closeAddMkModal();
+        // Close modal
+        const modal = document.getElementById('modalAddMk');
+        if (modal) modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+        resetAddMkForm();
+
         showNotification(`${selectedKelasData.mkData.nama_mk} berhasil ditambahkan!`, 'success');
 
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error in submitAddMk:', error);
         showAddMkError('Gagal menambah: ' + error.message);
     } finally {
         if (submitBtn) submitBtn.disabled = false;
@@ -497,7 +563,6 @@ async function openEditMkModal(detailId) {
         return;
     }
 
-    // Cari data detail
     const detail = krsDetailList.find(d => d.id === detailId);
     if (!detail) {
         showNotification('Data tidak ditemukan', 'error');
@@ -520,7 +585,6 @@ function closeEditMkModal() {
 }
 
 async function populateEditMkForm(detail) {
-    // Info mata kuliah (read-only)
     const namaMkEl = document.getElementById('editMkNamaMk');
     const kodeMkEl = document.getElementById('editMkKodeMk');
     const sksMkEl = document.getElementById('editMkSksMk');
@@ -529,7 +593,6 @@ async function populateEditMkForm(detail) {
     if (kodeMkEl) kodeMkEl.textContent = detail.mataKuliah?.kode_mk || '-';
     if (sksMkEl) sksMkEl.textContent = `${detail.sks || 0} SKS`;
     
-    // Current kelas info
     const currentKelasEl = document.getElementById('editMkCurrentKelas');
     const currentDosenEl = document.getElementById('editMkCurrentDosen');
     const currentJadwalEl = document.getElementById('editMkCurrentJadwal');
@@ -548,13 +611,11 @@ async function populateEditMkForm(detail) {
         }
     }
     
-    // Status ambil
     const statusSelect = document.getElementById('editMkStatusAmbil');
     if (statusSelect) {
         statusSelect.value = detail.status_ambil || 'BARU';
     }
     
-    // Load kelas lain
     await loadEditAvailableKelas(detail.mata_kuliah_id, detail.kelas_id);
 }
 
@@ -585,7 +646,6 @@ async function loadEditAvailableKelas(mataKuliahId, currentKelasId) {
 
         const allKelas = result.data.matakuliah?.kelas || [];
 
-        // Filter kelas saat ini & normalize kuota
         editAvailableKelas = allKelas
             .filter(k => k.id !== currentKelasId)
             .map(k => ({ ...k, kuota_terisi: k.kuota_terisi ?? 0 }));
@@ -644,11 +704,9 @@ function displayEditMkKelasInfo(kelasData) {
     const infoSection = document.getElementById('editMkNewKelasInfo');
     if (!infoSection) return;
 
-    // Dosen
     const dosenEl = document.getElementById('editMkNewDosen');
     if (dosenEl) dosenEl.textContent = kelasData.dosen?.nama_lengkap || '-';
     
-    // Jadwal
     const jadwalEl = document.getElementById('editMkNewJadwal');
     if (jadwalEl) {
         if (kelasData.jadwalKuliah?.length > 0) {
@@ -661,7 +719,6 @@ function displayEditMkKelasInfo(kelasData) {
         }
     }
     
-    // Kuota
     const kuotaEl = document.getElementById('editMkNewKuota');
     if (kuotaEl) {
         const sisaKuota = (kelasData.kapasitas ?? 0) - (kelasData.kuota_terisi ?? 0);
@@ -683,7 +740,6 @@ function hideEditMkKelasInfo() {
 function validateEditMkKelasSelection(kelasData) {
     hideEditMkError();
     
-    // Cek konflik jadwal (exclude mata kuliah yang sedang diedit)
     if (checkEditMkJadwalConflict(kelasData)) {
         showEditMkError('⚠️ KONFLIK JADWAL: Waktu kuliah bentrok dengan mata kuliah lain!');
         return false;
@@ -697,7 +753,6 @@ function checkEditMkJadwalConflict(kelasData) {
     if (!kelasData.jadwalKuliah?.length) return false;
     
     for (const detail of krsDetailList) {
-        // Skip mata kuliah yang sedang diedit
         if (detail.id === editMkDetailData.id) continue;
         
         if (!detail.kelas?.jadwalKuliah) continue;
@@ -731,7 +786,6 @@ async function submitEditMk(event) {
         const newKelasId = kelasSelect?.value;
         const newStatus = statusSelect?.value;
         
-        // Cek perubahan
         const hasKelasChange = newKelasId && newKelasId !== editMkDetailData.kelas_id;
         const hasStatusChange = newStatus !== editMkDetailData.status_ambil;
         
@@ -739,7 +793,6 @@ async function submitEditMk(event) {
             throw new Error('Tidak ada perubahan');
         }
 
-        // Validasi jika ganti kelas
         if (hasKelasChange) {
             const selectedOption = kelasSelect.options[kelasSelect.selectedIndex];
             const kelasData = JSON.parse(selectedOption.dataset.kelas);
@@ -749,7 +802,6 @@ async function submitEditMk(event) {
             }
         }
 
-        // Mutation
         const mutation = `mutation($id: ID!, $input: UpdateKrsDetailInput!) {
             updateKrsDetail(id: $id, input: $input) {
                 id kelas_id status_ambil
@@ -775,17 +827,14 @@ async function submitEditMk(event) {
         const result = await response.json();
         if (result.errors) throw new Error(result.errors[0].message);
 
-        // Update kuota jika ganti kelas
         if (hasKelasChange) {
-            await updateKuotaKelas(editMkDetailData.kelas_id, -1); // Kurangi kelas lama
-            await updateKuotaKelas(newKelasId, 1); // Tambah kelas baru
+            // await updateKuotaKelas(editMkDetailData.kelas_id, -1);
+            // await updateKuotaKelas(newKelasId, 1);
         }
 
-        // Reload data
         await loadCurrentKrs();
         closeEditMkModal();
         
-        // Success message
         let message = 'Data berhasil diupdate!';
         if (hasKelasChange) message = 'Kelas berhasil dipindah!';
         if (hasStatusChange && !hasKelasChange) message = 'Status berhasil diubah!';
@@ -800,7 +849,6 @@ async function submitEditMk(event) {
     }
 }
 
-// UI Helpers for Edit Modal
 function showEditMkError(msg) {
     const el = document.getElementById('editMkError');
     if (el) {

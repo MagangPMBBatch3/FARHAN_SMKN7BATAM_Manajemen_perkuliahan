@@ -222,7 +222,7 @@ function renderMahasiswaList(krsDetailList) {
 async function loadPertemuanData(kelasId) {
     const query = `
     query {
-        allPertemuan(kelas_id: ${kelasId}) {
+        allPertemuan {
             id
             pertemuan_ke
             tanggal

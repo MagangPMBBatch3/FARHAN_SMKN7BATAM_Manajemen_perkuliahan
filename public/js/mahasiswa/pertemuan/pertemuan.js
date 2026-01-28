@@ -1,11 +1,14 @@
 const API_URL = "/graphql";
 let currentPage = 1;
 let allPertemuanData = [];
+let isLoading = false;
+let hasMorePages = true;
 
 // ==================== LOAD DATA ====================
 function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 }
+
 async function graphqlFetch(query, variables = {}) {
     const response = await fetch(API_URL, {
         method: 'POST',
@@ -13,9 +16,9 @@ async function graphqlFetch(query, variables = {}) {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': getCsrfToken(),
             'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest' // Penting untuk Laravel
+            'X-Requested-With': 'XMLHttpRequest'
         },
-        credentials: 'same-origin', // PENTING: Untuk mengirim session cookies
+        credentials: 'same-origin',
         body: JSON.stringify({ query, variables })
     });
 
@@ -25,10 +28,17 @@ async function graphqlFetch(query, variables = {}) {
 
     return await response.json();
 }
-async function loadPertemuanData(page = 1) {
+
+async function loadPertemuanData(page = 1, append = false) {
+    if (isLoading) return;
+    
+    isLoading = true;
     currentPage = page;
     
-    const perPage = parseInt(document.getElementById("perPage")?.value || 10);
+    // Show loading indicator
+    showLoadingIndicator();
+    
+    const perPage = parseInt(document.getElementById("perPage")?.value || 20);
     const searchValue = document.getElementById("search")?.value.trim() || "";
     const filterSemester = document.getElementById("filterSemester")?.value || null;
     const filterStatus = document.getElementById("filterStatus")?.value || null;
@@ -103,15 +113,29 @@ async function loadPertemuanData(page = 1) {
         }
 
         const data = result.data.pertemuanMahasiswa;
-        allPertemuanData = data.data || [];
+        
+        if (append) {
+            allPertemuanData = [...allPertemuanData, ...(data.data || [])];
+        } else {
+            allPertemuanData = data.data || [];
+        }
 
-        renderPertemuanCards(allPertemuanData);
+        hasMorePages = data.paginatorInfo.hasMorePages;
+
+        renderPertemuanCards(allPertemuanData, append);
         updatePagination(data.paginatorInfo);
-        updateStats(allPertemuanData);
+        
+        // Only update stats on initial load or filter change
+        if (!append) {
+            updateStats(allPertemuanData);
+        }
 
     } catch (error) {
         console.error('Error loading data:', error);
         showError('Terjadi kesalahan saat memuat data: ' + error.message);
+    } finally {
+        isLoading = false;
+        hideLoadingIndicator();
     }
 }
 
@@ -148,106 +172,116 @@ async function loadSemesterOptions() {
 
 // ==================== RENDER FUNCTIONS ====================
 
-function renderPertemuanCards(data) {
+function renderPertemuanCards(data, append = false) {
     const container = document.getElementById('pertemuanContainer');
     const emptyState = document.getElementById('emptyState');
 
     if (!data || data.length === 0) {
-        container.innerHTML = '';
-        emptyState.classList.remove('hidden');
+        if (!append) {
+            container.innerHTML = '';
+            emptyState.classList.remove('hidden');
+        }
         return;
     }
 
     emptyState.classList.add('hidden');
     
-    container.innerHTML = data.map(item => {
-        const statusBadge = getStatusBadge(item.status_pertemuan);
-        const metodeBadge = getMetodeBadge(item.metode);
-        const isUpcoming = isUpcomingClass(item.tanggal, item.waktu_mulai);
-        
-        return `
-            <div class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                <div class="p-5">
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="px-2.5 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
-                                    ${item.kelas.kode_kelas}
-                                </span>
-                                ${metodeBadge}
-                                ${statusBadge}
-                                ${isUpcoming ? '<span class="px-2.5 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full animate-pulse">🔔 Segera Dimulai</span>' : ''}
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-900 mb-1">
-                                ${item.kelas.mataKuliah.nama_mk}
-                            </h3>
-                            <p class="text-sm text-gray-600">
-                                <span class="font-medium">${item.kelas.mataKuliah.kode_mk}</span> • 
-                                ${item.kelas.mataKuliah.sks} SKS • 
-                                Dosen: ${item.kelas.dosen.nama_lengkap}
-                            </p>
+    const cardsHTML = data.map(item => createPertemuanCard(item)).join('');
+    
+    if (append) {
+        container.insertAdjacentHTML('beforeend', cardsHTML);
+    } else {
+        container.innerHTML = cardsHTML;
+    }
+}
+
+function createPertemuanCard(item) {
+    const statusBadge = getStatusBadge(item.status_pertemuan);
+    const metodeBadge = getMetodeBadge(item.metode);
+    const isUpcoming = isUpcomingClass(item.tanggal, item.waktu_mulai);
+    
+    return `
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden pertemuan-card">
+            <div class="p-5">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2 flex-wrap">
+                            <span class="px-2.5 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
+                                ${item.kelas.kode_kelas}
+                            </span>
+                            ${metodeBadge}
+                            ${statusBadge}
+                            ${isUpcoming ? '<span class="px-2.5 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full animate-pulse">🔔 Segera Dimulai</span>' : ''}
                         </div>
-                        <div class="text-right ml-4">
-                            <div class="text-2xl font-bold text-blue-600">
-                                ${item.pertemuan_ke}
-                            </div>
-                            <div class="text-xs text-gray-500">Pertemuan</div>
-                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">
+                            ${item.kelas.mataKuliah.nama_mk}
+                        </h3>
+                        <p class="text-sm text-gray-600">
+                            <span class="font-medium">${item.kelas.mataKuliah.kode_mk}</span> • 
+                            ${item.kelas.mataKuliah.sks} SKS • 
+                            Dosen: ${item.kelas.dosen.nama_lengkap}
+                        </p>
                     </div>
-
-                    ${item.materi ? `
-                        <div class="mb-3 p-3 bg-gray-50 rounded-lg">
-                            <p class="text-xs font-medium text-gray-500 mb-1">📚 Materi:</p>
-                            <p class="text-sm text-gray-900 font-medium">${item.materi}</p>
+                    <div class="text-right ml-4">
+                        <div class="text-2xl font-bold text-blue-600">
+                            ${item.pertemuan_ke}
                         </div>
-                    ` : ''}
-
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <div class="flex items-center text-sm text-gray-600">
-                            <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            <span>${formatDate(item.tanggal)}</span>
-                        </div>
-                        <div class="flex items-center text-sm text-gray-600">
-                            <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span>${item.waktu_mulai} - ${item.waktu_selesai}</span>
-                        </div>
-                    </div>
-
-                    ${item.ruangan ? `
-                        <div class="flex items-center text-sm text-gray-600 mb-3">
-                            <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                            <span>${item.ruangan.gedung} - ${item.ruangan.nama_ruangan} (${item.ruangan.kode_ruangan})</span>
-                        </div>
-                    ` : ''}
-
-                    <div class="flex gap-2">
-                        ${item.link_daring ? `
-                            <a href="${item.link_daring}" target="_blank"
-                                class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                </svg>
-                                Join Meeting
-                            </a>
-                        ` : ''}
-                        <button onclick='openDetailModal(${JSON.stringify(item)})' 
-                            class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Detail
-                        </button>
+                        <div class="text-xs text-gray-500">Pertemuan</div>
                     </div>
                 </div>
+
+                ${item.materi ? `
+                    <div class="mb-3 p-3 bg-gray-50 rounded-lg">
+                        <p class="text-xs font-medium text-gray-500 mb-1">📚 Materi:</p>
+                        <p class="text-sm text-gray-900 font-medium">${item.materi}</p>
+                    </div>
+                ` : ''}
+
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <svg class="w-5 h-5 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="truncate">${formatDate(item.tanggal)}</span>
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <svg class="w-5 h-5 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>${item.waktu_mulai} - ${item.waktu_selesai}</span>
+                    </div>
+                </div>
+
+                ${item.ruangan ? `
+                    <div class="flex items-center text-sm text-gray-600 mb-3">
+                        <svg class="w-5 h-5 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        <span class="truncate">${item.ruangan.gedung} - ${item.ruangan.nama_ruangan} (${item.ruangan.kode_ruangan})</span>
+                    </div>
+                ` : ''}
+
+                <div class="flex gap-2">
+                    ${item.link_daring ? `
+                        <a href="${item.link_daring}" target="_blank"
+                            class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                            Join Meeting
+                        </a>
+                    ` : ''}
+                    <button onclick='openDetailModal(${JSON.stringify(item).replace(/'/g, "&#39;")})' 
+                        class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Detail
+                    </button>
+                </div>
             </div>
-        `;
-    }).join('');
+        </div>
+    `;
 }
 
 function updateStats(data) {
@@ -267,9 +301,58 @@ function updateStats(data) {
 function updatePagination(pageInfo) {
     if (pageInfo) {
         document.getElementById('pageInfo').textContent = 
-            `Halaman ${pageInfo.currentPage} dari ${pageInfo.lastPage} (Total: ${pageInfo.total})`;
-        document.getElementById('prevBtn').disabled = pageInfo.currentPage <= 1;
-        document.getElementById('nextBtn').disabled = !pageInfo.hasMorePages;
+            `Menampilkan ${allPertemuanData.length} dari ${pageInfo.total} pertemuan`;
+        
+        // Update load more button
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        if (loadMoreBtn) {
+            if (pageInfo.hasMorePages) {
+                loadMoreBtn.classList.remove('hidden');
+            } else {
+                loadMoreBtn.classList.add('hidden');
+            }
+        }
+    }
+}
+
+// ==================== INFINITE SCROLL ====================
+
+function setupInfiniteScroll() {
+    const scrollContainer = document.getElementById('pertemuanScrollContainer');
+    
+    if (!scrollContainer) return;
+    
+    scrollContainer.addEventListener('scroll', () => {
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+        
+        // Check if user has scrolled to bottom (with 100px threshold)
+        if (scrollTop + clientHeight >= scrollHeight - 100) {
+            if (!isLoading && hasMorePages) {
+                loadPertemuanData(currentPage + 1, true);
+            }
+        }
+    });
+}
+
+function loadMoreData() {
+    if (!isLoading && hasMorePages) {
+        loadPertemuanData(currentPage + 1, true);
+    }
+}
+
+// ==================== LOADING INDICATOR ====================
+
+function showLoadingIndicator() {
+    const loadingEl = document.getElementById('loadingIndicator');
+    if (loadingEl) {
+        loadingEl.classList.remove('hidden');
+    }
+}
+
+function hideLoadingIndicator() {
+    const loadingEl = document.getElementById('loadingIndicator');
+    if (loadingEl) {
+        loadingEl.classList.add('hidden');
     }
 }
 
@@ -298,7 +381,7 @@ function getMetodeBadge(metode) {
 function formatDate(dateString) {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
     return date.toLocaleDateString('id-ID', options);
 }
 
@@ -323,18 +406,15 @@ function showError(message) {
 
 // ==================== SEARCH & FILTER ====================
 
+let searchTimeout;
 function searchPertemuan() {
-    loadPertemuanData(1);
-}
-
-function prevPage() {
-    if (currentPage > 1) {
-        loadPertemuanData(currentPage - 1);
-    }
-}
-
-function nextPage() {
-    loadPertemuanData(currentPage + 1);
+    // Debounce search
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        currentPage = 1;
+        hasMorePages = true;
+        loadPertemuanData(1, false);
+    }, 300);
 }
 
 // ==================== DETAIL MODAL ====================
@@ -392,4 +472,5 @@ function closeDetailModal() {
 document.addEventListener("DOMContentLoaded", async () => {
     await loadSemesterOptions();
     loadPertemuanData();
+    setupInfiniteScroll();
 });
