@@ -265,7 +265,6 @@ function renderStatusAlert(status, totalSks, maxSks) {
 
     let alertClass, icon, message;
 
-    // ✅ Sesuaikan dengan status dari database (Title Case)
     if (status === 'Disetujui') {
         alertClass = 'bg-green-50 border-green-500 text-green-800';
         icon = '✓';
@@ -279,7 +278,6 @@ function renderStatusAlert(status, totalSks, maxSks) {
         icon = '⏳';
         message = `<strong>KRS sedang menunggu persetujuan dosen PA.</strong> Mohon tunggu konfirmasi.`;
     } else {
-        // Draft - check SKS
         if (totalSks < MIN_SKS) {
             alertClass = 'bg-red-50 border-red-500 text-red-800';
             icon = '⚠️';

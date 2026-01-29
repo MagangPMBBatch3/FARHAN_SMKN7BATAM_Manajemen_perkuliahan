@@ -22,7 +22,7 @@ class Semester extends Model
         'periode',
         'tanggal_mulai',
         'tanggal_selesai',
-        'is_active',
+        'status',
     ];
 
     protected function casts(): array
@@ -31,7 +31,6 @@ class Semester extends Model
             'tanggal_mulai' => 'date',
             'tanggal_selesai' => 'date',
             'is_active' => 'boolean',
-            'deleted_at' => 'datetime',
         ];
     }
 

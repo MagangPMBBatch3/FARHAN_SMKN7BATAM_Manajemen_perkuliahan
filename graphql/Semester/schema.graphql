@@ -6,6 +6,7 @@ type Semester {
     periode: String!
     tanggal_mulai: Date!
     tanggal_selesai: Date!
+    status: String!
     created_at: DateTime
     updated_at: DateTime
     deleted_at: DateTime
@@ -20,6 +21,7 @@ input CreateSemesterInput {
     nama_semester: String!
     tahun_ajaran: String!
     periode: String!
+    status: String!
     tanggal_mulai: Date!
     tanggal_selesai: Date!
 }
@@ -29,7 +31,7 @@ input UpdateSemesterInput {
     kode_semester: String
     nama_semester: String
     tahun_ajaran: String
-    periode: String
+    status: String
     tanggal_mulai: Date
     tanggal_selesai: Date
 }

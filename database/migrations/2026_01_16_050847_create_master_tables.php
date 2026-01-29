@@ -83,6 +83,7 @@ return new class extends Migration {
             $table->enum('periode', ['Ganjil', 'Genap']);
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
+            $table->enum('status', ['Aktif', 'Nonaktif'])->nullable();
             $table->timestamps();
             $table->softDeletes();
 
