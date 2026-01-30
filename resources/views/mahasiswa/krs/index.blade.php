@@ -1,4 +1,4 @@
-<x-layouts.dashboard title="Kartu Rencana Studi (KRS) Saya">
+<x-layouts.mahasiswa title="Kartu Rencana Studi (KRS) Saya">
     <div class="space-y-6">
         {{-- Header Section --}}
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-lg p-6 text-white">

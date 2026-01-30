@@ -13,6 +13,7 @@ type Khs {
     # Relations
     mahasiswa: Mahasiswa! @belongsTo
     semester: Semester! @belongsTo
+    nilai: [Nilai!]! @hasMany
 }
 
 input CreateKhsInput {

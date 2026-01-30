@@ -79,7 +79,9 @@ async function loadRekapKehadiranData(page = 1) {
     const filterSemester = parseInt(document.getElementById("filterSemester")?.value) || null;
     const filterMahasiswa = parseInt(document.getElementById("filterMahasiswa")?.value) || null;
     const filterStatus = document.getElementById("filterStatus")?.value || null;
-    
+    showTableLoading('dataRekapKehadiran', 5, 12);
+    showTableLoading('dataRekapKehadiranArsip', 5, 12);
+
     let statusMinimal = null;
     if (filterStatus === "Memenuhi") {
         statusMinimal = "Memenuhi";

@@ -15,7 +15,7 @@
 
             <!-- Body -->
             <div class="flex-1 overflow-y-auto px-6 py-6">
-                <form id="formAddKrs" onsubmit="createKrs(); return false;">
+                <form id="formAddKrs" onsubmit="event.preventDefault(); createKrs();">
                     <div class="space-y-4">
                         <!-- Info Box -->
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">

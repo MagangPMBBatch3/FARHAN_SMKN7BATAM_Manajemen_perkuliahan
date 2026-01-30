@@ -10,6 +10,7 @@ use App\Models\Dosen\Dosen;
 use App\Models\Semester\Semester;
 use App\Models\JadwalKuliah\JadwalKuliah;
 use App\Models\KrsDetail\KrsDetail;
+use App\Models\Pertemuan\Pertemuan;
 
 class Kelas extends Model
 {
@@ -63,5 +64,9 @@ class Kelas extends Model
     public function krsDetail()
     {
         return $this->hasMany(KrsDetail::class);
+    }
+    public function pertemuan()
+    {
+        return $this->hasMany(Pertemuan::class, 'kelas_id');
     }
 }

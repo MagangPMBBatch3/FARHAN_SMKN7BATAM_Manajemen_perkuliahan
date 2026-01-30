@@ -197,6 +197,7 @@
     @include('components.modal.grade-system.modal-edit')
 
     <!-- Scripts -->
+    <script src="{{ asset('js/services/loading.js') }}"></script>
     <script src="{{ asset('js/admin/grade-system/grade-system.js') }}"></script>
     <script src="{{ asset('js/admin/grade-system/grade-system-create.js') }}"></script>
     <script src="{{ asset('js/admin/grade-system/grade-system-edit.js') }}"></script>

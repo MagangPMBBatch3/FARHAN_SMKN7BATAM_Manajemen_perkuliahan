@@ -437,7 +437,7 @@ async function submitAddKrsDetail(event) {
         if (result.errors) throw new Error(result.errors[0].message);
 
         // Update kuota kelas
-        await updateKuotaKelas(selectedKelasData.id, 1);
+        // await updateKuotaKelas(selectedKelasData.id, 1);
 
         // Reload data KRS
         await loadKrsDetail();

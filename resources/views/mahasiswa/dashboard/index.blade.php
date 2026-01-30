@@ -1,16 +1,6 @@
 <x-layouts.mahasiswa title="Dashboard Mahasiswa">
-    
-    {{-- Tambahkan ID Mahasiswa di body atau meta tag --}}
-    {{-- Pilih salah satu cara di bawah ini --}}
-    
-    {{-- Cara 1: Menggunakan data attribute di body (Recommended) --}}
     @push('body-attributes')
         data-mahasiswa-id="{{ auth()->user()->mahasiswa->id ?? '' }}"
-    @endpush
-    
-    {{-- Cara 2: Menggunakan meta tag --}}
-    @push('head')
-        <meta name="mahasiswa-id" content="{{ auth()->user()->mahasiswa->id ?? '' }}">
     @endpush
     
     {{-- Error Notification Container --}}
@@ -119,7 +109,7 @@
                     <i class="fas fa-book text-emerald-500 mr-2"></i>
                     Mata Kuliah Semester Ini
                 </span>
-                <a href="/krs" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                <a href="/mahasiswa/krs" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
                     Lihat Detail KRS <i class="fas fa-arrow-right ml-1"></i>
                 </a>
             </h3>
@@ -153,7 +143,7 @@
         <div class="space-y-6">
             
             {{-- Jadwal Hari Ini --}}
-            <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <div class="bg-white rounded-2xl p-6 pb-26 shadow-lg border border-gray-100">
                 <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
                     <i class="fas fa-calendar-day text-emerald-500 mr-2"></i>
                     Jadwal Hari Ini
@@ -163,21 +153,6 @@
                     <div class="text-center py-4">
                         <i class="fas fa-spinner fa-spin text-emerald-500 text-2xl mb-2"></i>
                         <p class="text-sm text-gray-500">Memuat jadwal...</p>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Pengumuman Terbaru --}}
-            <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                    <i class="fas fa-bullhorn text-orange-500 mr-2"></i>
-                    Pengumuman Terbaru
-                </h3>
-                <div class="space-y-3" data-pengumuman>
-                    {{-- Data akan dimuat via JavaScript --}}
-                    <div class="text-center py-4">
-                        <i class="fas fa-spinner fa-spin text-orange-500 text-2xl mb-2"></i>
-                        <p class="text-sm text-gray-500">Memuat pengumuman...</p>
                     </div>
                 </div>
             </div>

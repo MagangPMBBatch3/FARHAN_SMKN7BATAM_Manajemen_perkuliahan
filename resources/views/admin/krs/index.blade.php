@@ -204,6 +204,8 @@
     @include('components.modal.krs.modal-edit')
 
     {{-- Script --}}
+    
+    <script src="{{ asset('js/services/loading.js') }}"></script>
     <script src="{{ asset('js/admin/krs/krs.js') }}"></script>
     <script src="{{ asset('js/admin/krs/krs-create.js') }}"></script>
     <script src="{{ asset('js/admin/krs/krs-edit.js') }}"></script>

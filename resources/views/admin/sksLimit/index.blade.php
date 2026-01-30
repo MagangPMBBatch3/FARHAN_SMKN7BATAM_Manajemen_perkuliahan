@@ -141,6 +141,7 @@
     @include('components.modal.sksLimit.modal-add')
     @include('components.modal.sksLimit.modal-edit')
 
+    <script src="{{ asset('js/services/loading.js') }}"></script>
     <script src="{{ asset('js/admin/sksLimit/sks-limit.js') }}"></script>
     <script src="{{ asset('js/admin/sksLimit/sks-limit-create.js') }}"></script>
     <script src="{{ asset('js/admin/sksLimit/sks-limit-edit.js') }}"></script>

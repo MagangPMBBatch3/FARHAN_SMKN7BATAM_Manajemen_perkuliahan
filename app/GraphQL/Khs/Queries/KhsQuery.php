@@ -2,6 +2,7 @@
 namespace App\GraphQL\Khs\Queries;
 
 use App\Models\Khs\Khs;
+use App\Models\Nilai\Nilai;
 
 class KhsQuery {
     public function allArsip($_, array $args)

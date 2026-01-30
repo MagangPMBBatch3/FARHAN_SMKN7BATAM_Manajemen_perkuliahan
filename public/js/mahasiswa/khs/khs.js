@@ -1,6 +1,7 @@
 const API_URL = "/graphql";
 let allKhsData = [];
 let mahasiswaData = null;
+let idMahasiswa = null;
 
 // Load data saat halaman dimuat
 document.addEventListener("DOMContentLoaded", async () => {
@@ -8,6 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadMahasiswaInfo();
     await loadMahasiswaKHS();
 });
+
 async function getMahasiswaProfile() {
     const query = `
     query {
@@ -26,9 +28,16 @@ async function getMahasiswaProfile() {
         });
 
         const result = await response.json();
+        console.log(result.data)
+        console.log(result.data.mahasiswaProfile)
         if (result.data && result.data.mahasiswaProfile) {
             idMahasiswa = result.data.mahasiswaProfile.id;
-            document.getElementById('headerNIM').textContent = result.data.mahasiswaProfile.nim;
+            
+            // Add null check untuk headerNIM
+            const headerNIMElement = document.getElementById('headerNIM');
+            if (headerNIMElement) {
+                headerNIMElement.textContent = result.data.mahasiswaProfile.nim;
+            }
         } else {
             console.error('Failed to get mahasiswa profile');
             alert('Gagal memuat profil mahasiswa');
@@ -38,6 +47,7 @@ async function getMahasiswaProfile() {
         alert('Terjadi kesalahan saat memuat profil');
     }
 }
+
 /**
  * Load informasi mahasiswa
  */
@@ -248,8 +258,8 @@ async function loadTranskrip() {
     `;
 
     try {
-        // Load semua nilai mahasiswa
-        const query = `
+        // Load semua KHS terlebih dahulu
+        const khsQuery = `
         query($mahasiswaId: Int!) {
             khsByMahasiswa(mahasiswa_id: $mahasiswaId) {
                 id
@@ -259,30 +269,100 @@ async function loadTranskrip() {
                     tahun_ajaran
                 }
                 sks_semester
+                sks_kumulatif
                 ip_semester
+                ipk
             }
         }`;
 
-        const response = await fetch(API_URL, {
+        const khsResponse = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                query,
+                query: khsQuery,
                 variables: { mahasiswaId: parseInt(idMahasiswa) }
             })
         });
 
-        const result = await response.json();
-        const khsData = result.data.khsByMahasiswa || [];
+        const khsResult = await khsResponse.json();
+        
+        if (khsResult.errors) {
+            console.error('GraphQL Errors:', khsResult.errors);
+            throw new Error('Gagal memuat data KHS');
+        }
+        
+        const khsData = khsResult.data.khsByMahasiswa || [];
+
+        // Load nilai untuk setiap semester secara terpisah
+        const khsWithNilai = await Promise.all(
+            khsData.map(async (khs) => {
+                try {
+                    const nilaiQuery = `
+                    query($mahasiswaId: ID!, $semesterId: ID!) {
+                        nilaiMahasiswaBySemester(mahasiswa_id: $mahasiswaId, semester_id: $semesterId) {
+                            id
+                            nilai_akhir
+                            nilai_huruf
+                            nilai_mutu
+                            krsDetail {
+                                id
+                                mataKuliah {
+                                    id
+                                    kode_mk
+                                    nama_mk
+                                    sks
+                                }
+                            }
+                        }
+                    }`;
+
+                    const nilaiResponse = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            query: nilaiQuery,
+                            variables: { 
+                                mahasiswaId: idMahasiswa.toString(),
+                                semesterId: khs.semester.id.toString()
+                            }
+                        })
+                    });
+
+                    const nilaiResult = await nilaiResponse.json();
+                    
+                    if (nilaiResult.errors) {
+                        console.error(`Error loading nilai for semester ${khs.semester.id}:`, nilaiResult.errors);
+                    }
+                    
+                    return {
+                        ...khs,
+                        nilai: nilaiResult.data?.nilaiMahasiswaBySemester || []
+                    };
+                } catch (error) {
+                    console.error(`Error loading nilai for semester ${khs.semester.id}:`, error);
+                    return {
+                        ...khs,
+                        nilai: []
+                    };
+                }
+            })
+        );
 
         // Render transkrip
-        renderTranskrip(khsData);
+        renderTranskrip(khsWithNilai);
 
     } catch (error) {
         console.error('Error loading transkrip:', error);
         transkripContent.innerHTML = `
             <div class="text-center py-12 text-red-600">
-                <p>Gagal memuat transkrip nilai</p>
+                <svg class="mx-auto h-12 w-12 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-lg font-semibold">Gagal memuat transkrip nilai</p>
+                <p class="text-sm text-gray-500 mt-2">${error.message}</p>
+                <button onclick="loadTranskrip()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Coba Lagi
+                </button>
             </div>
         `;
     }
@@ -297,18 +377,23 @@ function renderTranskrip(khsData) {
     if (khsData.length === 0) {
         transkripContent.innerHTML = `
             <div class="text-center py-12">
-                <p class="text-gray-500">Belum ada data transkrip</p>
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada data transkrip</h3>
+                <p class="mt-1 text-sm text-gray-500">Data transkrip nilai Anda akan muncul di sini setelah nilai diinput</p>
             </div>
         `;
         return;
     }
 
-    // Sort berdasarkan semester
+    // Sort berdasarkan semester (semester awal ke akhir)
     khsData.sort((a, b) => a.semester.id - b.semester.id);
 
+    // Ambil data terakhir untuk total SKS dan IPK
     const latestKhs = khsData[khsData.length - 1];
-    const totalSKS = latestKhs ? khsData[khsData.length - 1].sks_semester : 0;
-    const ipk = latestKhs ? parseFloat(latestKhs.ip_semester).toFixed(2) : '0.00';
+    const totalSKS = latestKhs.sks_kumulatif;
+    const ipk = parseFloat(latestKhs.ipk).toFixed(2);
 
     transkripContent.innerHTML = `
         <div id="printableTranskrip" class="bg-white">
@@ -342,34 +427,100 @@ function renderTranskrip(khsData) {
             <!-- Riwayat Per Semester -->
             <div class="space-y-6">
                 ${khsData.map(khs => `
-                    <div class="border border-gray-200 rounded-lg p-4">
-                        <h4 class="font-semibold text-gray-900 mb-2">${khs.semester.nama_semester} - ${khs.semester.tahun_ajaran}</h4>
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <span class="text-gray-600">SKS Semester:</span>
-                                <span class="font-semibold ml-2">${khs.sks_semester}</span>
+                    <div class="border-2 border-gray-300 rounded-lg overflow-hidden">
+                        <!-- Header Semester -->
+                        <div class="bg-blue-600 text-white px-4 py-3">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-bold text-lg">${khs.semester.nama_semester}</h4>
+                                    <p class="text-blue-100 text-sm">${khs.semester.tahun_ajaran}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm">IP Semester: <span class="font-bold text-lg">${parseFloat(khs.ip_semester).toFixed(2)}</span></p>
+                                    <p class="text-sm">SKS: <span class="font-bold">${khs.sks_semester}</span></p>
+                                </div>
                             </div>
-                            <div>
-                                <span class="text-gray-600">IP Semester:</span>
-                                <span class="font-semibold ml-2">${parseFloat(khs.ip_semester).toFixed(2)}</span>
+                        </div>
+                        
+                        <!-- Tabel Nilai -->
+                        ${khs.nilai && khs.nilai.length > 0 ? `
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Kode MK</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Mata Kuliah</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">SKS</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Nilai</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Huruf</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Mutu</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        ${khs.nilai.filter(n => n.krsDetail && n.krsDetail.mataKuliah).map((nilai, index) => `
+                                            <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">${nilai.krsDetail.mataKuliah.kode_mk || '-'}</td>
+                                                <td class="px-4 py-3 text-sm text-gray-900">${nilai.krsDetail.mataKuliah.nama_mk}</td>
+                                                <td class="px-4 py-3 text-sm text-center text-gray-900">${nilai.krsDetail.mataKuliah.sks}</td>
+                                                <td class="px-4 py-3 text-sm text-center font-semibold text-gray-900">${nilai.nilai_akhir ? parseFloat(nilai.nilai_akhir).toFixed(2) : '-'}</td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <span class="px-2 py-1 text-xs font-semibold rounded ${getNilaiHurufColor(nilai.nilai_huruf)}">
+                                                        ${nilai.nilai_huruf || '-'}
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-center font-semibold text-gray-900">${nilai.nilai_mutu ? parseFloat(nilai.nilai_mutu).toFixed(2) : '-'}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : `
+                            <div class="p-6 text-center text-gray-500">
+                                <p>Belum ada nilai untuk semester ini</p>
+                            </div>
+                        `}
+                        
+                        <!-- Summary Semester -->
+                        <div class="bg-gray-50 px-4 py-3 border-t border-gray-200">
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-600">Total SKS Semester:</span>
+                                    <span class="font-bold text-gray-900 ml-2">${khs.sks_semester}</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">SKS Kumulatif:</span>
+                                    <span class="font-bold text-blue-600 ml-2">${khs.sks_kumulatif}</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">IPK:</span>
+                                    <span class="font-bold text-blue-600 ml-2">${parseFloat(khs.ipk).toFixed(2)}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `).join('')}
             </div>
 
-            <!-- Summary -->
-            <div class="mt-8 bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
-                <div class="grid grid-cols-2 gap-6">
-                    <div>
-                        <p class="text-sm text-gray-600">Total SKS</p>
-                        <p class="text-3xl font-bold text-blue-600">${totalSKS}</p>
+            <!-- Summary Total -->
+            <div class="mt-8 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg p-6 text-white">
+                <h3 class="text-lg font-semibold mb-4 text-center">RINGKASAN AKADEMIK</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
+                        <p class="text-blue-100 text-sm mb-1">Total SKS Lulus</p>
+                        <p class="text-4xl font-bold">${totalSKS}</p>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-600">Indeks Prestasi Kumulatif (IPK)</p>
-                        <p class="text-3xl font-bold text-blue-600">${ipk}</p>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
+                        <p class="text-blue-100 text-sm mb-1">Indeks Prestasi Kumulatif (IPK)</p>
+                        <p class="text-4xl font-bold">${ipk}</p>
+                        <p class="text-sm text-blue-100 mt-1">${getPredikat(parseFloat(ipk))}</p>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="mt-6 text-center text-xs text-gray-500">
+                <p>Dokumen ini dicetak pada ${new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'})}</p>
+                <p class="mt-1">© ${new Date().getFullYear()} Politeknik Batam - Sistem Informasi Akademik</p>
             </div>
         </div>
     `;
@@ -410,20 +561,32 @@ function printTranskrip() {
     const printContent = document.getElementById('printableTranskrip');
     if (!printContent) return;
 
-    const winPrint = window.open('', '', 'width=800,height=600');
+    const winPrint = window.open('', '', 'width=900,height=700');
     winPrint.document.write(`
         <html>
             <head>
-                <title>Transkrip Nilai</title>
+                <title>Transkrip Nilai - ${mahasiswaData.nim} - ${mahasiswaData.nama_lengkap}</title>
                 <script src="https://cdn.tailwindcss.com"></script>
                 <style>
                     @media print {
-                        body { padding: 20px; }
-                        @page { margin: 1cm; }
+                        body { 
+                            padding: 20px;
+                            background: white;
+                        }
+                        @page { 
+                            margin: 1.5cm;
+                            size: A4;
+                        }
+                        .no-print {
+                            display: none !important;
+                        }
+                    }
+                    body {
+                        font-family: 'Arial', sans-serif;
                     }
                 </style>
             </head>
-            <body>
+            <body class="bg-white">
                 ${printContent.innerHTML}
             </body>
         </html>
@@ -434,7 +597,7 @@ function printTranskrip() {
     setTimeout(() => {
         winPrint.print();
         winPrint.close();
-    }, 250);
+    }, 500);
 }
 
 /**
@@ -455,6 +618,27 @@ function getIPKColor(ipk) {
     if (ipk >= 2.75) return 'bg-yellow-100 text-yellow-800 border-2 border-yellow-400';
     if (ipk >= 2.00) return 'bg-orange-100 text-orange-800 border-2 border-orange-400';
     return 'bg-red-100 text-red-800 border-2 border-red-400';
+}
+
+function getNilaiHurufColor(huruf) {
+    switch(huruf) {
+        case 'A': return 'bg-green-100 text-green-800';
+        case 'B+': return 'bg-blue-100 text-blue-800';
+        case 'B': return 'bg-cyan-100 text-cyan-800';
+        case 'C+': return 'bg-yellow-100 text-yellow-800';
+        case 'C': return 'bg-orange-100 text-orange-800';
+        case 'D': return 'bg-red-100 text-red-800';
+        case 'E': return 'bg-red-200 text-red-900';
+        default: return 'bg-gray-100 text-gray-800';
+    }
+}
+
+function getPredikat(ipk) {
+    if (ipk >= 3.75) return 'Dengan Pujian (Cum Laude)';
+    if (ipk >= 3.50) return 'Sangat Memuaskan';
+    if (ipk >= 3.00) return 'Memuaskan';
+    if (ipk >= 2.75) return 'Baik';
+    return 'Cukup';
 }
 
 function showErrorMessage(message) {

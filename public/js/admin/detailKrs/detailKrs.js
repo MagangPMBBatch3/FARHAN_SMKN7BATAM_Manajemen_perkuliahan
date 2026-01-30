@@ -323,7 +323,7 @@ async function deleteKrsDetail(id, namaMk) {
         const result = await response.json();
         if (result.errors) throw new Error(result.errors[0].message);
 
-        if (detail?.kelas_id) await updateKuotaKelas(detail.kelas_id, -1);
+        // if (detail?.kelas_id) await updateKuotaKelas(detail.kelas_id, -1);
 
         await loadKrsDetail();
         showSuccessNotification(`"${namaMk}" berhasil dihapus`);
@@ -337,36 +337,36 @@ async function deleteKrsDetail(id, namaMk) {
 /**
  * Update kuota kelas (increment/decrement)
  */
-async function updateKuotaKelas(kelasId, increment) {
-    try {
-        const queryKuota = `query($id: ID!) { kelas(id: $id) { id kuota_terisi } }`;
+// async function updateKuotaKelas(kelasId, increment) {
+//     try {
+//         const queryKuota = `query($id: ID!) { kelas(id: $id) { id kuota_terisi } }`;
         
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: queryKuota, variables: { id: parseInt(kelasId) } })
-        });
+//         const res = await fetch(API_URL, {
+//             method: 'POST',
+//             headers: { 'Content-Type': 'application/json' },
+//             body: JSON.stringify({ query: queryKuota, variables: { id: parseInt(kelasId) } })
+//         });
 
-        const result = await res.json();
-        const currentKuota = result.data?.kelas?.kuota_terisi ?? 0;
-        const newKuota = Math.max(0, currentKuota + increment);
+//         const result = await res.json();
+//         const currentKuota = result.data?.kelas?.kuota_terisi ?? 0;
+//         const newKuota = Math.max(0, currentKuota + increment);
 
-        const mutation = `mutation($id: ID!, $input: UpdateKelasInput!) {
-            updateKelas(id: $id, input: $input) { id kuota_terisi }
-        }`;
+//         const mutation = `mutation($id: ID!, $input: UpdateKelasInput!) {
+//             updateKelas(id: $id, input: $input) { id kuota_terisi }
+//         }`;
 
-        await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                query: mutation,
-                variables: { id: parseInt(kelasId), input: { kuota_terisi: newKuota } }
-            })
-        });
-    } catch (error) {
-        console.error('Error updating kuota:', error);
-    }
-}
+//         await fetch(API_URL, {
+//             method: 'POST',
+//             headers: { 'Content-Type': 'application/json' },
+//             body: JSON.stringify({
+//                 query: mutation,
+//                 variables: { id: parseInt(kelasId), input: { kuota_terisi: newKuota } }
+//             })
+//         });
+//     } catch (error) {
+//         console.error('Error updating kuota:', error);
+//     }
+// }
 
 /**
  * Setujui KRS

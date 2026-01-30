@@ -1,91 +1,100 @@
 // ===== KONFIGURASI =====
 const API_URL = '/graphql';
 
+// ===== STATE MANAGEMENT =====
+let currentMahasiswaData = null;
+let currentSemesterAktif = null;
+
 // ===== HELPER FUNCTIONS =====
 
 /**
- * Mendapatkan ID mahasiswa dari berbagai sumber
- * Prioritas: URL params > data attribute > meta tag > localStorage > prompt user
+ * Mendapatkan ID mahasiswa dari mahasiswaProfile
  */
-function getCurrentMahasiswaId() {
-    // 1. Coba dari URL params (?mahasiswa_id=1)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlId = urlParams.get('mahasiswa_id');
-    if (urlId) return urlId;
-    
-    // 2. Coba dari data attribute di body/container
-    const dataId = document.body.dataset.mahasiswaId || 
-                   document.querySelector('[data-mahasiswa-id]')?.dataset.mahasiswaId;
-    if (dataId) return dataId;
-    
-    // 3. Coba dari meta tag
-    const metaId = document.querySelector('meta[name="mahasiswa-id"]')?.content;
-    if (metaId) return metaId;
-    
-    // 4. Coba dari localStorage
-    const storageId = localStorage.getItem('mahasiswa_id');
-    if (storageId) return storageId;
-    
-    // 5. Jika tidak ada, prompt user (untuk development/testing)
-    const promptId = prompt('Masukkan ID Mahasiswa untuk testing:');
-    if (promptId) {
-        localStorage.setItem('mahasiswa_id', promptId);
-        return promptId;
-    }
-    
-    return null;
-}
+async function getCurrentMahasiswaId() {
+    try {
+        const query = `
+        query {
+            mahasiswaProfile {
+                id
+                nim
+                nama_lengkap
+            }
+        }`;
 
-/**
- * Menghitung IPK dari data KHS
- */
-function hitungIPK(khsList) {
-    if (!khsList || khsList.length === 0) return 0;
-    
-    let totalNilai = 0;
-    let totalSKS = 0;
-    
-    khsList.forEach(khs => {
-        if (khs.ip_semester && khs.sks_semester) {
-            totalNilai += khs.ip_semester * khs.sks_semester;
-            totalSKS += khs.sks_semester;
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ query })
+        });
+
+        const result = await response.json();
+        
+        if (result.errors) {
+            console.error('GraphQL Errors:', result.errors);
+            return null;
         }
-    });
-    
-    return totalSKS > 0 ? (totalNilai / totalSKS) : 0;
+
+        if (result.data && result.data.mahasiswaProfile) {
+            return result.data.mahasiswaProfile.id;
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error getting mahasiswa ID:', error);
+        return null;
+    }
 }
 
 /**
- * Menghitung total SKS dari KHS
+ * Mendapatkan semester aktif saat ini
  */
-function hitungTotalSKS(khsList) {
-    if (!khsList || khsList.length === 0) return 0;
-    
-    return khsList.reduce((total, khs) => {
-        return total + (khs.sks_semester || 0);
-    }, 0);
+async function getCurrentSemester() {
+    try {
+        const query = `
+        query {
+            allSemester {
+                id
+                nama_semester
+                tahun_ajaran
+                status
+            }
+        }`;
+
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ query })
+        });
+
+        const result = await response.json();
+        
+        if (result.data && result.data.allSemester) {
+            // Cari semester dengan status aktif
+            const semesterAktif = result.data.allSemester.find(s => s.status === 'Aktif');
+            return semesterAktif || result.data.allSemester[0];
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error getting current semester:', error);
+        return null;
+    }
 }
 
 /**
- * Format tanggal ke format Indonesia
+ * Get CSRF Token
  */
-function formatTanggalIndonesia(tanggalString) {
-    const date = new Date(tanggalString);
-    const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
-                   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    
-    return `${date.getDate()} ${bulan[date.getMonth()]} ${date.getFullYear()}`;
-}
-
-/**
- * Format tanggal lengkap (Hari, Tanggal Bulan Tahun)
- */
-function formatTanggalLengkap(date = new Date()) {
-    const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
-                   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    
-    return `${hari[date.getDay()]}, ${date.getDate()} ${bulan[date.getMonth()]} ${date.getFullYear()}`;
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 }
 
 /**
@@ -108,77 +117,113 @@ function updateElementHTML(selector, html) {
     }
 }
 
+/**
+ * Format tanggal lengkap (Hari, Tanggal Bulan Tahun)
+ */
+function formatTanggalLengkap(date = new Date()) {
+    const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    
+    return `${hari[date.getDay()]}, ${date.getDate()} ${bulan[date.getMonth()]} ${date.getFullYear()}`;
+}
+
 // ===== GRAPHQL QUERIES =====
 
-const DASHBOARD_QUERY = `
-query ($id: ID!){
-  mahasiswa(id: $id) {
-      id
-      nim
-      nama_lengkap
-      angkatan
-      semester_saat_ini
-      status
-      jurusan {
-          id
-          nama_jurusan
-          fakultas {
-              id
-              nama_fakultas
-          }
-      }
-      krs {
-          id
-          semester {
-              id
-              nama_semester
-          }
-          krsDetail {
-              id
-              kelas {
-                  id
-                  nama_kelas
-                  dosen {
-                      id
-                      nama_lengkap
-                  }
-                  jadwalKuliah {
-                      id
-                      hari
-                      jam_mulai
-                      jam_selesai
-                      ruangan {
-                          id
-                          nama_ruangan
-                      }
-                  }
-              }
-              mataKuliah {
-                  id
-                  kode_mk
-                  nama_mk
-                  sks
-                  jenis
-              }
-              nilai {
-                  id
-                  nilai_huruf
-                  nilai_mutu
-              }
-          }
-      }
-      khs {
-          id
-          semester {
-              id
-              nama_semester
-          }
-          ip_semester
-          sks_semester
-      }
-  }
-}   
-`;
+const MAHASISWA_FULL_QUERY = `
+query {
+    mahasiswaProfile {
+        id
+        nim
+        nama_lengkap
+        angkatan
+        semester_saat_ini
+        status
+        jurusan {
+            id
+            nama_jurusan
+            fakultas {
+                id
+                nama_fakultas
+            }
+        }
+        krs {
+            id
+            semester {
+                id
+                nama_semester
+                tahun_ajaran
+            }
+            krsDetail {
+                id
+                kelas {
+                    id
+                    nama_kelas
+                    dosen {
+                        id
+                        nama_lengkap
+                    }
+                    mataKuliah {
+                        id
+                        kode_mk
+                        nama_mk
+                        sks
+                        jenis
+                    }
+                    pertemuan {
+                        id
+                        pertemuan_ke
+                        tanggal
+                        waktu_mulai
+                        waktu_selesai
+                        materi
+                        metode
+                        status_pertemuan
+                        link_daring
+                        ruangan {
+                            id
+                            nama_ruangan
+                        }
+                    }
+                }
+            }
+        }
+    }
+}`;
+
+const KHS_QUERY = `
+query($mahasiswaId: Int!) {
+    khsByMahasiswa(mahasiswa_id: $mahasiswaId) {
+        id
+        semester {
+            id
+            nama_semester
+            tahun_ajaran
+        }
+        sks_semester
+        sks_kumulatif
+        ip_semester
+        ipk
+    }
+}`;
+
+const NILAI_MAHASISWA_QUERY = `
+query($mahasiswaId: ID!, $semesterId: ID!) {
+    nilaiMahasiswaBySemester(mahasiswa_id: $mahasiswaId, semester_id: $semesterId) {
+        id
+        nilai_akhir
+        nilai_huruf
+        nilai_mutu
+        krsDetail {
+            id
+            mataKuliah {
+                id
+                kode_mk
+                nama_mk
+            }
+        }
+    }
+}`;
 
 // ===== FETCH DATA FUNCTIONS =====
 
@@ -187,53 +232,95 @@ query ($id: ID!){
  */
 async function loadDashboard() {
     try {
-        const mahasiswaId = getCurrentMahasiswaId();
-        
-        if (!mahasiswaId) {
-            showError('ID Mahasiswa tidak ditemukan. Silakan login kembali.');
-            return;
-        }
-        
         showLoading();
         
-        const response = await fetch(API_URL, {
+        // 1. Get Current Semester
+        currentSemesterAktif = await getCurrentSemester();
+        
+        if (!currentSemesterAktif) {
+            throw new Error('Semester aktif tidak ditemukan.');
+        }
+
+        // 2. Load Mahasiswa Profile dengan KRS
+        const profileResponse = await fetch(API_URL, {
             method: 'POST',
             headers: { 
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
-                query: DASHBOARD_QUERY,
-                variables: { id: mahasiswaId }
+                query: MAHASISWA_FULL_QUERY
             })
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
+        const profileResult = await profileResponse.json();
         
-        if (result.errors) {
-            console.error('GraphQL Errors:', result.errors);
-            throw new Error(result.errors[0].message);
+        if (profileResult.errors) {
+            console.error('GraphQL Errors:', profileResult.errors);
+            throw new Error(profileResult.errors[0].message);
         }
 
-        if (!result.data || !result.data.mahasiswa) {
-            throw new Error('Data mahasiswa tidak ditemukan');
-        }
+        const mahasiswa = profileResult.data.mahasiswaProfile;
+        currentMahasiswaData = mahasiswa;
 
-        const data = result.data;
-        console.log(data);
-        
+        // 3. Load KHS (untuk IPK dan Total SKS)
+        const khsResponse = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                query: KHS_QUERY,
+                variables: { mahasiswaId: parseInt(mahasiswa.id) }
+            })
+        });
+
+        const khsResult = await khsResponse.json();
+        const khsData = khsResult.data?.khsByMahasiswa || [];
+
+        // 4. Filter KRS untuk semester aktif
+        const krsData = mahasiswa.krs?.filter(krs => 
+            krs.semester.id === currentSemesterAktif.id
+        ) || [];
+
+        // 5. Load Nilai Semester Aktif
+        const nilaiResponse = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                query: NILAI_MAHASISWA_QUERY,
+                variables: { 
+                    mahasiswaId: mahasiswa.id.toString(),
+                    semesterId: currentSemesterAktif.id.toString()
+                }
+            })
+        });
+
+        const nilaiResult = await nilaiResponse.json();
+        const nilaiData = nilaiResult.data?.nilaiMahasiswaBySemester || [];
+
         // Render semua komponen dashboard
-        renderWelcomeBanner(data.mahasiswa);
-        renderQuickStats(data.mahasiswa);
-        renderMataKuliahSemesterIni(data.mahasiswa);
-        renderJadwalHariIni(data.mahasiswa);
+        renderWelcomeBanner(mahasiswa, khsData);
+        renderQuickStats(mahasiswa, khsData, krsData);
+        renderMataKuliahSemesterIni(krsData, nilaiData);
+        renderJadwalHariIni(krsData);
         
         hideLoading();
         
-        console.log('Dashboard berhasil dimuat', data);
+        console.log('Dashboard berhasil dimuat', {
+            mahasiswa,
+            khsData,
+            krsData,
+            nilaiData,
+            semesterAktif: currentSemesterAktif
+        });
         
     } catch (error) {
         console.error('Error loading dashboard:', error);
@@ -247,8 +334,13 @@ async function loadDashboard() {
 /**
  * Render Welcome Banner
  */
-function renderWelcomeBanner(mahasiswa) {
-    const ipk = hitungIPK(mahasiswa.khs);
+function renderWelcomeBanner(mahasiswa, khsData) {
+    // Hitung IPK dari KHS terakhir
+    let ipk = 0;
+    if (khsData && khsData.length > 0) {
+        const latestKhs = khsData[khsData.length - 1];
+        ipk = parseFloat(latestKhs.ipk) || 0;
+    }
     
     // Update data mahasiswa
     updateElement('[data-mahasiswa-nama]', mahasiswa.nama_lengkap);
@@ -261,15 +353,21 @@ function renderWelcomeBanner(mahasiswa) {
     // Update badge IPK
     const badgeElement = document.querySelector('[data-ipk-badge]');
     if (badgeElement) {
-        if (ipk >= 3.5) {
+        if (ipk >= 3.75) {
             badgeElement.className = 'bg-yellow-400 text-yellow-900 text-xs px-3 py-1 rounded-full font-semibold';
-            badgeElement.textContent = 'Cumlaude';
-        } else if (ipk >= 3.0) {
+            badgeElement.textContent = 'Cum Laude';
+        } else if (ipk >= 3.50) {
             badgeElement.className = 'bg-green-400 text-green-900 text-xs px-3 py-1 rounded-full font-semibold';
-            badgeElement.textContent = 'Sangat Baik';
-        } else {
+            badgeElement.textContent = 'Sangat Memuaskan';
+        } else if (ipk >= 3.00) {
             badgeElement.className = 'bg-blue-400 text-blue-900 text-xs px-3 py-1 rounded-full font-semibold';
+            badgeElement.textContent = 'Memuaskan';
+        } else if (ipk >= 2.75) {
+            badgeElement.className = 'bg-cyan-400 text-cyan-900 text-xs px-3 py-1 rounded-full font-semibold';
             badgeElement.textContent = 'Baik';
+        } else {
+            badgeElement.className = 'bg-orange-400 text-orange-900 text-xs px-3 py-1 rounded-full font-semibold';
+            badgeElement.textContent = 'Cukup';
         }
     }
 }
@@ -277,28 +375,34 @@ function renderWelcomeBanner(mahasiswa) {
 /**
  * Render Quick Stats
  */
-function renderQuickStats(mahasiswa) {
-    const totalSKS = hitungTotalSKS(mahasiswa.khs);
-    const targetSKS = 144; // Sesuaikan dengan target SKS program studi
+function renderQuickStats(mahasiswa, khsData, krsData) {
+    // Total SKS dari KHS terakhir
+    let totalSKS = 0;
+    if (khsData && khsData.length > 0) {
+        const latestKhs = khsData[khsData.length - 1];
+        totalSKS = latestKhs.sks_kumulatif || 0;
+    }
+    
+    const targetSKS = 144;
     const progressPercentage = Math.min((totalSKS / targetSKS) * 100, 100);
     
     // Total SKS
     updateElement('[data-stat-total-sks]', totalSKS);
     const progressBar = document.querySelector('[data-stat-progress]');
     if (progressBar) {
-        progressBar.style.width = `${progressPercentage}%`;
+        progressBar.style.width = `${progressPercentage.toFixed(1)}%`;
     }
     
     // Semester Aktif
     updateElement('[data-stat-semester]', mahasiswa.semester_saat_ini || 1);
     
     // Mata Kuliah Aktif (KRS semester ini)
-    const krsAktif = mahasiswa.krs?.find(krs => {
-        // Cari semester yang sesuai dengan semester_saat_ini
-        const semesterNumber = parseInt(krs.semester?.nama_semester?.match(/\d+/)?.[0]);
-        return semesterNumber === mahasiswa.semester_saat_ini;
-    });
-    const jumlahMK = krsAktif ? krsAktif.krsDetail.length : 0;
+    let jumlahMK = 0;
+    if (krsData && krsData.length > 0) {
+        krsData.forEach(krs => {
+            jumlahMK += krs.krsDetail?.length || 0;
+        });
+    }
     updateElement('[data-stat-mk-aktif]', jumlahMK);
     
     // Status Akademik
@@ -308,6 +412,9 @@ function renderQuickStats(mahasiswa) {
         if (mahasiswa.status === 'Aktif') {
             statusBadge.className = 'inline-block mt-2 bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full';
             statusBadge.innerHTML = '<i class="fas fa-check-circle mr-1"></i>Aktif';
+        } else if (mahasiswa.status === 'Cuti') {
+            statusBadge.className = 'inline-block mt-2 bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full';
+            statusBadge.innerHTML = '<i class="fas fa-pause-circle mr-1"></i>Cuti';
         } else {
             statusBadge.className = 'inline-block mt-2 bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full';
             statusBadge.textContent = mahasiswa.status || 'Tidak Diketahui';
@@ -318,13 +425,7 @@ function renderQuickStats(mahasiswa) {
 /**
  * Render Mata Kuliah Semester Ini
  */
-function renderMataKuliahSemesterIni(mahasiswa) {
-    const krsAktif = mahasiswa.krs?.find(krs => {
-        // Cari semester yang sesuai dengan semester_saat_ini
-        const semesterNumber = parseInt(krs.semester?.nama_semester?.match(/\d+/)?.[0]);
-        return semesterNumber === mahasiswa.semester_saat_ini;
-    });
-    
+function renderMataKuliahSemesterIni(krsData, nilaiData) {
     const tableBody = document.querySelector('[data-mk-semester-ini]');
     
     if (!tableBody) {
@@ -332,13 +433,23 @@ function renderMataKuliahSemesterIni(mahasiswa) {
         return;
     }
     
-    if (!krsAktif || !krsAktif.krsDetail || krsAktif.krsDetail.length === 0) {
+    // Gabungkan semua krsDetail dari semua KRS
+    let allKrsDetail = [];
+    if (krsData && krsData.length > 0) {
+        krsData.forEach(krs => {
+            if (krs.krsDetail) {
+                allKrsDetail = allKrsDetail.concat(krs.krsDetail);
+            }
+        });
+    }
+    
+    if (allKrsDetail.length === 0) {
         tableBody.innerHTML = `
             <tr>
                 <td colspan="6" class="text-center py-8">
                     <i class="fas fa-inbox text-gray-300 text-5xl mb-3 block"></i>
                     <p class="text-gray-500 mb-4">Belum ada mata kuliah yang diambil semester ini</p>
-                    <a href="/krs" class="inline-block px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition">
+                    <a href="/mahasiswa/krs" class="inline-block px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition">
                         Isi KRS Sekarang
                     </a>
                 </td>
@@ -347,17 +458,23 @@ function renderMataKuliahSemesterIni(mahasiswa) {
         return;
     }
     
-    tableBody.innerHTML = krsAktif.krsDetail.map(detail => {
-        const mk = detail.mataKuliah;
+    tableBody.innerHTML = allKrsDetail.map(detail => {
         const kelas = detail.kelas;
-        const nilai = detail.nilai;
+        const mk = kelas?.mataKuliah;
+        
+        if (!mk) return '';
+        
+        // Cari nilai untuk mata kuliah ini
+        const nilai = nilaiData.find(n => 
+            n.krsDetail?.mataKuliah?.kode_mk === mk.kode_mk
+        );
         
         let nilaiBadge = '<span class="text-xs text-gray-400">Belum ada</span>';
         if (nilai && nilai.nilai_huruf) {
             let badgeClass = 'bg-gray-100 text-gray-700';
             if (nilai.nilai_huruf === 'A') badgeClass = 'bg-green-100 text-green-700';
-            else if (nilai.nilai_huruf === 'B') badgeClass = 'bg-blue-100 text-blue-700';
-            else if (nilai.nilai_huruf === 'C') badgeClass = 'bg-yellow-100 text-yellow-700';
+            else if (nilai.nilai_huruf.startsWith('B')) badgeClass = 'bg-blue-100 text-blue-700';
+            else if (nilai.nilai_huruf.startsWith('C')) badgeClass = 'bg-yellow-100 text-yellow-700';
             else if (nilai.nilai_huruf === 'D' || nilai.nilai_huruf === 'E') badgeClass = 'bg-red-100 text-red-700';
             
             nilaiBadge = `<span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${badgeClass}">${nilai.nilai_huruf}</span>`;
@@ -380,31 +497,36 @@ function renderMataKuliahSemesterIni(mahasiswa) {
                 <td class="px-4 py-3 text-center">${nilaiBadge}</td>
             </tr>
         `;
-    }).join('');
+    }).filter(Boolean).join('');
 }
 
 /**
- * Render Jadwal Hari Ini
+ * Render Jadwal Hari Ini berdasarkan Pertemuan
  */
-function renderJadwalHariIni(mahasiswa) {
-    const hariIni = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][new Date().getDay()];
+function renderJadwalHariIni(krsData) {
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
     
-    // Kumpulkan semua jadwal dari KRS aktif
-    const krsAktif = mahasiswa.krs?.find(krs => {
-        const semesterNumber = parseInt(krs.semester?.nama_semester?.match(/\d+/)?.[0]);
-        return semesterNumber === mahasiswa.semester_saat_ini;
-    });
+    let pertemuanHariIni = [];
     
-    let jadwalHariIni = [];
-    if (krsAktif && krsAktif.krsDetail) {
-        krsAktif.krsDetail.forEach(detail => {
-            if (detail.kelas && detail.kelas.jadwalKuliah) {
-                detail.kelas.jadwalKuliah.forEach(jadwal => {
-                    if (jadwal.hari === hariIni) {
-                        jadwalHariIni.push({
-                            ...jadwal,
-                            mataKuliah: detail.mataKuliah,
-                            kelas: detail.kelas
+    if (krsData && krsData.length > 0) {
+        krsData.forEach(krs => {
+            if (krs.krsDetail) {
+                krs.krsDetail.forEach(detail => {
+                    const kelas = detail.kelas;
+                    if (kelas && kelas.pertemuan) {
+                        kelas.pertemuan.forEach(pertemuan => {
+                            // Filter pertemuan berdasarkan tanggal hari ini
+                            const pertemuanDate = new Date(pertemuan.tanggal).toISOString().split('T')[0];
+                            
+                            if (pertemuanDate === todayString) {
+                                pertemuanHariIni.push({
+                                    ...pertemuan,
+                                    mataKuliah: kelas.mataKuliah,
+                                    kelas: kelas,
+                                    dosen: kelas.dosen
+                                });
+                            }
                         });
                     }
                 });
@@ -419,44 +541,105 @@ function renderJadwalHariIni(mahasiswa) {
         return;
     }
     
-    if (jadwalHariIni.length === 0) {
+    if (pertemuanHariIni.length === 0) {
         container.innerHTML = `
             <div class="text-center py-8">
                 <i class="fas fa-calendar-times text-gray-300 text-5xl mb-3"></i>
-                <p class="text-gray-500">Tidak ada jadwal kuliah hari ini</p>
+                <p class="text-gray-500">Tidak ada pertemuan kuliah hari ini</p>
                 <p class="text-sm text-gray-400 mt-2">${formatTanggalLengkap()}</p>
             </div>
         `;
         return;
     }
     
-    // Urutkan berdasarkan jam_mulai
-    jadwalHariIni.sort((a, b) => {
-        return a.jam_mulai.localeCompare(b.jam_mulai);
+    // Urutkan berdasarkan waktu_mulai
+    pertemuanHariIni.sort((a, b) => {
+        return a.waktu_mulai.localeCompare(b.waktu_mulai);
     });
     
-    container.innerHTML = jadwalHariIni.map(jadwal => `
-        <div class="bg-white p-4 rounded-lg shadow border-l-4 border-emerald-500 hover:shadow-md transition">
-            <div class="flex justify-between items-start mb-2">
-                <h4 class="font-semibold text-gray-800">${jadwal.mataKuliah?.nama_mk || '-'}</h4>
-                <span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded font-semibold">
-                    ${jadwal.mataKuliah?.sks || 0} SKS
-                </span>
+    container.innerHTML = pertemuanHariIni.map(pertemuan => {
+        // Tentukan warna border dan badge berdasarkan status_pertemuan
+        let borderColor = 'border-emerald-500';
+        let statusBadge = '';
+        
+        if (pertemuan.status_pertemuan === 'Selesai') {
+            borderColor = 'border-gray-400';
+            statusBadge = '<span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded ml-2">Selesai</span>';
+        } else if (pertemuan.status_pertemuan === 'Dibatalkan') {
+            borderColor = 'border-red-400';
+            statusBadge = '<span class="bg-red-100 text-red-700 text-xs px-2 py-1 rounded ml-2">Dibatalkan</span>';
+        } else if (pertemuan.status_pertemuan === 'Berlangsung') {
+            borderColor = 'border-blue-500';
+            statusBadge = '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded ml-2 animate-pulse">Sedang Berlangsung</span>';
+        } else {
+            statusBadge = '<span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded ml-2">Dijadwalkan</span>';
+        }
+        
+        // Badge metode pertemuan
+        let metodeBadge = '';
+        if (pertemuan.metode === 'Daring') {
+            metodeBadge = '<span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded"><i class="fas fa-laptop mr-1"></i>Daring</span>';
+        } else if (pertemuan.metode === 'Hybrid') {
+            metodeBadge = '<span class="bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded"><i class="fas fa-sync-alt mr-1"></i>Hybrid</span>';
+        } else {
+            metodeBadge = '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded"><i class="fas fa-chalkboard-teacher mr-1"></i>Tatap Muka</span>';
+        }
+        
+        return `
+            <div class="bg-gray-50 p-4 rounded-lg border-l-4 ${borderColor} hover:shadow-md transition">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-800">${pertemuan.mataKuliah?.nama_mk || '-'}</h4>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Pertemuan ke-${pertemuan.pertemuan_ke || '-'}${statusBadge}
+                        </p>
+                    </div>
+                    <span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded font-semibold">
+                        ${pertemuan.mataKuliah?.sks || 0} SKS
+                    </span>
+                </div>
+                
+                <!-- Metode Pertemuan -->
+                <div class="mb-2">
+                    ${metodeBadge}
+                </div>
+                
+                ${pertemuan.materi ? `
+                    <div class="mb-2 bg-white px-3 py-2 rounded border border-gray-200">
+                        <p class="text-xs text-gray-500">Materi:</p>
+                        <p class="text-sm text-gray-700 font-medium">${pertemuan.materi}</p>
+                    </div>
+                ` : ''}
+                
+                ${pertemuan.metode === 'Daring' && pertemuan.link_daring ? `
+                    <div class="mb-2">
+                        <a href="${pertemuan.link_daring}" target="_blank" 
+                           class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-video mr-1"></i>
+                            Join Meeting
+                        </a>
+                    </div>
+                ` : ''}
+                
+                <p class="text-sm text-gray-600 mb-1">
+                    <i class="fas fa-user mr-2"></i>${pertemuan.dosen?.nama_lengkap || '-'}
+                </p>
+                
+                ${pertemuan.metode !== 'Daring' && pertemuan.ruangan ? `
+                    <p class="text-sm text-gray-600 mb-1">
+                        <i class="fas fa-door-open mr-2"></i>${pertemuan.ruangan?.nama_ruangan || '-'}
+                    </p>
+                ` : ''}
+                
+                <p class="text-sm text-gray-600 mb-1">
+                    <i class="fas fa-users mr-2"></i>${pertemuan.kelas?.nama_kelas || '-'}
+                </p>
+                <p class="text-sm text-emerald-600 font-semibold">
+                    <i class="fas fa-clock mr-2"></i>${pertemuan.waktu_mulai || '-'} - ${pertemuan.waktu_selesai || '-'}
+                </p>
             </div>
-            <p class="text-sm text-gray-600 mb-1">
-                <i class="fas fa-user mr-2"></i>${jadwal.kelas?.dosen?.nama_lengkap || '-'}
-            </p>
-            <p class="text-sm text-gray-600 mb-1">
-                <i class="fas fa-door-open mr-2"></i>${jadwal.ruangan?.nama_ruangan || '-'}
-            </p>
-            <p class="text-sm text-gray-600 mb-1">
-                <i class="fas fa-users mr-2"></i>${jadwal.kelas?.nama_kelas || '-'}
-            </p>
-            <p class="text-sm text-emerald-600 font-semibold">
-                <i class="fas fa-clock mr-2"></i>${jadwal.jam_mulai || '-'} - ${jadwal.jam_selesai || '-'}
-            </p>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // ===== UI HELPER FUNCTIONS =====
@@ -466,7 +649,6 @@ function showLoading() {
     if (loader) {
         loader.classList.remove('hidden');
     } else {
-        // Buat loader sederhana jika belum ada
         const loaderHTML = `
             <div id="dashboard-loader" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
                 <div class="bg-white rounded-lg p-6 flex flex-col items-center">
@@ -482,12 +664,11 @@ function showLoading() {
 function hideLoading() {
     const loader = document.getElementById('dashboard-loader');
     if (loader) {
-        loader.classList.add('hidden');
+        loader.remove();
     }
 }
 
 function showError(message) {
-    // Gunakan alert sederhana atau implement notifikasi kustom
     const errorContainer = document.getElementById('error-notification');
     
     if (errorContainer) {
@@ -505,6 +686,12 @@ function showError(message) {
                 </div>
             </div>
         `;
+        
+        setTimeout(() => {
+            if (errorContainer.firstElementChild) {
+                errorContainer.firstElementChild.remove();
+            }
+        }, 10000);
     } else {
         alert(message);
     }
@@ -514,7 +701,6 @@ function showError(message) {
 
 // ===== INITIALIZE =====
 
-// Load dashboard saat halaman dimuat
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Dashboard script loaded');
     loadDashboard();
@@ -526,13 +712,16 @@ document.addEventListener('DOMContentLoaded', () => {
 // Refresh saat tab menjadi aktif kembali
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
+        console.log('Tab visible again, reloading dashboard...');
         loadDashboard();
     }
 });
 
-// Export fungsi untuk debugging di console
+// Export fungsi untuk debugging
 window.dashboardDebug = {
     reload: loadDashboard,
     getMahasiswaId: getCurrentMahasiswaId,
-    API_URL: API_URL
+    getSemester: getCurrentSemester,
+    data: () => currentMahasiswaData,
+    semesterAktif: () => currentSemesterAktif
 };

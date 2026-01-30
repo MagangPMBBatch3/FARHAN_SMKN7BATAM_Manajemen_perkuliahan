@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Mahasiswa\Mahasiswa;
 use App\Models\Semester\Semester;
+use App\Models\Nilai\Nilai;
 
 class Khs extends Model
 {
@@ -44,4 +45,8 @@ class Khs extends Model
     {
         return $this->belongsTo(Semester::class);
     }
+    public function nilai()
+{
+    return $this->hasMany(Nilai::class, 'khs_id');
+}
 }
