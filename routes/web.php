@@ -1,10 +1,16 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\DosenController;
 
+/*
+|--------------------------------------------------------------------------
+| Auth Routes
+|--------------------------------------------------------------------------
+*/
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
@@ -12,59 +18,76 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    // Dashboard
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    
-    // Master Data
-    Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.user');
-    Route::get('/admin/roles', [AdminController::class, 'roles'])->name('admin.role');
-    Route::get('/admin/dosen', [AdminController::class, 'dosen']);
-    Route::get('/admin/mahasiswa', [AdminController::class, 'mahasiswa'])->name('admin.mahasiswa');
-    Route::get('/admin/jurusan', [AdminController::class, 'jurusan'])->name('admin.jurusan');
-    Route::get('/admin/fakultas', [AdminController::class, 'fakultas'])->name('admin.fakultas');
-    Route::get('/admin/mata_kuliah', [AdminController::class, 'mata_kuliah'])->name('admin.mata_kuliah');
-    Route::get('/admin/ruangan', [AdminController::class, 'ruangan']);
-    Route::get('/admin/semester', [AdminController::class, 'semester']);
-    
-    // Kelas Routes (dengan detail)
-    Route::get('/admin/kelas', [AdminController::class, 'kelas'])->name('admin.kelas');
-    Route::get('/admin/kelas/{id}', [AdminController::class, 'kelas_detail'])->name('admin.kelas.detail');
-    
-    // Jadwal
-    Route::get('/admin/jadwal', [AdminController::class, 'jadwal'])->name('admin.jadwal');
-    
-    // KRS
-    Route::get('/admin/krs', [AdminController::class, 'krs']);
-    Route::get('/admin/krs-detail/{id}', [AdminController::class, 'krs_detail'])->name('admin.krs_detail');
-    
-    // Nilai & KHS
-    Route::get('/admin/nilai', [AdminController::class, 'nilai'])->name('admin.nilai');
-    Route::get('/admin/khs', [AdminController::class, 'khs']);
-    Route::get('/admin/bobot-nilai', [AdminController::class, 'bobotNilai'])->name('admin.bobot-nilai');
-    Route::get('/admin/grade-system', [AdminController::class, 'gradeSystem'])->name('admin.grade-system');
-    Route::get('/admin/sks-limit', [AdminController::class, 'sksLimit'])->name('admin.sksLimit');
-    
-    // Kehadiran & Pertemuan
-    Route::get('/admin/pertemuan', [AdminController::class, 'pertemuan'])->name('admin.pertemuan');
-    Route::get('/admin/kehadiran', [AdminController::class, 'kehadiran'])->name('admin.kehadiran');
-    Route::get('/admin/rekap-kehadiran', [AdminController::class, 'rekapKehadiran'])->name('admin.rekapKehadiran');
-    Route::get('/admin/pengaturan-kehadiran', [AdminController::class, 'pengaturanKehadiran'])->name('admin.pengaturanKehadiran');
-    
-    // Detail Pages
-    Route::get('/admin/dosen_detail/{id}', [AdminController::class, 'dosen_detail']);
-    Route::get('/admin/mahasiswa_detail/{id}', [AdminController::class, 'mahasiswa_detail']);
+/*
+|--------------------------------------------------------------------------
+| GraphiQL (DEV ONLY)
+|--------------------------------------------------------------------------
+*/
+// Route::get('/graphiql', function () {
+//     abort(404);
+// })->middleware('graphiql.admin');
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+
+    Route::get('/users', [AdminController::class, 'users'])->name('user');
+    Route::get('/roles', [AdminController::class, 'roles'])->name('role');
+    Route::get('/dosen', [AdminController::class, 'dosen'])->name('dosen');
+    Route::get('/mahasiswa', [AdminController::class, 'mahasiswa'])->name('mahasiswa');
+    Route::get('/jurusan', [AdminController::class, 'jurusan'])->name('jurusan');
+    Route::get('/fakultas', [AdminController::class, 'fakultas'])->name('fakultas');
+    Route::get('/mata_kuliah', [AdminController::class, 'mata_kuliah'])->name('mata_kuliah');
+    Route::get('/ruangan', [AdminController::class, 'ruangan'])->name('ruangan');
+    Route::get('/semester', [AdminController::class, 'semester'])->name('semester');
+
+    Route::get('/kelas', [AdminController::class, 'kelas'])->name('kelas');
+    Route::get('/kelas/{id}', [AdminController::class, 'kelas_detail'])->name('kelas.detail');
+
+    Route::get('/jadwal', [AdminController::class, 'jadwal'])->name('jadwal');
+
+    Route::get('/krs', [AdminController::class, 'krs'])->name('krs');
+    Route::get('/krs-detail/{id}', [AdminController::class, 'krs_detail'])->name('krs.detail');
+
+    Route::get('/nilai', [AdminController::class, 'nilai'])->name('nilai');
+    Route::get('/khs', [AdminController::class, 'khs'])->name('khs');
+    Route::get('/bobot-nilai', [AdminController::class, 'bobotNilai'])->name('bobot-nilai');
+    Route::get('/grade-system', [AdminController::class, 'gradeSystem'])->name('grade-system');
+    Route::get('/sks-limit', [AdminController::class, 'sksLimit'])->name('sksLimit');
+
+    Route::get('/pertemuan', [AdminController::class, 'pertemuan'])->name('pertemuan');
+    Route::get('/kehadiran', [AdminController::class, 'kehadiran'])->name('kehadiran');
+    Route::get('/rekap-kehadiran', [AdminController::class, 'rekapKehadiran'])->name('rekapKehadiran');
+    Route::get('/pengaturan-kehadiran', [AdminController::class, 'pengaturanKehadiran'])->name('pengaturanKehadiran');
+
+    Route::get('/dosen-detail/{id}', [AdminController::class, 'dosen_detail'])->name('dosen.detail');
+    Route::get('/mahasiswa-detail/{id}', [AdminController::class, 'mahasiswa_detail'])->name('mahasiswa.detail');
 });
 
-Route::middleware(['auth', 'role:dosen'])->group(function () {
-    Route::get('/dosen/dashboard', [DosenController::class, 'index'])->name('dosen.dashboard');
+/*
+|--------------------------------------------------------------------------
+| Dosen Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:dosen'])->prefix('dosen')->name('dosen.')->group(function () {
+    Route::get('/dashboard', [DosenController::class, 'index'])->name('dashboard');
 });
 
-Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
-    Route::get('/mahasiswa/dashboard', [MahasiswaController::class, 'index'])->name('mahasiswa.dashboard');
-    Route::get('/mahasiswa/jadwal', [MahasiswaController::class, 'jadwal'])->name('jadwal.index');
-    Route::get('/mahasiswa/nilai', [MahasiswaController::class, 'nilai'])->name('nilai.index');
-    Route::get('/mahasiswa/khs', [MahasiswaController::class, 'khs'])->name('khs.index');
-    Route::get('/mahasiswa/krs', [MahasiswaController::class, 'krs'])->name('krs.index');
-    Route::get('/mahasiswa/krsHistory', [MahasiswaController::class, 'krsHistory'])->name('krsHistroy.index');
+/*
+|--------------------------------------------------------------------------
+| Mahasiswa Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
+    Route::get('/dashboard', [MahasiswaController::class, 'index'])->name('dashboard');
+    Route::get('/jadwal', [MahasiswaController::class, 'jadwal'])->name('jadwal');
+    Route::get('/nilai', [MahasiswaController::class, 'nilai'])->name('nilai');
+    Route::get('/khs', [MahasiswaController::class, 'khs'])->name('khs');
+    Route::get('/krs', [MahasiswaController::class, 'krs'])->name('krs');
+    Route::get('/krs-history', [MahasiswaController::class, 'krsHistory'])->name('krs-history');
 });

@@ -1,5 +1,4 @@
 <?php declare(strict_types=1);
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,17 +10,21 @@ return [
     | registration and take full control.
     |
     */
+    'graphiql' => [
+        'enabled' => false,
+    ],
+
+
+
 
     'route' => [
         'uri' => '/graphql',
         'name' => 'graphql',
-        
+
         'middleware' => [
-            \Illuminate\Session\Middleware\StartSession::class, // ← TAMBAHKAN untuk session
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class, // ← TAMBAHKAN
-            \Illuminate\Cookie\Middleware\EncryptCookies::class, // ← TAMBAHKAN untuk cookies
-            
-            // Lighthouse middleware
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
             Nuwave\Lighthouse\Http\Middleware\AcceptJson::class,
             Nuwave\Lighthouse\Http\Middleware\AttemptAuthentication::class,
         ],
@@ -63,12 +66,12 @@ return [
     |
     */
     'cache' => [
-        'enable' => true,                    // HARUS TRUE
-        'driver' => 'redis',                 // GUNAKAN REDIS (bukan file!)
+        'enable' => true,
+        'driver' => 'redis',
         'ttl' => 600,                        // 10 menit
         'key_prefix' => 'lighthouse',
     ],
-        
+
     'schema_cache' => [
         /*
          * Setting to true enables schema caching.
@@ -214,6 +217,7 @@ return [
             ? GraphQL\Validator\Rules\DisableIntrospection::ENABLED
             : GraphQL\Validator\Rules\DisableIntrospection::DISABLED,
     ],
+
 
     /*
     |--------------------------------------------------------------------------
