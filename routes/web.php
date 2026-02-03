@@ -23,9 +23,12 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 | GraphiQL (DEV ONLY)
 |--------------------------------------------------------------------------
 */
-// Route::get('/graphiql', function () {
-//     abort(404);
-// })->middleware('graphiql.admin');
+Route::get('/graphiql', function () {
+    abort(404);
+})->middleware('graphiql.admin');
+Route::get('/graphql', function () {
+    abort(404);
+})->middleware('graphiql.admin');
 
 /*
 |--------------------------------------------------------------------------
