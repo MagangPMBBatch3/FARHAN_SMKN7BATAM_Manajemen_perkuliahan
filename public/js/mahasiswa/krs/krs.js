@@ -561,13 +561,26 @@ function setContent(id, text) {
     if (el) el.textContent = text;
 }
 
+function normalizeStatusAmbil(status) {
+    if (!status) return 'Baru';
+    const normalized = status.toString().trim().toLowerCase();
+
+    if (normalized === 'baru') return 'Baru';
+    if (normalized === 'mengulang') return 'Mengulang';
+    if (normalized === 'perbaikan') return 'Perbaikan';
+
+    return status;
+}
+
 function getStatusAmbilBadge(status) {
+    const normalized = normalizeStatusAmbil(status);
     const badges = {
-        'BARU': 'bg-blue-100 text-blue-800',
-        'MENGULANG': 'bg-orange-100 text-orange-800'
+        'Baru': 'bg-blue-100 text-blue-800',
+        'Mengulang': 'bg-orange-100 text-orange-800',
+        'Perbaikan': 'bg-purple-100 text-purple-800'
     };
-    const cls = badges[status?.toUpperCase()] || 'bg-gray-100 text-gray-800';
-    return `<span class="${cls} px-2 py-1 rounded text-xs font-semibold">${status || '-'}</span>`;
+    const cls = badges[normalized] || 'bg-gray-100 text-gray-800';
+    return `<span class="${cls} px-2 py-1 rounded text-xs font-semibold">${normalized || '-'}</span>`;
 }
 
 function showNotification(message, type = 'info') {
