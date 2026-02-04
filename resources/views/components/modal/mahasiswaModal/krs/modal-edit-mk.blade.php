@@ -128,8 +128,9 @@
                     id="editMkStatusAmbil"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-sm"
                     required>
-                    <option value="BARU">Baru</option>
-                    <option value="MENGULANG">Mengulang</option>
+                    <option value="Baru">Baru</option>
+                    <option value="Mengulang">Mengulang</option>
+                    <option value="Perbaikan">Perbaikan</option>
                 </select>
                 <div class="mt-3 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg text-sm">
                     <div class="flex items-start">

@@ -8,6 +8,32 @@ let allKrsHistory = [];
 let filteredHistory = [];
 let mahasiswaData = null;
 
+async function getMahasiswaProfile() {
+    const query = `
+    query {
+        mahasiswaProfile {
+            id
+            user_id
+            nim
+            nama_lengkap
+        }
+    }`;
+
+    const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+    });
+
+    const result = await response.json();
+
+    if (!result.data?.mahasiswaProfile) {
+        throw new Error('Profil mahasiswa tidak ditemukan');
+    }
+
+    return result.data.mahasiswaProfile;
+}
+
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
@@ -22,7 +48,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ============================================================================
 
 async function loadMahasiswaData() {
-    const userId = getUserIdFromSession();
+    const profile = await getMahasiswaProfile();
+    const userId = profile.user_id;
     
     const query = `query($userId: ID!) {
         mahasiswaByUserId(user_id: $userId) {
@@ -131,14 +158,14 @@ function renderMahasiswaStats() {
 }
 
 function calculateStats() {
-    const totalSemester = allKrsHistory.filter(krs => 
-        krs.status === 'DISETUJUI'
+    const totalSemester = allKrsHistory.filter(krs =>
+        (krs.status || '').toLowerCase() === 'disetujui'
     ).length;
     
     let totalSksLulus = 0;
     
     allKrsHistory.forEach(krs => {
-        if (krs.status === 'DISETUJUI' && krs.krsDetail) {
+        if ((krs.status || '').toLowerCase() === 'disetujui' && krs.krsDetail) {
             krs.krsDetail.forEach(detail => {
                 const nilaiHuruf = detail.nilai?.nilai_huruf;
                 // SKS lulus jika nilai >= C
@@ -197,7 +224,7 @@ function renderKrsHistory() {
         
         // Calculate IP Semester if available
         let ipSemester = '-';
-        if (krs.status === 'DISETUJUI' && krs.krsDetail) {
+        if ((krs.status || '').toLowerCase() === 'disetujui' && krs.krsDetail) {
             const { totalMutu, totalSks: sksValid } = calculateIpSemester(krs.krsDetail);
             if (sksValid > 0) {
                 ipSemester = (totalMutu / sksValid).toFixed(2);
@@ -402,15 +429,26 @@ function setContent(id, text) {
     if (el) el.textContent = text;
 }
 
+function normalizeKrsStatus(status) {
+    if (!status) return 'Draft';
+    const normalized = status.toString().trim().toLowerCase();
+    if (normalized === 'draft') return 'Draft';
+    if (normalized === 'diajukan') return 'Diajukan';
+    if (normalized === 'disetujui') return 'Disetujui';
+    if (normalized === 'ditolak') return 'Ditolak';
+    return status;
+}
+
 function getStatusBadge(status) {
+    const normalized = normalizeKrsStatus(status);
     const badges = {
-        'DRAFT': 'bg-gray-100 text-gray-800',
-        'DIAJUKAN': 'bg-yellow-100 text-yellow-800',
-        'DISETUJUI': 'bg-green-100 text-green-800',
-        'DITOLAK': 'bg-red-100 text-red-800'
+        'Draft': 'bg-gray-100 text-gray-800',
+        'Diajukan': 'bg-yellow-100 text-yellow-800',
+        'Disetujui': 'bg-green-100 text-green-800',
+        'Ditolak': 'bg-red-100 text-red-800'
     };
-    const cls = badges[status?.toUpperCase()] || 'bg-gray-100 text-gray-800';
-    return `<span class="${cls} px-3 py-1 rounded-full text-xs font-semibold">${status || '-'}</span>`;
+    const cls = badges[normalized] || 'bg-gray-100 text-gray-800';
+    return `<span class="${cls} px-3 py-1 rounded-full text-xs font-semibold">${normalized || '-'}</span>`;
 }
 
 function getNilaiColor(nilai) {
@@ -453,8 +491,4 @@ function showNotification(message, type = 'info') {
     `;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 5000);
-}
-
-function getUserIdFromSession() {
-    return document.querySelector('meta[name="user-id"]')?.content || '1';
 }

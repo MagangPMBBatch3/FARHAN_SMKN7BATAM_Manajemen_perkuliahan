@@ -4,6 +4,22 @@
 
 let availableMataKuliah = [];
 let selectedKelasData = null;
+const STATUS_AMBIL_OPTIONS = {
+    baru: 'Baru',
+    mengulang: 'Mengulang',
+    perbaikan: 'Perbaikan'
+};
+
+function normalizeStatusAmbil(status) {
+    if (!status) return STATUS_AMBIL_OPTIONS.baru;
+    const normalized = status.toString().trim().toLowerCase();
+
+    if (normalized === 'baru') return STATUS_AMBIL_OPTIONS.baru;
+    if (normalized === 'mengulang') return STATUS_AMBIL_OPTIONS.mengulang;
+    if (normalized === 'perbaikan') return STATUS_AMBIL_OPTIONS.perbaikan;
+
+    return status;
+}
 
 // ============================================================================
 // MODAL MANAGEMENT
@@ -441,10 +457,11 @@ async function submitAddMk(event) {
         // Cek riwayat nilai
         const previousNilai = await checkPreviousEnrollment(selectedKelasData.mkData.id);
         const statusAmbil = previousNilai && ['D', 'E'].includes(previousNilai.nilai_huruf)
-            ? 'MENGULANG' : 'BARU';
+            ? STATUS_AMBIL_OPTIONS.mengulang
+            : STATUS_AMBIL_OPTIONS.baru;
 
-        if (statusAmbil === 'MENGULANG') {
-            showAddMkInfo(`ℹ️ Status: MENGULANG (Nilai sebelumnya: ${previousNilai.nilai_huruf})`);
+        if (statusAmbil === STATUS_AMBIL_OPTIONS.mengulang) {
+            showAddMkInfo(`ℹ️ Status: Mengulang (Nilai sebelumnya: ${previousNilai.nilai_huruf})`);
         }
 
         // Mutation
@@ -613,7 +630,7 @@ async function populateEditMkForm(detail) {
     
     const statusSelect = document.getElementById('editMkStatusAmbil');
     if (statusSelect) {
-        statusSelect.value = detail.status_ambil || 'BARU';
+    statusSelect.value = normalizeStatusAmbil(detail.status_ambil);
     }
     
     await loadEditAvailableKelas(detail.mata_kuliah_id, detail.kelas_id);
@@ -787,7 +804,7 @@ async function submitEditMk(event) {
         const newStatus = statusSelect?.value;
         
         const hasKelasChange = newKelasId && newKelasId !== editMkDetailData.kelas_id;
-        const hasStatusChange = newStatus !== editMkDetailData.status_ambil;
+        const hasStatusChange = normalizeStatusAmbil(newStatus) !== normalizeStatusAmbil(editMkDetailData.status_ambil);
         
         if (!hasKelasChange && !hasStatusChange) {
             throw new Error('Tidak ada perubahan');
