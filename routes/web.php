@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\DosenController;
+use App\Http\Controllers\AkademikController;
 
 /*
 |--------------------------------------------------------------------------
@@ -79,6 +80,23 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 */
 Route::middleware(['auth', 'role:dosen'])->prefix('dosen')->name('dosen.')->group(function () {
     Route::get('/dashboard', [DosenController::class, 'index'])->name('dashboard');
+    Route::get('/jadwal', [DosenController::class, 'jadwal'])->name('jadwal');
+    Route::get('/pertemuan', [DosenController::class, 'pertemuan'])->name('pertemuan');
+    Route::get('/nilai', [DosenController::class, 'nilai'])->name('nilai');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Akademik Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:akademik'])->prefix('akademik')->name('akademik.')->group(function () {
+    Route::get('/dashboard', [AkademikController::class, 'index'])->name('dashboard');
+    Route::get('/mahasiswa', [AkademikController::class, 'mahasiswa'])->name('mahasiswa');
+    Route::get('/dosen', [AkademikController::class, 'dosen'])->name('dosen');
+    Route::get('/jadwal', [AkademikController::class, 'jadwal'])->name('jadwal');
+    Route::get('/krs', [AkademikController::class, 'krs'])->name('krs');
+    Route::get('/khs', [AkademikController::class, 'khs'])->name('khs');
 });
 
 /*

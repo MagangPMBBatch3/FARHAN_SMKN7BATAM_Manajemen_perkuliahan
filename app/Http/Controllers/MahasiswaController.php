@@ -2,26 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 class MahasiswaController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         return view('mahasiswa.dashboard.index');
     }
-    public function jadwal(){
+
+    public function jadwal()
+    {
         return view('mahasiswa.jadwal.index');
     }
-    public function nilai(){
+
+    public function nilai()
+    {
         return view('mahasiswa.nilai.index');
     }
-    public function khs(){
+
+    public function khs()
+    {
         return view('mahasiswa.khs.index');
     }
-    public function krs(){
+
+    public function krs()
+    {
         return view('mahasiswa.krs.index');
     }
-    public function krsHistroy(){
+
+    public function krsHistory()
+    {
         return view('mahasiswa.krsHistory.index');
     }
 }
