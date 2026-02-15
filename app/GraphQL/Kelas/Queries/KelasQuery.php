@@ -49,4 +49,19 @@ class KelasQuery {
             ],
         ];
     }
+    public function __invoke($rootValue, array $args)
+    {
+        $user = auth()->user();
+        
+        if (!$user || !$user->dosen) {
+            return [];
+        }
+        
+        $dosenId = $user->dosen->id;
+        
+        return Kelas::where('dosen_id', $dosenId)
+            ->with(['mataKuliah', 'semester', 'jurusan'])
+            ->orderBy('semester_id', 'desc')
+            ->get();
+    }
 }

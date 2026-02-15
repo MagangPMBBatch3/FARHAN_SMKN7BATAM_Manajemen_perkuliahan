@@ -25,3 +25,79 @@ scalar Time @scalar(class: "App\\GraphQL\\Scalars\\Time")
 #import ./Pertemuan/schema.graphql
 #import ./PengaturanKehadiran/schema.graphql
 #import ./RekapKehadiran/schema.graphql
+# File: graphql/dosen-specific.graphql
+# Schema khusus untuk query dosen (data yang ter-filter berdasarkan dosen yang login)
+
+# Queries khusus untuk Dosen yang sedang login
+extend type Query {
+    # Get data dosen yang sedang login
+    currentDosen: Dosen 
+        @field(resolver: "App\\GraphQL\\Dosen\\Queries\\DosenQuery")
+    
+    # Get kelas yang diampu oleh dosen yang login
+    currentDosenKelas: [Kelas!]! 
+        @field(resolver: "App\\GraphQL\\Dosen\\Queries\\DosenQuery@getKelas")
+    
+    # Jadwal kuliah dosen yang login (READ-ONLY)
+    currentDosenJadwal(
+        first: Int
+        page: Int
+        search: String
+        hari: String
+    ): JadwalKuliahPaginator 
+        @field(resolver: "App\\GraphQL\\JadwalKuliah\\Queries\\JadwalKuliahQuery")
+    
+    # Pertemuan dosen yang login
+    currentDosenPertemuan(
+        first: Int
+        page: Int
+        search: String
+        kelas_id: Int
+        status_pertemuan: StatusPertemuan
+    ): PertemuanPaginator 
+        @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery")
+    
+    # Pertemuan arsip dosen yang login
+    currentDosenPertemuanArsip(
+        first: Int
+        page: Int
+        search: String
+    ): PertemuanPaginator 
+        @field(resolver: "App\\GraphQL\\Pertemuan\\Queries\\PertemuanQuery@allArsipDosen")
+    
+    # Nilai mahasiswa di kelas yang diampu dosen
+    currentDosenNilai(
+        first: Int
+        page: Int
+        search: String
+        kelas_id: Int
+        status: String
+    ): NilaiPaginator 
+        @field(resolver: "App\\GraphQL\\Nilai\\Queries\\NilaiQuery@allByDosen")
+    
+    # Nilai arsip
+    currentDosenNilaiArsip(
+        first: Int
+        page: Int
+        search: String
+    ): NilaiPaginator 
+        @field(resolver: "App\\GraphQL\\Nilai\\Queries\\NilaiQuery@allArsipDosen")
+    jadwalByKelas(
+        kelas_ids: [ID!]!
+    ): [JadwalKuliah!]! 
+        @field(resolver: "App\\GraphQL\\JadwalKuliah\\Queries\\JadwalKuliahQuery@byMultipleKelas")
+}
+
+# Enums
+enum StatusPertemuan {
+    Dijadwalkan
+    Berlangsung
+    Selesai
+    Dibatalkan
+}
+
+enum Metode {
+    TatapMuka
+    Daring
+    Hybrid
+}
